@@ -1,66 +1,56 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Evaluation_System
+ Sistema de Evaluación de Profesores
 
-## About Laravel
+El Sistema de Evaluación de Profesores es una plataforma web diseñada para medir y analizar el desempeño docente en instituciones educativas. A través de pruebas estandarizadas y reportes analíticos, el sistema permite evaluar a los profesores en cinco competencias clave:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- ✅ Competencia Pedagógica
+- ✅ Competencia Comunicativa
+- ✅ Competencia de Gestión
+- ✅ Competencia Tecnológica
+- ✅ Competencia Investigativa
+Esta herramienta facilita la toma de decisiones basadas en datos y proporciona recomendaciones personalizadas para la mejora continua del cuerpo docente.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Objetivo General
+Desarrollar un sistema web para la evaluación de docentes en colegios y universidades, proporcionando reportes analíticos detallados y sugerencias de mejora, con el fin de fortalecer la calidad educativa y la formación continua del profesorado.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## ⚙️ Características Principales
+- 🔹 Autenticación y Seguridad
+  - Registro y autenticación de usuarios con validación por correo electrónico.
+  - Recuperación de contraseña.
+  - Gestión de sesiones seguras.
+  
+- 🔹 Gestión de Roles y Permisos
+  - Administrador: Crea y administra test, gestiona usuarios y genera reportes.
+  - Coordinador de Institución: Registra instituciones y gestiona docentes.
+  - Profesor: Realiza las pruebas de evaluación.
+  
+- 🔹 Evaluaciones por Competencias
+  - Cada profesor realiza cinco pruebas, una por cada competencia.
+  - Cada prueba contiene 20 preguntas de selección múltiple.
+  - Las preguntas son creadas y gestionadas por el administrador.
+  
+- 🔹 Reportes y Análisis
+  - Reportes individuales con resultados detallados por competencia.
+  - Reportes por departamento o programa académico.
+  - Reportes por facultad o área de conocimiento.
+  - Reporte institucional sobre la competencia digital docente.
+  - Gráficas de radar para visualizar fortalezas y áreas de mejora.
+  - Sugerencias personalizadas de formación para cada profesor.
+  
+- 🔹 Tecnologías Utilizadas
+  - Backend: Laravel 11 (PHP)
+  - Base de Datos: MySQL con ORM
+  - Frontend: Diseño responsivo compatible con dispositivos móviles.
+  - Gestión de Versionamiento: Repositorio en GitHub.
+  
+- 🏫 Alcance del Sistema
+  - ✔ Puede ser utilizado por cualquier colegio o universidad en Colombia.
+  - ✔ Cada institución necesita un Coordinador para registrar a los profesores.
+  - ✔ Adaptable a diversas instituciones y niveles educativos.
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- 🚀 Requisitos del Sistema
+  - Servidor web con soporte para PHP y Laravel.
+  - Base de datos MySQL configurada correctamente.
+  - Navegador actualizado para acceso óptimo a la plataforma.
+  - Acceso a internet para el uso del sistema desde cualquier dispositivo.
