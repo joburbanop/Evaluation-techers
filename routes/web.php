@@ -40,4 +40,4 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rutas para recuperación de contraseña
 Route::post('/password/email', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
-Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.update');
+Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->name('password.update');

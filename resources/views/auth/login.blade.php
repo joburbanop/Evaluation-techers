@@ -1,32 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <span>{{ session('error') }}</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        <span>{{ session('success') }}</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-light overflow-hidden">
     <div class="container" style="padding-top: 2px; padding-bottom: 2px;">
         <div class="row justify-content-center">
             <div class="col-md-5 d-flex align-items-center mt-2">
-                @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <span>{{ session('error') }}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="card shadow-lg p-4 rounded-4 border-0 w-100" style="background-color: #f8f9fa;">
@@ -70,17 +48,26 @@
         </div>
     </div>
 </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            let alertBoxes = document.querySelectorAll('.alert');
-            alertBoxes.forEach(function(alert) {
-                setTimeout(() => {
-                    alert.classList.add('fade');
-                    setTimeout(() => {
-                        alert.remove();
-                    }, 500);
-                }, 5000);
-            });
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#d33'
         });
-    </script>
+    @endif
+    
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#3085d6'
+        });
+    @endif
+});
+</script>
 @endsection

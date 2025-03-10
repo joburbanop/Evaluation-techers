@@ -65,5 +65,53 @@
             @yield('content')
         </main>
     </div>
+
+    <!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Script para mostrar notificaciones -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Aceptar'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+        @endif
+
+        @if(session('warning'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'Advertencia',
+                text: '{{ session('warning') }}',
+                confirmButtonColor: '#f39c12',
+                confirmButtonText: 'Aceptar'
+            });
+        @endif
+
+        @if(session('info'))
+            Swal.fire({
+                icon: 'info',
+                title: 'Información',
+                text: '{{ session('info') }}',
+                confirmButtonColor: '#17a2b8',
+                confirmButtonText: 'Aceptar'
+            });
+        @endif
+    });
+</script>
 </body>
 </html>

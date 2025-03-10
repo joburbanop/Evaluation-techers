@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 
 class RegisterController extends Controller
 {
@@ -88,11 +89,11 @@ class RegisterController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        // Dispara el evento de verificación de email
-        event(new Registered($user));
-
-        // No iniciar sesión automáticamente para forzar la verificación del email
-        return redirect()->route('verification.notice')->with('status', 'Te hemos enviado un correo de verificación.');
+        event(new Registered($user)); 
+        Auth::login($user);
+    
+        session()->flash('success', 'Registro exitoso. Se ha enviado un enlace de verificación a tu correo.');
+    return redirect()->route('verification.notice');
     }
 
 }
