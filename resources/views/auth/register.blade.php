@@ -51,4 +51,26 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        @if ($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Error en el registro',
+                html: `
+                    <ul style='text-align: left;'>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#d33'
+            });
+        @endif
+    });
+</script>
 @endsection

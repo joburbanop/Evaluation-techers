@@ -77,11 +77,18 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Error en el registro. Verifica los datos ingresados.');
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -91,9 +98,10 @@ class RegisterController extends Controller
 
         event(new Registered($user)); 
         Auth::login($user);
-    
+
         session()->flash('success', 'Registro exitoso. Se ha enviado un enlace de verificación a tu correo.');
-    return redirect()->route('verification.notice');
+        
+        return redirect()->route('verification.notice');
     }
 
 }
