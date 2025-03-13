@@ -95,6 +95,7 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
+        $user->assignRole('Docente');
 
         event(new Registered($user)); 
         Auth::login($user);
