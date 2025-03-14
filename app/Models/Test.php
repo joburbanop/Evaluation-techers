@@ -12,4 +12,9 @@ class Test extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    public function institutions()
+    {
+        return $this->belongsToMany(Institution::class, 'institution_test');
+    }
 }
