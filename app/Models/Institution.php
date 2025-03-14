@@ -2,19 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Institution extends Model
 {
     use HasFactory;
 
+    protected $table = 'institutions';
+
     protected $fillable = [
         'name',
-        // Otros campos que necesites
+        'address',
+        'phone',
+        'email',
+        'contact_person',
+        'foundation_date',
     ];
 
-    // Relación muchos a muchos con tests
     public function tests()
     {
         return $this->belongsToMany(Test::class, 'institution_test');
