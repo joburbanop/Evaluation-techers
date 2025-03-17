@@ -23,17 +23,39 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Select::make('roles')
-                    ->relationship('roles', 'name')
-                    ->preload()
-                    ->label('Rol')
-                    ->required(),
-                //TextInput::make()
-            ]);
+        ->schema([
+            TextInput::make('name')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('email')
+                ->email()
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->maxLength(255),
+            TextInput::make('phone')
+                ->tel()
+                ->label('Teléfono')
+                ->maxLength(15)
+                ->nullable(),
+            Forms\Components\DatePicker::make('date_of_birth')
+                ->label('Fecha de Nacimiento')
+                ->maxDate(now()->subYears(15)->format('Y-m-d')) // Ajustar la fecha máxima a 15 años atrás desde hoy
+                ->required()
+                ->nullable(),
+            
+            Select::make('roles')
+                ->relationship('roles', 'name')
+                ->preload()
+                ->label('Rol')
+                ->required(),
+
+            TextInput::make('password')
+                ->required()
+                ->password()
+                ->maxLength(255)
+                ->label('Contraseña'),
+            
+        ]);
     }
 
     public static function table(Table $table): Table
