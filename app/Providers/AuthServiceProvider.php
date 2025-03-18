@@ -22,7 +22,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class => UserPolicy::class,
         Role::class => RolePolicy::class,
         Test::class => TestPolicy::class,
-        InstitutionTest::class => AsignacionTestPolicy::class, 
+        
     ];
 
     /**

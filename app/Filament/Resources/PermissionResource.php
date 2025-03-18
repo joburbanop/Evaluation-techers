@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PermissionResource\Pages;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Filament\Resources\Resource;
 use Filament\Forms\Form;
@@ -11,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\MultiSelect;
 use Filament\Tables\Table;
 use Filament\Tables;
+use App\Models\Role; 
 
 class PermissionResource extends Resource
 {
@@ -66,4 +66,5 @@ class PermissionResource extends Resource
             'edit'   => Pages\EditPermission::route('/{record}/edit'),
         ];
     }
+    
 }

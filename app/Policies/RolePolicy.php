@@ -2,32 +2,30 @@
 
 namespace App\Policies;
 
-use App\Models\Role;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RolePolicy
 {
-     /**
-     * Permitir que solo los administradores vean todos los usuarios.
+    /**
+     * Permitir que solo los administradores vean todos los roles.
      */
     public function viewAny(User $user): bool
     {
-        Log::info('RolePolicy');
         return $user->hasRole('Administrador');
     }
 
     /**
-     * Permitir que un usuario vea su propia cuenta o que un administrador vea cualquier usuario.
+     * Permitir que un usuario vea un rol si es administrador o el mismo rol.
      */
-    public function view(User $user, User $model): bool
+    public function view(User $user, Role $role): bool
     {
-        return $user->hasRole('Administrador') || $user->id === $model->id;
+        return $user->hasRole('Administrador') || $user->id === $role->id;
     }
 
     /**
-     * Permitir que solo los administradores creen nuevos usuarios.
+     * Permitir que solo los administradores creen nuevos roles.
      */
     public function create(User $user): bool
     {
@@ -35,33 +33,33 @@ class RolePolicy
     }
 
     /**
-     * Permitir que solo los administradores actualicen usuarios.
+     * Permitir que solo los administradores actualicen roles.
      */
-    public function update(User $user, User $model): bool
+    public function update(User $user, Role $role): bool
     {
         return $user->hasRole('Administrador');
     }
 
     /**
-     * Permitir que solo los administradores eliminen usuarios.
+     * Permitir que solo los administradores eliminen roles.
      */
-    public function delete(User $user, User $model): bool
+    public function delete(User $user, Role $role): bool
     {
         return $user->hasRole('Administrador');
     }
 
     /**
-     * Permitir que solo los administradores restauren usuarios eliminados.
+     * Permitir que solo los administradores restauren roles eliminados.
      */
-    public function restore(User $user, User $model): bool
+    public function restore(User $user, Role $role): bool
     {
         return $user->hasRole('Administrador');
     }
 
     /**
-     * Permitir que solo los administradores eliminen usuarios permanentemente.
+     * Permitir que solo los administradores eliminen roles permanentemente.
      */
-    public function forceDelete(User $user, User $model): bool
+    public function forceDelete(User $user, Role $role): bool
     {
         return $user->hasRole('Administrador');
     }
