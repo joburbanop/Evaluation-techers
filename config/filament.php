@@ -86,14 +86,17 @@ return [
 
     'livewire_loading_delay' => 'default',
 
-    'auth' => [
-        'guard' => 'web',
-       
-        'middleware' => [
-            'auth',       
-            'role:admin', 
-        ],
-       
+   'auth' => [
+        'guard' => 'web',  // Usa el guardia correcto
+        'user' => App\Models\User::class,
+        'logout_redirect' => '/',  // Modelo correcto
     ],
+
+  
+    'panels' => [
+    'admin' => \App\Providers\Filament\AdminPanelProvider::class,
+    'coordinador' => \App\Providers\Filament\CoordinadorPanelProvider::class,
+    'docente' => \App\Providers\Filament\DocentePanelProvider::class,  // Registrar el panel de docente
+],
 
 ];

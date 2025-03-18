@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
@@ -12,15 +13,27 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('/');
+            $user = Auth::user();
+            dd($user->roles->pluck('name'));
+            if ($user->hasRole('Administrador')) {
+                return redirect('/admin/dashboard');
+            } elseif ($user->hasRole('Coordinador')) {
+                return redirect('/coordinador/dashboard');
+            } elseif ($user->hasRole('Docente')) {
+                return redirect('/docente/dashboard');
+            }
+            return redirect()->route('home');
         }
 
         return back()->withErrors(['email' => 'Credenciales incorrectas']);
     }
 
     public function logout()
-    {
-        Auth::logout();
-        return redirect('/login');
-    }
+{
+    Log::info('Cerrando sesión para el usuario: ' . auth()->user()->name);
+    Auth::logout();
+    return redirect('/login');
+}
+
+    
 }

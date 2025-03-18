@@ -37,24 +37,16 @@ class TestAssignmentResource extends Resource
         return $table->columns([
             Tables\Columns\TextColumn::make('institution.name'),
             Tables\Columns\TextColumn::make('test.name'),
-        ])->filters([
-            //
         ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
+   
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTestAssignments::route('/'),
+            'index'  => Pages\ListTestAssignments::route('/'),
             'create' => Pages\CreateTestAssignment::route('/create'),
-            'edit' => Pages\EditTestAssignment::route('/{record}/edit'),
+            'edit'   => Pages\EditTestAssignment::route('/{record}/edit'),
         ];
     }
 }

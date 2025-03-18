@@ -4,13 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PermissionResource\Pages;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Filament\Resources\Resource;
 use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\MultiSelect;
 use Filament\Tables\Table;
 use Filament\Tables;
- 
+
 class PermissionResource extends Resource
 {
     // Cambiamos el modelo a Role para manejar roles
@@ -29,10 +30,14 @@ class PermissionResource extends Resource
                     ->label('Nombre del Rol')
                     ->required()
                     ->maxLength(255),
+
+                // Agregamos un MultiSelect para permisos
                 MultiSelect::make('permissions')
-                    ->relationship('permissions', 'name')
+                    ->label('Permisos')
+                    ->relationship('permissions', 'name')  // Relacionamos con el modelo de permisos
                     ->preload()
-                    ->label('Permisos'),
+                    ->options(Permission::all()->pluck('name', 'id')) // Obtén todos los permisos y los muestra
+                    
             ]);
     }
 

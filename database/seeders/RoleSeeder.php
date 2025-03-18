@@ -3,42 +3,56 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $now = Carbon::now();
+        // Crear los roles
+        $admin = Role::create(['name' => 'Administrador']);
+        $coordinador = Role::create(['name' => 'Coordinador']);
+        $docente = Role::create(['name' => 'Docente']);
 
-        $roles = [
-            [
-                // ACT1: Administrador del Sistema
-                'name'       => 'Administrador',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                // ACT2: Coordinador de Institución
-                'name'       => 'Coordinador',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                // ACT3: Profesor/Docente
-                'name'       => 'Docente',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
+          // Crear permisos
+          $permissions = [
+            // **Permisos de Usuarios**
+            'ver usuarios',
+            'crear usuarios',
+            'editar usuarios',
+            'eliminar usuarios',
+
+            // **Permisos de Instituciones**
+            'ver instituciones',
+            'crear instituciones',
+            'editar instituciones',
+            'eliminar instituciones',
+
+            // **Permisos de Tests**
+            'ver tests',
+            'crear tests',
+            'editar tests',
+            'eliminar tests',
+
+            // **Permisos de Asignación de Tests**
+            'asignar tests',
+            'ver asignaciones de tests',
+
+            // **Permisos de Roles y Permisos**
+            'ver roles y permisos',
+            'asignar roles y permisos',
         ];
 
-        DB::table('roles')->insert($roles);
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+
+
+        // Asignar permisos a los roles
+        $admin->givePermissionTo($permissions);
+        $docente->givePermissionTo([]);
+        $coordinador->givePermissionTo([]);
+
     }
 }

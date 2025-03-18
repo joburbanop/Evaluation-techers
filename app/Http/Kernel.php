@@ -63,8 +63,11 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class,
+       
+        
     ];
-
+    protected $middlewareAliases = [
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+    ];
     
 }
