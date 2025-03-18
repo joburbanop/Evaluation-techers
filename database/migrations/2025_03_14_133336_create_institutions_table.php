@@ -10,13 +10,16 @@ return new class extends Migration
     {
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');               // Nombre de la institución
-            $table->string('address')->nullable(); // Dirección
-            $table->string('phone')->nullable();   // Teléfono
-            $table->string('email')->nullable();   // Correo de contacto
-            $table->string('contact_person')->nullable(); // Persona de contacto principal
-            $table->date('foundation_date')->nullable();  // Fecha de fundación
-            // Agrega otros campos que consideres necesarios
+            $table->string('nit'); // Columna nit
+            $table->string('name');
+            $table->string('address');
+            $table->string('city');
+            $table->string('phone')->nullable(); 
+            $table->string('contact_person');
+            $table->string('email');
+            $table->unsignedBigInteger('test_id'); // Relación con el modelo Test
+            $table->foreign('test_id')->references('id')->on('tests')->onDelete('cascade');
+            
             $table->timestamps();
         });
     }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\InstitutionResource\Pages;
 use App\Models\Institution;
+use App\Models\Test;  // Importar el modelo Test
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -63,6 +64,13 @@ class InstitutionResource extends Resource
                     ->label('Correo Electrónico')
                     ->email()
                     ->maxLength(255),
+
+                // Agregar el campo Select para los tests
+                Forms\Components\Select::make('test_id') // Asumimos que tienes una relación con 'Test'
+                    ->label('Seleccionar Test')
+                    ->options(Test::all()->pluck('name', 'id')) // Cargar los tests desde la base de datos
+                    ->searchable()
+                    ->required(), // Si deseas que este campo sea obligatorio
             ]);
     }
 

@@ -31,7 +31,7 @@ class UserPolicy
     public function create(User $user): bool
     {
         
-        return $user->hasRole('Administrador');
+        return false;
     }
 
     /**
