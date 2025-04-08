@@ -6,26 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create('test_assignments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('test_id'); 
-            $table->text('question'); 
+            $table->unsignedBigInteger('user_id'); 
+            $table->unsignedBigInteger('test_id');
+            $table->timestamp('assigned_at')->useCurrent(); 
             $table->timestamps();
+
         
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('test_id')->references('id')->on('tests')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('questions');
+        Schema::dropIfExists('test_assignments');
     }
 };

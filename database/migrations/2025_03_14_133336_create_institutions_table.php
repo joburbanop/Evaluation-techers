@@ -10,14 +10,14 @@ return new class extends Migration
     {
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
-            $table->string('nit'); // Columna nit
+            $table->string('nit'); 
             $table->string('name');
             $table->string('address');
             $table->string('city');
             $table->string('phone')->nullable(); 
             $table->string('contact_person');
             $table->string('email');
-            $table->unsignedBigInteger('test_id'); // Relación con el modelo Test
+            $table->unsignedBigInteger('test_id');  
             $table->foreign('test_id')->references('id')->on('tests')->onDelete('cascade');
             
             $table->timestamps();

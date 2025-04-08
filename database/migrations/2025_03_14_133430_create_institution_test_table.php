@@ -13,11 +13,8 @@ return new class extends Migration
             $table->unsignedBigInteger('institution_id');
             $table->unsignedBigInteger('test_id');
             $table->timestamps();
-
-            // Restricción de unicidad para evitar asignaciones duplicadas
             $table->unique(['institution_id', 'test_id']);
 
-            // Llaves foráneas
             $table->foreign('institution_id')
                   ->references('id')
                   ->on('institutions')

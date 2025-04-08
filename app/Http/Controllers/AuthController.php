@@ -30,7 +30,7 @@ class AuthController extends Controller
 
     public function logout()
 {
-    Log::info('Cerrando sesión para el usuario: ' . auth()->user()->name);
+   
     Auth::logout();
     return redirect('/login');
 }

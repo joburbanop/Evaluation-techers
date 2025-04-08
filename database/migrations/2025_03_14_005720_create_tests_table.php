@@ -17,7 +17,6 @@ return new class extends Migration {
             $table->string('name');
             $table->string('category');
             $table->text('description')->nullable();
-            // Puedes agregar otras columnas necesarias para tu aplicación
             $table->timestamps();
         });
     }
