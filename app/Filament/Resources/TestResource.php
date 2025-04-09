@@ -13,7 +13,7 @@ use Filament\Tables\Table;
 class TestResource extends Resource
 {
     protected static ?string $model = Test::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-plus';
     protected static ?string $navigationGroup = 'Test';
     protected static ?string $navigationLabel = 'Crear Tests';
     

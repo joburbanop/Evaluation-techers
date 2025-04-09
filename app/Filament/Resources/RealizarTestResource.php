@@ -9,6 +9,7 @@ use Filament\Tables;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Radio;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
 class RealizarTestResource extends Resource
@@ -47,6 +48,12 @@ class RealizarTestResource extends Resource
                         'completed' => 'success',
                         'expired' => 'danger',
                         default => 'gray',
+                    })
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'pending' => 'Pendiente',
+                        'completed' => 'Completado',
+                        'expired' => 'Expirado',
+                        default => $state,
                     }),
             ])
             ->filters([
@@ -64,10 +71,19 @@ class RealizarTestResource extends Resource
                     ->hidden(fn (TestAssignment $record) => $record->status !== 'pending')
                     ->modalHeading(fn (TestAssignment $record) => 'Responder: ' . $record->test->name)
                     ->modalSubmitActionLabel('Guardar respuestas')
+                    ->modalWidth('4xl') // Aumentar el ancho del modal
                     ->form(function (TestAssignment $record) {
                         $questions = $record->test->questions()->with('options')->get();
+                        
+                        if ($questions->isEmpty()) {
+                            return [
+                                Forms\Components\Placeholder::make('no-questions')
+                                    ->label('No hay preguntas disponibles')
+                                    ->content('Este test no tiene preguntas configuradas.'),
+                            ];
+                        }
+    
                         $formFields = [];
-
                         foreach ($questions as $question) {
                             $formFields[] = Radio::make("answers.{$question->id}")
                                 ->label($question->question)
@@ -76,29 +92,51 @@ class RealizarTestResource extends Resource
                                 ->inline()
                                 ->columnSpanFull();
                         }
-
+    
                         return $formFields;
                     })
                     ->action(function (TestAssignment $record, array $data) {
-                        // Guardar cada respuesta
-                        foreach ($data['answers'] as $questionId => $optionId) {
-                            $record->responses()->create([
-                                'question_id' => $questionId,
-                                'option_id' => $optionId,
-                                'user_id' => auth()->id(),
+                        try {
+                            // Verificar que hay respuestas para guardar
+                            if (empty($data['answers'])) {
+                                throw new \Exception('No se han proporcionado respuestas.');
+                            }
+    
+                            // Guardar cada respuesta
+                            foreach ($data['answers'] as $questionId => $optionId) {
+                                $record->responses()->create([
+                                    'question_id' => $questionId,
+                                    'option_id' => $optionId,
+                                    'user_id' => auth()->id(),
+                                ]);
+                            }
+    
+                            // Actualizar el estado del test
+                            $record->update([
+                                'status' => 'completed',
+                                'completed_at' => now(),
                             ]);
+    
+                            // Notificación de éxito
+                            Tables\Actions\Action::make('success')
+                                ->notificationTitle('Test completado exitosamente')
+                                ->success();
+                        } catch (\Exception $e) {
+                            // Notificación de error
+                            Tables\Actions\Action::make('error')
+                                ->notificationTitle('Error al guardar respuestas')
+                                ->notificationBody($e->getMessage())
+                                ->danger();
                         }
-
-                        // Actualizar el estado del test
-                        $record->update([
-                            'status' => 'completed',
-                            'completed_at' => now(),
-                        ]);
+                    })
+                    ->after(function () {
+                        // Forzar recarga de la tabla
+                        return redirect()->route('filament.resources.realizar-tests.index');
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    // Aquí puedes agregar acciones masivas si las necesitas
+                    // Acciones masivas si son necesarias
                 ]),
             ]);
     }
@@ -117,10 +155,11 @@ class RealizarTestResource extends Resource
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
-{
-    return parent::getEloquentQuery()
-        ->where('user_id', auth()->id()) // Solo mostrar los test asignados al usuario
-        ->with(['test.questions.options']); // Cargar preguntas y opciones de respuesta
-}
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('user_id', auth()->id())
+            ->with(['test.questions.options'])
+            ->where('status', 'pending'); // Solo mostrar tests pendientes
+    }
 }
