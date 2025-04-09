@@ -17,7 +17,7 @@ class TestPolicy
      */
     public function viewAny(User $user): bool
     {
-        Log::info('estPolicy');  
+        //Log::info('estPolicy');  
         return $user->hasRole('Administrador') || $user->can('ver tests');
     }
 

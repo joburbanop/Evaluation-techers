@@ -16,15 +16,17 @@ class TestAssignment extends Model
         'assigned_at',
     ];
 
-    // Relación con User
+    public function test()
+    {
+        return $this->belongsTo(Test::class);
+    }
+    
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
-    // Relación con Test
-    public function test()
+    public function responses()
     {
-        return $this->belongsTo(Test::class);
+        return $this->hasMany(TestResponse::class);
     }
 }

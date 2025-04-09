@@ -17,4 +17,9 @@ class Test extends Model
     {
         return $this->belongsToMany(Institution::class, 'institution_test');
     }
+
+    public function testAssignments()
+    {
+        return $this->hasMany(TestAssignment::class);
+    }
 }

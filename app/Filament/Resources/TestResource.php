@@ -15,7 +15,7 @@ class TestResource extends Resource
     protected static ?string $model = Test::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Test';
-    protected static ?string $navigationLabel = 'Tests';
+    protected static ?string $navigationLabel = 'Crear Tests';
     
     public static function form(Form $form): Form
     {
@@ -24,7 +24,7 @@ class TestResource extends Resource
                 // Campos de test
                 Forms\Components\TextInput::make('name')
                     ->label('Nombre')
-                    ->required(),
+                    ->required(), 
 
                 Forms\Components\Select::make('category')
                     ->label('Categoría')
@@ -35,21 +35,23 @@ class TestResource extends Resource
                         'competencia_tecnologica' => 'Competencia Tecnológica',
                         'competencia_investigativa' => 'Competencia Investigativa',
                     ])
-                    ->required(),
+                    ->required(), 
 
                 Forms\Components\Textarea::make('description')
                     ->label('Descripción')
-                    ->required(),
+                    ->required()
+                    ->columnSpan(2), 
 
-                // Repeater principal para las preguntas
+              
                 Forms\Components\Repeater::make('questions')
-                    ->relationship('questions') // Esto apunta a Test::questions()
-                    ->label('Preguntas')
+                    ->relationship('questions') 
+                    ->label('Todas las Preguntas')
                     ->schema([
                         // Campo de la pregunta
                         Forms\Components\TextInput::make('question')
                             ->label('Pregunta')
-                            ->required(),
+                            ->required()
+                            ->columnSpan(2), 
 
                         // Repeater anidado para las opciones
                         Forms\Components\Repeater::make('options')
@@ -68,9 +70,10 @@ class TestResource extends Resource
                             ->maxItems(4)
                             ->required(),
                     ])
-                    ->minItems(20)
-                    ->maxItems(20)
-                    ->required(),
+                    ->minItems(1)
+                    ->maxItems(10)
+                    ->required()
+                    ->columnSpan(2), 
             ]);
     }
 

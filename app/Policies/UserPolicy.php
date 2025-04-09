@@ -13,7 +13,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        Log::info('UserPolicy');  
+        //Log::info('UserPolicy');  
         return $user->hasRole('Administrador');
     }
 
