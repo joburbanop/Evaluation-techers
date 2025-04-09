@@ -24,7 +24,7 @@ class RealizarTestResource extends Resource
     {
         return $form
             ->schema([
-                // Schema vacío ya que no usaremos el formulario tradicional
+               
             ]);
     }
 
@@ -114,12 +114,12 @@ class RealizarTestResource extends Resource
                     })
                     ->action(function (TestAssignment $record, array $data) {
                         try {
-                            // Verificar que hay respuestas para guardar
+                           
                             if (empty($data['answers'])) {
                                 throw new \Exception('No se han proporcionado respuestas.');
                             }
     
-                            // Guardar cada respuesta
+                            
                             foreach ($data['answers'] as $questionId => $optionId) {
                                 $record->responses()->create([
                                     'question_id' => $questionId,
@@ -128,18 +128,18 @@ class RealizarTestResource extends Resource
                                 ]);
                             }
     
-                            // Actualizar el estado del test
+                            
                             $record->update([
                                 'status' => 'completed',
                                 'completed_at' => now(),
                             ]);
     
-                            // Notificación de éxito
+                            
                             Tables\Actions\Action::make('success')
                                 ->notificationTitle('Test completado exitosamente')
                                 ->success();
                         } catch (\Exception $e) {
-                            // Notificación de error
+                           
                             Tables\Actions\Action::make('error')
                                 ->notificationTitle('Error al guardar respuestas')
                                 ->notificationBody($e->getMessage())
@@ -147,13 +147,13 @@ class RealizarTestResource extends Resource
                         }
                     })
                     ->after(function () {
-                        // Forzar recarga de la tabla
+                       
                         return redirect()->route('filament.resources.realizar-tests.index');
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    // Acciones masivas si son necesarias
+                  
                 ]),
             ]);
     }
@@ -161,7 +161,7 @@ class RealizarTestResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Relaciones si son necesarias
+           
         ];
     }
 
@@ -177,6 +177,6 @@ class RealizarTestResource extends Resource
         return parent::getEloquentQuery()
             ->where('user_id', auth()->id())
             ->with(['test.questions.options'])
-            ->where('status', 'pending'); // Solo mostrar tests pendientes
+            ->where('status', 'pending'); 
     }
 }
