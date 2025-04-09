@@ -55,7 +55,7 @@ class TestResource extends Resource
 
                         // Repeater anidado para las opciones
                         Forms\Components\Repeater::make('options')
-                            ->relationship('options') // Esto apunta a Question::options()
+                            ->relationship('options') 
                             ->label('Opciones de Respuesta')
                             ->schema([
                                 Forms\Components\TextInput::make('option')
@@ -66,12 +66,10 @@ class TestResource extends Resource
                                     ->label('Respuesta Correcta')
                                     ->default(false),
                             ])
-                            ->minItems(4)
-                            ->maxItems(4)
+                            ->minItems(1)
                             ->required(),
                     ])
                     ->minItems(1)
-                    ->maxItems(10)
                     ->required()
                     ->columnSpan(2), 
             ]);
