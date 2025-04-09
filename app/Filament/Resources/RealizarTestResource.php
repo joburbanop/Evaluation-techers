@@ -71,7 +71,7 @@ class RealizarTestResource extends Resource
                     ->hidden(fn (TestAssignment $record) => $record->status !== 'pending')
                     ->modalHeading(fn (TestAssignment $record) => 'Responder: ' . $record->test->name)
                     ->modalSubmitActionLabel('Guardar respuestas')
-                    ->modalWidth('4xl') // Aumentar el ancho del modal
+                    ->modalWidth('4xl') 
                     ->form(function (TestAssignment $record) {
                         $questions = $record->test->questions()->with('options')->get();
                         
@@ -85,13 +85,30 @@ class RealizarTestResource extends Resource
     
                         $formFields = [];
                         foreach ($questions as $question) {
-                            $formFields[] = Radio::make("answers.{$question->id}")
-                                ->label($question->question)
-                                ->options($question->options->pluck('option', 'id'))
-                                ->required()
-                                ->inline()
-                                ->columnSpanFull();
+                            $formFields[] = Forms\Components\Card::make()
+                                ->schema([
+                                    Forms\Components\Placeholder::make('question_title')
+                                        ->label($question->question)
+                                        ->extraAttributes([
+                                            'class' => 'font-extrabold text-4xl mb-5 text-teal-700 tracking-wide' 
+                                            ])
+                                        ->columnSpanFull(),
+                                    Forms\Components\Radio::make("answers.{$question->id}")
+                                        ->options($question->options->pluck('option', 'id'))
+                                        ->required()
+                                        ->inline()
+                                        ->label('')
+                                        ->extraAttributes([
+                                             'class' => 'rounded-lg p-4 m-3 transition duration-300 ease-in-out transform hover:bg-gradient-to-r hover:from-teal-400 hover:to-indigo-500 hover:scale-105 focus:ring-2 focus:ring-teal-500'
+                                            ]) 
+                                        ->helperText('Selecciona la opción correcta')
+                                        ->columnSpanFull(),
+                                ])
+                                ->extraAttributes([
+                                     'class' => 'mb-6 p-6 border-4 border-gradient-to-r from-teal-300 via-indigo-400 to-blue-500 rounded-lg shadow-xl hover:shadow-2xl bg-gradient-to-tl from-blue-200 to-indigo-200 transition-all duration-500 ease-in-out'
+                                ]);
                         }
+        
     
                         return $formFields;
                     })
