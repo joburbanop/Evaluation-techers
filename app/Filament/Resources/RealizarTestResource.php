@@ -18,7 +18,7 @@ class RealizarTestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-pencil';
     protected static ?string $navigationLabel = 'Responder Test';
-    protected static ?string $navigationGroup = 'Test';
+    protected static ?string $navigationGroup = 'Evaluaciones';
 
     public static function form(Form $form): Form
     {
@@ -114,12 +114,12 @@ class RealizarTestResource extends Resource
                     })
                     ->action(function (TestAssignment $record, array $data) {
                         try {
-                           
+                            // Verificar que hay respuestas para guardar
                             if (empty($data['answers'])) {
                                 throw new \Exception('No se han proporcionado respuestas.');
                             }
-    
-                            
+
+                            // Guardar cada respuesta en la base de datos
                             foreach ($data['answers'] as $questionId => $optionId) {
                                 $record->responses()->create([
                                     'question_id' => $questionId,
@@ -127,29 +127,21 @@ class RealizarTestResource extends Resource
                                     'user_id' => auth()->id(),
                                 ]);
                             }
-    
-                            
+
+                            // Actualizar el estado del test a 'completed'
                             $record->update([
                                 'status' => 'completed',
                                 'completed_at' => now(),
                             ]);
-    
-                            
-                            Tables\Actions\Action::make('success')
-                                ->notificationTitle('Test completado exitosamente')
-                                ->success();
+
+                            // Notificación de éxito
+                            session()->flash('success', 'Test completado exitosamente');
                         } catch (\Exception $e) {
-                           
-                            Tables\Actions\Action::make('error')
-                                ->notificationTitle('Error al guardar respuestas')
-                                ->notificationBody($e->getMessage())
-                                ->danger();
+                            // Notificación de error
+                            session()->flash('error', 'Error al guardar respuestas: ' . $e->getMessage());
                         }
                     })
-                    ->after(function () {
-                       
-                        return redirect()->route('filament.resources.realizar-tests.index');
-                    }),
+                   
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -168,7 +160,7 @@ class RealizarTestResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRealizarTests::route('/'),
+            'index' => Pages\ListRealizarTests::route('/realizar-tests'),
         ];
     }
 
