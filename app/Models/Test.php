@@ -22,4 +22,10 @@ class Test extends Model
     {
         return $this->hasMany(TestAssignment::class);
     }
+
+    // En app/Models/Test.php
+public function category()
+{
+    return $this->belongsTo(Category::class); // Ajusta según tu modelo de categoría
+}
 }

@@ -11,11 +11,18 @@ class TestAssignment extends Model
 
     
     protected $fillable = [
-        'test_id', 
-        'user_id', 
+        'user_id',
+        'test_id',
+        'assigned_date',
+        'assigned_time',
         'assigned_at',
+        'due_date',
+        'due_time',
+        'due_at',
+        'instructions',
+        'completed_at',
+        'status'
     ];
-
     public function test()
     {
         return $this->belongsTo(Test::class);

@@ -10,15 +10,22 @@ return new class extends Migration
     {
         Schema::create('test_assignments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); 
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('test_id');
-            $table->timestamp('assigned_at')->useCurrent(); 
+            $table->date('assigned_date');
+            $table->time('assigned_time');
+            $table->dateTime('assigned_at');
+            $table->date('due_date');
+            $table->time('due_time');
+            $table->dateTime('due_at');
+            $table->text('instructions')->nullable();
+            $table->dateTime('completed_at')->nullable();
             $table->timestamps();
-
         
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('test_id')->references('id')->on('tests')->onDelete('cascade');
         });
+       
     }
 
     public function down(): void
