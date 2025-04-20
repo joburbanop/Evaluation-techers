@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PermissionResource\Pages;
@@ -46,7 +45,6 @@ class PermissionResource extends Resource
                             ->columnSpanFull()
                             ->disabled(fn ($record) => $record !== null),
                     ]),
-                
                 Section::make('Asignación de Permisos')
                     ->description('Selecciona los permisos que tendrá este rol')
                     ->schema([
@@ -59,40 +57,35 @@ class PermissionResource extends Resource
 
     protected static function getPermissionSections(): \Filament\Forms\Components\Group
     {
-        // Obtener todos los permisos agrupados por módulo
+       
         $permissions = Permission::all()->groupBy('module');
-        
-        // Crear secciones para cada módulo de permisos
+    
+    
         $sections = $permissions->map(function ($permissions, $module) {
-            // Filtrar solo los permisos de este módulo
-            $modulePermissions = $permissions->filter(fn($perm) => $perm->module === $module);
             
-            // Crear opciones de permisos para este módulo específico
-            $permissionOptions = $modulePermissions->mapWithKeys(function ($permission) {
+            $permissionOptions = $permissions->mapWithKeys(function ($permission) {
                 return [
                     $permission->id => $permission->description
                 ];
             });
-            
-            // Obtener un nombre legible para el módulo
+    
+            // Nombre legible del módulo
             $moduleName = match($module) {
                 'evaluaciones' => 'Evaluaciones',
                 'instituciones' => 'Instituciones',
                 'administracion'  => 'Administración',
-                
                 default => Str::headline($module)
             };
-            
-            // Obtener el ícono correspondiente al módulo
+    
+            // Icono correspondiente
             $icon = match($module) {
                 'evaluaciones' => 'heroicon-o-chart-bar',
                 'instituciones' => 'heroicon-o-building-library',
                 'administracion' => 'heroicon-o-shield-check',
-         
                 default => 'heroicon-o-cog'
             };
     
-            // Crear una sección para este módulo específico
+            // Sección de permisos para el módulo
             return \Filament\Forms\Components\Section::make($moduleName)
                 ->icon($icon)
                 ->collapsible()
@@ -107,17 +100,22 @@ class PermissionResource extends Resource
                             titleAttribute: 'name',
                             modifyQueryUsing: fn($query) => $query->where('module', $module)
                         )
+                        ->default(function ($record) use ($permissions) {
+                            if (! $record) return [];
+                            return $record->permissions
+                                ->whereIn('id', $permissions->pluck('id'))
+                                ->pluck('id')
+                                ->toArray();
+                        })
                         ->bulkToggleable()
                         ->gridDirection('row')
                         ->columns(1)
-                        ->searchable()
+                        ->searchable("Buscar permiso")
                 ]);
         })->values()->toArray();
-        
-        // Devolver las secciones de permisos agrupadas
+    
         return \Filament\Forms\Components\Group::make($sections)->columnSpanFull();
     }
-    
     
 
 

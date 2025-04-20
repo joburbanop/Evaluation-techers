@@ -18,5 +18,11 @@ class Question extends Model
         return $this->hasMany(Option::class);
     }
 
+    public function responses()
+    {
+        return $this->hasMany(\App\Models\Response::class);
+    }
+    
+
     
 }
