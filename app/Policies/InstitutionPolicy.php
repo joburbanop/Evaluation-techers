@@ -27,5 +27,4 @@ class InstitutionPolicy
         return $user->can('Eliminar institucion');
     }
 
-
 }

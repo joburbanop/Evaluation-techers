@@ -43,7 +43,8 @@ class PermissionResource extends Resource
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->placeholder('Ej: Coordinador Académico')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->disabled(fn ($record) => $record !== null),
                     ]),
                 
                 Section::make('Asignación de Permisos')
@@ -55,63 +56,58 @@ class PermissionResource extends Resource
             ]);
     }
 
-    protected static array $mainResources = [
-        'user' => 'Usuarios',
-        'institution' => 'Instituciones',
-        'test' => 'Tests',
-        'test_assignment' => 'Asignaciones',
-        'role' => 'Roles',
-        'permission' => 'Permisos',
-        'evaluation' => 'Evaluaciones'
-    ];
 
     protected static function getPermissionSections(): \Filament\Forms\Components\Group
     {
-        // Obtener todos los permisos
-        $permissions = Permission::all()->unique('name');
+        // Obtener todos los permisos agrupados por módulo
+        $permissions = Permission::all()->groupBy('module');
         
-        // Agrupar los permisos por recurso (usuarios, instituciones, etc.)
-        $groupedPermissions = $permissions->groupBy(function ($permission) {
-            $parts = explode('.', $permission->name);
-            // Agrupar por el primer parte del nombre del permiso (por ejemplo, 'user', 'institution', etc.)
-            return $parts[0] ?? 'general';
-        });
-        
-        // Filtrar y crear secciones por cada grupo de permisos (usuarios, instituciones, etc.)
-        $sections = $groupedPermissions->map(function ($permissions, $group) {
-            $groupName = match ($group) {
-                'user' => 'Usuarios',
-                'institution' => 'Instituciones',
-                'test' => 'Tests',
-                'test_assignment' => 'Asignaciones',
-                'role' => 'Roles',
-                'permission' => 'Permisos',
-                'evaluation' => 'Evaluaciones',
-                'general' => 'Permisos Generales', // Mejoramos el nombre aquí
-                default => 'Otros Permisos'
-            };
-    
-            // Crear opciones de permisos para cada grupo
-            $permissionOptions = $permissions->mapWithKeys(function ($permission) {
-                $parts = explode('.', $permission->name);
-                $action = end($parts);
+        // Crear secciones para cada módulo de permisos
+        $sections = $permissions->map(function ($permissions, $module) {
+            // Filtrar solo los permisos de este módulo
+            $modulePermissions = $permissions->filter(fn($perm) => $perm->module === $module);
+            
+            // Crear opciones de permisos para este módulo específico
+            $permissionOptions = $modulePermissions->mapWithKeys(function ($permission) {
                 return [
-                    $permission->id => Str::headline($action)
+                    $permission->id => $permission->description
                 ];
             });
+            
+            // Obtener un nombre legible para el módulo
+            $moduleName = match($module) {
+                'evaluaciones' => 'Evaluaciones',
+                'instituciones' => 'Instituciones',
+                'administracion'  => 'Administración',
+                
+                default => Str::headline($module)
+            };
+            
+            // Obtener el ícono correspondiente al módulo
+            $icon = match($module) {
+                'evaluaciones' => 'heroicon-o-chart-bar',
+                'instituciones' => 'heroicon-o-building-library',
+                'administracion' => 'heroicon-o-shield-check',
+         
+                default => 'heroicon-o-cog'
+            };
     
-            // Crear una sección para cada grupo de permisos
-            return \Filament\Forms\Components\Section::make($groupName)
-                ->icon(self::getGroupIcon($group)) // Asignamos el ícono del grupo
-                ->collapsible() // Permitir que las secciones sean colapsables
-                ->collapsed() // La sección se muestra colapsada por defecto
-                ->compact() // Hacer la sección más compacta
+            // Crear una sección para este módulo específico
+            return \Filament\Forms\Components\Section::make($moduleName)
+                ->icon($icon)
+                ->collapsible()
+                ->collapsed()
+                ->compact()
                 ->schema([
                     \Filament\Forms\Components\CheckboxList::make('permissions')
                         ->label('')
                         ->options($permissionOptions)
-                        ->relationship('permissions', 'name')
-                        ->bulkToggleable() // Permite alternar la selección en bloque
+                        ->relationship(
+                            name: 'permissions',
+                            titleAttribute: 'name',
+                            modifyQueryUsing: fn($query) => $query->where('module', $module)
+                        )
+                        ->bulkToggleable()
                         ->gridDirection('row')
                         ->columns(1)
                         ->searchable()
@@ -123,21 +119,8 @@ class PermissionResource extends Resource
     }
     
     
-    
 
-    protected static function getGroupIcon(string $group): string
-    {
-        return match($group) {
-            'user' => 'heroicon-o-users',
-            'institution' => 'heroicon-o-building-library',
-            'test' => 'heroicon-o-clipboard-document',
-            'test_assignment' => 'heroicon-o-document-check',
-            'role' => 'heroicon-o-shield-exclamation',
-            'permission' => 'heroicon-o-key',
-            'evaluation' => 'heroicon-o-chart-bar',
-            default => 'heroicon-o-cog'
-        };
-    }
+
 
     public static function table(Table $table): Table
     {

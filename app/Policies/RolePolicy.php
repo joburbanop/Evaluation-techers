@@ -9,7 +9,7 @@ class RolePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('Ver permisos');
+        return $user->can('Ver Gestion de roles');
     }
 
 
@@ -20,7 +20,7 @@ class RolePolicy
 
     public function update(User $user): bool
     {
-        return $user->can('Editar permiso');
+        return $user->can('Editar permisos');
     }
 
     public function delete(User $user, Role $role): bool

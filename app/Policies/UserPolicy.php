@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 // controla el recurso de usuarios UserResource
+
 class UserPolicy
 {
     public function viewAny(User $user): bool
@@ -13,16 +14,16 @@ class UserPolicy
 
     public function create(User $user): bool
     {
-        return $user->can('Crear_usuario');
+        return $user->can('Crear usuario');
     }
 
     public function delete(User $user, User $model): bool
     {
-        return $user->can('eliminar_usuario');
+        return $user->can('NA');
     }
 
     public function update(User $user, User $model): bool
     {
-        return $user->can('editar_usuario');
+        return $user->can('Editar usuario');
     }
 }

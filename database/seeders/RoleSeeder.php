@@ -30,9 +30,26 @@ class RoleSeeder extends Seeder
         // 2. Definir permisos por módulo (basado en tu captura)
         $modules = [
             'evaluaciones' => [
-                'Realizar test' => 'Realizar Test',
-                'Asignar evaluaciones' => 'Gestionar Asignaciones de Evaluaciones',
-                'Crear evaluaciones' => 'Crear Evaluaciones',
+            
+               
+               
+                //Permisos para el manejo de TestResource
+                'Ver gestion Evaluaciones' => 'Ver gestion Evaluaciones',
+                'Crear evaluaciones' => 'Crear evaluaciones',
+                'Editar evaluaciones' => 'Editar evaluaciones',
+                'Eliminar evaluaciones' =>  'Eliminar evaluaciones',
+
+               
+               //Permisos para el manejo de TestAssignmentResource
+                'Ver asignaciones' => 'Ver asignaciones',
+                'Crear asignaciones' => 'Crear asignaciones',
+                'Editar asignaciones' => 'Editar asignaciones',
+                'Eliminar asignaciones' => 'Eliminar asignaciones',
+                'Ver resultados' => 'Ver resultados',
+
+                //permisos para el manejo de RealizarTestResource
+                'Realizar test' => 'Realizar test',
+               
             ],
  
             'instituciones' => [
@@ -41,25 +58,16 @@ class RoleSeeder extends Seeder
                 'Eliminar institucion' => 'Eliminar Institución',
                 'Ver institucion' => 'Ver Instituciones',
             ],
-            'permisos' => [
-                'Crear permiso' => 'Crear Permiso',
-                'Editar permiso' => 'Editar Permiso',
-                'Eliminar permiso' => 'Eliminar Permiso',
-                'Ver permisos' => 'Ver Permisos',
-            ],
-            'tests' => [
-                'Crear test' => 'Crear Test',
-                'Editar test' => 'Editar Test',
-                'Eliminar test' => 'Eliminar Test',
-                'Ver tests' => 'Ver Tests',
-            ],
-            'asignacion_tests' => [
-                'Asignar test' => 'Asignar Test',
-                'Ver asignaciones' => 'Ver Asignaciones',
-                'Editar asignaciones' => 'Editar Asignaciones',
-                'Eliminar asignaciones' => 'Eliminar Asignaciones',
-            ],
-            'usuarios' => [
+            
+            
+            'administracion' => [
+                //permisos para el manejo de PermissionResource
+                'Crear permisos' => 'Crear Permisos',
+                'Editar permisos' => 'Editar Permisos',
+                'Ver Gestion de roles' => 'Ver Permisos',
+
+
+                //permisos para el manejo de UserResource 
                 'Crear usuario' => 'Crear Usuario',
                 'Editar usuario' => 'Editar Usuario',
                 'Eliminar usuario' => 'Eliminar Usuario',
@@ -73,7 +81,7 @@ class RoleSeeder extends Seeder
                 Permission::firstOrCreate([
                     'name' => $key,
                     'description' => $description,
-                    'module' => $module, // Agrupa en Filament
+                    'module' => $module,
                 ]);
             }
         }
