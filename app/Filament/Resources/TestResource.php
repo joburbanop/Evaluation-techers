@@ -24,7 +24,7 @@ class TestResource extends Resource
     protected static ?string $model = Test::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = 'Evaluaciones';
-    protected static ?string $navigationLabel = 'Crear Tests';
+    protected static ?string $navigationLabel = 'Crear Evaluaciones';
     protected static ?string $modelLabel = 'Test';
     protected static ?string $pluralModelLabel = 'Tests';
     

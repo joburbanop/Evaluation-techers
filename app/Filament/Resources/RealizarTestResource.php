@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Filament\Resources;
-
+use App\Policies\RealizarTestPolicy;
 use App\Filament\Resources\RealizarTestResource\Pages;
 use App\Models\TestAssignment;
 use Filament\Resources\Resource;
@@ -16,7 +16,7 @@ use Filament\Tables\Filters\SelectFilter;
 class RealizarTestResource extends Resource
 {
     protected static ?string $model = TestAssignment::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
     protected static ?string $navigationLabel = 'Realizar Test';
     protected static ?string $navigationGroup = 'Evaluaciones';
     protected static ?string $modelLabel = 'Test Asignado';
@@ -97,203 +97,203 @@ class RealizarTestResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('due_at', '<', now())->where('status', 'pending'))
                     ->default(false),
             ])
-            ->actions([
-                Tables\Actions\Action::make('responder')
-                    ->label(fn (TestAssignment $record) => $record->status === 'completed' ? 'Revisar' : 'Comenzar Test')
-                    ->icon(fn (TestAssignment $record) => $record->status === 'completed' ? 'heroicon-o-eye' : 'heroicon-o-play')
-                    ->color(fn (TestAssignment $record) => $record->status === 'completed' ? 'success' : 'primary')
-                    ->button()
-                    ->size('sm')
-                    ->modalHeading(fn (TestAssignment $record) => 'Test: ' . $record->test->name)
-                    ->modalDescription(fn (TestAssignment $record) => $record->test->description)
-                    ->modalWidth('5xl')
-                    ->form(function (TestAssignment $record) {
-                        // Si el test está completado, mostramos los resultados
-                        if ($record->status === 'completed') {
-                            // Cargar las preguntas con sus opciones
-                            $questions = $record->test->questions()->with('options')->get();
-                            
-                            // Obtener todas las respuestas del usuario para este test
-                            $responses = $record->responses()->with('option')->get()->keyBy('question_id');
-                            
-                            $fields = [
-                                Forms\Components\Placeholder::make('completed_info')
-                                    ->label('Resultados del Test')
-                                    ->content('Este test ya ha sido completado. A continuación puedes revisar tus respuestas:')
-                                    ->columnSpanFull(),
-                            ];
-                            
-                            foreach ($questions as $index => $question) {
-                                $selectedOptionId = $responses->get($question->id)?->option_id ?? null;
-                                $correctOptionId = $question->options->where('is_correct', true)->first()->id ?? null;
-                                
-                                $fields[] = Forms\Components\Card::make()
-                                    ->schema([
-                                        Forms\Components\ViewField::make("question_{$question->id}_header")
-                                            ->view('question-header', [
-                                                'index' => $index + 1,
-                                                'totalQuestions' => $questions->count(),
-                                                'questionText' => $question->question
-                                            ]),
-                                        
-                                        Forms\Components\ViewField::make("answers.{$question->id}")
-                                            ->view('test-result', [
-                                                'options' => $question->options,
-                                                'selectedOptionId' => $selectedOptionId,
-                                                'correctOptionId' => $correctOptionId
-                                            ])
-                                            ->columnSpanFull(),
-                                    ])
-                                    ->columnSpanFull()
-                                    ->extraAttributes(['class' => 'mb-6 border border-gray-200 rounded-xl p-6 shadow-sm']);
-                            }
-                            
-                            return $fields;
-                        }
-                        
-                        // Código para tests pendientes
-                        $questions = $record->test->questions()->with('options')->get();
-                        $questionsPerPage = 5;
-                        
-                        if ($questions->isEmpty()) {
-                            return [
-                                Forms\Components\Placeholder::make('no-questions')
-                                    ->label('No hay preguntas disponibles')
-                                    ->content('Este test no tiene preguntas configuradas.')
-                                    ->columnSpanFull(),
-                            ];
-                        }
+->actions([
+    Tables\Actions\Action::make('responder')
+        ->label(fn (TestAssignment $record) => $record->status === 'completed' ? 'Revisar' : 'Comenzar Test')
+        ->icon(fn (TestAssignment $record) => $record->status === 'completed' ? 'heroicon-o-eye' : 'heroicon-o-play')
+        ->color(fn (TestAssignment $record) => $record->status === 'completed' ? 'success' : 'primary')
+        ->button()
+        ->size('sm')
+        ->modalHeading(fn (TestAssignment $record) => 'Test: ' . $record->test->name)
+        ->modalDescription(fn (TestAssignment $record) => $record->test->description)
+        ->modalWidth('5xl')
+        ->form(function (TestAssignment $record) {
+            // Si el test está completado, mostramos los resultados
+            if ($record->status === 'completed') {
+                $questions = $record->test->questions()
+                    ->with(['options', 'responses' => function($q) use ($record) {
+                        $q->where('test_assignment_id', $record->id);
+                    }])
+                    ->get();
+                
+                $fields = [
+                    Forms\Components\Placeholder::make('completed_info')
+                        ->label('Resultados del Test')
+                        ->content('Este test ya ha sido completado. A continuación puedes revisar tus respuestas:')
+                        ->columnSpanFull(),
+                ];
+                
+                foreach ($questions as $index => $question) {
+                    $selectedOptionId = $question->responses->first()->option_id ?? null;
+                    $correctOptionId = $question->options->where('is_correct', true)->first()->id ?? null;
                     
-                        $totalPages = ceil($questions->count() / $questionsPerPage);
-                    
-                        $formFields = [
-                            Forms\Components\Placeholder::make('progress')
-                                ->label('Progreso del Test')
-                                ->content(function ($get) use ($questions, $questionsPerPage) {
-                                    $currentPage = $get('current_page') ?? 0;
-                                    $currentQuestion = ($currentPage * $questionsPerPage) + 1;
-                                    $lastQuestion = min(($currentPage + 1) * $questionsPerPage, $questions->count());
-                                    $progress = ($lastQuestion / $questions->count()) * 100;
-                                    
-                                    return view('test-progress', [
-                                        'currentRange' => $currentQuestion . '-' . $lastQuestion,
-                                        'totalQuestions' => $questions->count(),
-                                        'progress' => $progress
-                                    ]);
-                                })
-                                ->columnSpanFull(),
-                        ];
-                    
-                        for ($page = 0; $page < $totalPages; $page++) {
-                            $pageQuestions = $questions->slice($page * $questionsPerPage, $questionsPerPage);
-                            $firstQuestionNumber = ($page * $questionsPerPage) + 1;
+                    $fields[] = Forms\Components\Card::make()
+                        ->schema([
+                            Forms\Components\ViewField::make("question_{$question->id}_header")
+                                ->view('question-header', [
+                                    'index' => $index + 1,
+                                    'totalQuestions' => $questions->count(),
+                                    'questionText' => $question->question
+                                ]),
                             
-                            $formFields[] = Forms\Components\Group::make()
-                                ->id("page-{$page}")
-                                ->hidden(fn ($get) => ($get('current_page') ?? 0) != $page)
-                                ->schema([
-                                    Forms\Components\Group::make()
-                                        ->schema(function () use ($pageQuestions, $questions, $firstQuestionNumber) {
-                                            $fields = [];
-                                            
-                                            foreach ($pageQuestions as $index => $question) {
-                                                $globalIndex = $firstQuestionNumber + $index - 1;
-                                                
-                                                $fields[] = Forms\Components\Card::make()
-                                                    ->schema([
-                                                        Forms\Components\ViewField::make("question_{$question->id}_header")
-                                                            ->view('question-header', [
-                                                                'index' => $globalIndex,
-                                                                'totalQuestions' => $questions->count(),
-                                                                'questionText' => $question->question
-                                                            ]),
-                                                        
-                                                        Forms\Components\Radio::make("answers.{$question->id}")
-                                                            ->options($question->options->pluck('option', 'id')->toArray())
-                                                            ->required()
-                                                            ->label('Selecciona una respuesta:')
-                                                            ->inline()
-                                                            ->inlineLabel(false)
-                                                            ->columnSpanFull()
-                                                            ->extraAttributes(['class' => 'space-y-2']),
-                                                    ])
-                                                    ->columnSpanFull()
-                                                    ->extraAttributes(['class' => 'mb-6 border border-gray-200 rounded-xl p-6 shadow-sm']);
-                                            }
-                                            
-                                            return $fields;
-                                        })
-                                        ->columns(1)
-                                        ->columnSpanFull(),
-                                    
-                                    Forms\Components\Actions::make([
-                                        Forms\Components\Actions\Action::make('previous_page')
-                                            ->label('Anterior')
-                                            ->color('gray')
-                                            ->icon('heroicon-o-arrow-left')
-                                            ->hidden($page === 0)
-                                            ->action(function ($set) use ($page) {
-                                                $set('current_page', $page - 1);
-                                            })
-                                            ->extraAttributes(['class' => 'px-6 py-3 rounded-lg']),
-                                        
-                                        Forms\Components\Actions\Action::make('next_page')
-                                            ->label($page === $totalPages - 1 ? 'Finalizar Test' : 'Siguiente')
-                                            ->color('primary')
-                                            ->icon($page === $totalPages - 1 ? 'heroicon-o-check' : 'heroicon-o-arrow-right')
-                                            ->hidden($totalPages <= 1)
-                                            ->submit($page === $totalPages - 1)
-                                            ->action(function ($set) use ($page) {
-                                                $set('current_page', $page + 1);
-                                            })
-                                            ->extraAttributes(['class' => 'px-6 py-3 rounded-lg bg-primary-600 hover:bg-primary-700 text-white']),
-                                    ])
-                                    ->alignEnd()
-                                    ->columnSpanFull()
-                                    ->extraAttributes(['class' => 'mt-6 space-x-3']),
+                            Forms\Components\ViewField::make("answers.{$question->id}")
+                                ->view('test-result', [
+                                    'options' => $question->options,
+                                    'selectedOptionId' => $selectedOptionId,
+                                    'correctOptionId' => $correctOptionId
                                 ])
-                                ->columnSpanFull();
-                        }
+                                ->columnSpanFull(),
+                        ])
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'mb-6 border border-gray-200 rounded-xl p-6 shadow-sm']);
+                }
+                
+                return $fields;
+            }
+            
+            // Código para tests pendientes
+            $questions = $record->test->questions()->with('options')->get();
+            $questionsPerPage = 5;
+            
+            if ($questions->isEmpty()) {
+                return [
+                    Forms\Components\Placeholder::make('no-questions')
+                        ->label('No hay preguntas disponibles')
+                        ->content('Este test no tiene preguntas configuradas.')
+                        ->columnSpanFull(),
+                ];
+            }
+        
+            $totalPages = ceil($questions->count() / $questionsPerPage);
+        
+            $formFields = [
+                Forms\Components\Placeholder::make('progress')
+                    ->label('Progreso del Test')
+                    ->content(function ($get) use ($questions, $questionsPerPage) {
+                        $currentPage = $get('current_page') ?? 0;
+                        $currentQuestion = ($currentPage * $questionsPerPage) + 1;
+                        $lastQuestion = min(($currentPage + 1) * $questionsPerPage, $questions->count());
+                        $progress = ($lastQuestion / $questions->count()) * 100;
                         
-                        return $formFields;
+                        return view('test-progress', [
+                            'currentRange' => $currentQuestion . '-' . $lastQuestion,
+                            'totalQuestions' => $questions->count(),
+                            'progress' => $progress
+                        ]);
                     })
-                    ->action(function (TestAssignment $record, array $data) {
-                        // Solo procesar acción si el test está pendiente
-                        if ($record->status === 'pending') {
-                            try {
-                                if (empty($data['answers'])) {
-                                    throw new \Exception('No se han proporcionado respuestas.');
-                                }
-            
-                                foreach ($data['answers'] as $questionId => $optionId) {
-                                    $record->responses()->updateOrCreate(
-                                        ['question_id' => $questionId],
-                                        ['option_id' => $optionId, 'user_id' => auth()->id()]
-                                    );
-                                }
-            
-                                $record->update([
-                                    'status' => 'completed',
-                                    'completed_at' => now(),
-                                ]);
-            
-                                Notification::make()
-                                    ->title('Test completado')
-                                    ->success()
-                                    ->body('Has completado el test correctamente.')
-                                    ->send();
+                    ->columnSpanFull(),
+            ];
+        
+            for ($page = 0; $page < $totalPages; $page++) {
+                $pageQuestions = $questions->slice($page * $questionsPerPage, $questionsPerPage);
+                $firstQuestionNumber = ($page * $questionsPerPage) + 1;
+                
+                $formFields[] = Forms\Components\Group::make()
+                    ->id("page-{$page}")
+                    ->hidden(fn ($get) => ($get('current_page') ?? 0) != $page)
+                    ->schema([
+                        Forms\Components\Group::make()
+                            ->schema(function () use ($pageQuestions, $questions, $firstQuestionNumber) {
+                                $fields = [];
+                                
+                                foreach ($pageQuestions as $index => $question) {
+                                    $globalIndex = $firstQuestionNumber + $index - 1;
                                     
-                                return redirect()->to(RealizarTestResource::getUrl('index'));
-                            } catch (\Exception $e) {
-                                Notification::make()
-                                    ->title('Error')
-                                    ->danger()
-                                    ->body('Error al guardar respuestas: ' . $e->getMessage())
-                                    ->send();
-                            }
-                        }
-                    })
-            ])
+                                    $fields[] = Forms\Components\Card::make()
+                                        ->schema([
+                                            Forms\Components\ViewField::make("question_{$question->id}_header")
+                                                ->view('question-header', [
+                                                    'index' => $globalIndex,
+                                                    'totalQuestions' => $questions->count(),
+                                                    'questionText' => $question->question
+                                                ]),
+                                            
+                                            Forms\Components\Radio::make("answers.{$question->id}")
+                                                ->options($question->options->pluck('option', 'id')->toArray())
+                                                ->required()
+                                                ->label('Selecciona una respuesta:')
+                                                ->inline()
+                                                ->inlineLabel(false)
+                                                ->columnSpanFull()
+                                                ->extraAttributes(['class' => 'space-y-2']),
+                                        ])
+                                        ->columnSpanFull()
+                                        ->extraAttributes(['class' => 'mb-6 border border-gray-200 rounded-xl p-6 shadow-sm']);
+                                }
+                                
+                                return $fields;
+                            })
+                            ->columns(1)
+                            ->columnSpanFull(),
+                        
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('previous_page')
+                                ->label('Anterior')
+                                ->color('gray')
+                                ->icon('heroicon-o-arrow-left')
+                                ->hidden($page === 0)
+                                ->action(function ($set) use ($page) {
+                                    $set('current_page', $page - 1);
+                                })
+                                ->extraAttributes(['class' => 'px-6 py-3 rounded-lg']),
+                            
+                            Forms\Components\Actions\Action::make('next_page')
+                                ->label($page === $totalPages - 1 ? 'Finalizar Test' : 'Siguiente')
+                                ->color('primary')
+                                ->icon($page === $totalPages - 1 ? 'heroicon-o-check' : 'heroicon-o-arrow-right')
+                                ->hidden($totalPages <= 1)
+                                ->submit($page === $totalPages - 1)
+                                ->action(function ($set) use ($page) {
+                                    $set('current_page', $page + 1);
+                                })
+                                ->extraAttributes(['class' => 'px-6 py-3 rounded-lg bg-primary-600 hover:bg-primary-700 text-white']),
+                        ])
+                        ->alignEnd()
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'mt-6 space-x-3']),
+                    ])
+                    ->columnSpanFull();
+            }
+            
+            return $formFields;
+        })
+        ->action(function (TestAssignment $record, array $data) {
+            // Solo procesar acción si el test está pendiente
+            if ($record->status === 'pending') {
+                try {
+                    if (empty($data['answers'])) {
+                        throw new \Exception('No se han proporcionado respuestas.');
+                    }
+
+                    foreach ($data['answers'] as $questionId => $optionId) {
+                        $record->responses()->updateOrCreate(
+                            ['question_id' => $questionId],
+                            ['option_id' => $optionId, 'user_id' => auth()->id()]
+                        );
+                    }
+
+                    $record->update([
+                        'status' => 'completed',
+                        'completed_at' => now(),
+                    ]);
+
+                    Notification::make()
+                        ->title('Test completado')
+                        ->success()
+                        ->body('Has completado el test correctamente.')
+                        ->send();
+                        
+                    return redirect()->to(RealizarTestResource::getUrl('index'));
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title('Error')
+                        ->danger()
+                        ->body('Error al guardar respuestas: ' . $e->getMessage())
+                        ->send();
+                }
+            }
+        })
+])
             ->bulkActions([])
             ->emptyStateHeading('No tienes tests pendientes')
             ->emptyStateDescription('Cuando te asignen nuevos tests, aparecerán aquí')
@@ -308,6 +308,15 @@ class RealizarTestResource extends Resource
             // Eliminadas las páginas de create y edit
         ];
     }
+ 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('Realizar test') ?? false;
+    }
+
+
+
+
 
     public static function getEloquentQuery(): Builder
     {

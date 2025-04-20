@@ -4,20 +4,22 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PermissionResource\Pages;
 use Spatie\Permission\Models\Permission;
-use Filament\Resources\Resource;
+use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use App\Models\Role;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Tables\Table;
-use Filament\Tables;
-use App\Models\Role;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\Action;
-use Filament\Forms\Components\Group;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Support\Str;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Group;
 
 class PermissionResource extends Resource
 {
@@ -57,56 +59,71 @@ class PermissionResource extends Resource
         'user' => 'Usuarios',
         'institution' => 'Instituciones',
         'test' => 'Tests',
-        'assignment' => 'Asignaciones',
-        'role' => 'Roles'
+        'test_assignment' => 'Asignaciones',
+        'role' => 'Roles',
+        'permission' => 'Permisos',
+        'evaluation' => 'Evaluaciones'
     ];
 
-    protected static function getPermissionSections(): Group
+    protected static function getPermissionSections(): \Filament\Forms\Components\Group
     {
+        // Obtener todos los permisos
         $permissions = Permission::all()->unique('name');
         
-        // Filtrar y agrupar solo los permisos de los recursos principales
+        // Agrupar los permisos por recurso (usuarios, instituciones, etc.)
         $groupedPermissions = $permissions->groupBy(function ($permission) {
             $parts = explode('.', $permission->name);
-            $resource = $parts[0] ?? 'general';
-            
-            // Si el permiso no pertenece a un recurso principal, lo agrupamos como "Otros"
-            return array_key_exists($resource, static::$mainResources) ? $resource : 'other';
-        })->sortBy(function ($items, $key) {
-            // Ordenar según el orden definido en $mainResources
-            return array_search($key, array_keys(static::$mainResources)) ?? PHP_INT_MAX;
+            // Agrupar por el primer parte del nombre del permiso (por ejemplo, 'user', 'institution', etc.)
+            return $parts[0] ?? 'general';
         });
         
+        // Filtrar y crear secciones por cada grupo de permisos (usuarios, instituciones, etc.)
         $sections = $groupedPermissions->map(function ($permissions, $group) {
-            $groupName = static::$mainResources[$group] ?? 'Permisos Generales';
-            
+            $groupName = match ($group) {
+                'user' => 'Usuarios',
+                'institution' => 'Instituciones',
+                'test' => 'Tests',
+                'test_assignment' => 'Asignaciones',
+                'role' => 'Roles',
+                'permission' => 'Permisos',
+                'evaluation' => 'Evaluaciones',
+                'general' => 'Permisos Generales', // Mejoramos el nombre aquí
+                default => 'Otros Permisos'
+            };
+    
+            // Crear opciones de permisos para cada grupo
             $permissionOptions = $permissions->mapWithKeys(function ($permission) {
                 $parts = explode('.', $permission->name);
                 $action = end($parts);
                 return [
-                    $permission->id => Str::headline($action) // Formato más limpio
+                    $permission->id => Str::headline($action)
                 ];
-            })->sortKeys();
-            
-            return Section::make($groupName)
-                ->icon(self::getGroupIcon($group))
-                ->collapsible()
-                ->collapsed()
-                ->compact()
+            });
+    
+            // Crear una sección para cada grupo de permisos
+            return \Filament\Forms\Components\Section::make($groupName)
+                ->icon(self::getGroupIcon($group)) // Asignamos el ícono del grupo
+                ->collapsible() // Permitir que las secciones sean colapsables
+                ->collapsed() // La sección se muestra colapsada por defecto
+                ->compact() // Hacer la sección más compacta
                 ->schema([
-                    CheckboxList::make('permissions')
+                    \Filament\Forms\Components\CheckboxList::make('permissions')
                         ->label('')
                         ->options($permissionOptions)
                         ->relationship('permissions', 'name')
-                        ->bulkToggleable()
+                        ->bulkToggleable() // Permite alternar la selección en bloque
                         ->gridDirection('row')
                         ->columns(1)
                         ->searchable()
                 ]);
         })->values()->toArray();
         
-        return Group::make($sections)->columnSpanFull();
+        // Devolver las secciones de permisos agrupadas
+        return \Filament\Forms\Components\Group::make($sections)->columnSpanFull();
     }
+    
+    
+    
 
     protected static function getGroupIcon(string $group): string
     {
@@ -114,12 +131,13 @@ class PermissionResource extends Resource
             'user' => 'heroicon-o-users',
             'institution' => 'heroicon-o-building-library',
             'test' => 'heroicon-o-clipboard-document',
-            'assignment' => 'heroicon-o-document-check',
+            'test_assignment' => 'heroicon-o-document-check',
             'role' => 'heroicon-o-shield-exclamation',
+            'permission' => 'heroicon-o-key',
+            'evaluation' => 'heroicon-o-chart-bar',
             default => 'heroicon-o-cog'
         };
     }
-
 
     public static function table(Table $table): Table
     {
@@ -132,7 +150,7 @@ class PermissionResource extends Resource
                     ->weight(FontWeight::Bold)
                     ->description(fn ($record) => $record->users_count.' usuarios', position: 'below'),
                 
-                BadgeColumn::make('permissions_count')
+                Tables\Columns\BadgeColumn::make('permissions_count')
                     ->label('Permisos')
                     ->counts('permissions')
                     ->color('gray'),
@@ -144,7 +162,7 @@ class PermissionResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('permissions')
+                Tables\Filters\SelectFilter::make('permissions')
                     ->label('Filtrar por Permiso')
                     ->relationship('permissions', 'name')
                     ->multiple()
@@ -171,21 +189,8 @@ class PermissionResource extends Resource
                         $newRole->save();
                         $newRole->syncPermissions($role->permissions);
                     }),
-                
-                Tables\Actions\DeleteAction::make()
-                    ->iconButton()
-                    ->tooltip('Eliminar rol')
-                    ->before(function (Role $record) {
-                        if ($record->users()->count() > 0) {
-                            throw new \Exception('No se puede eliminar un rol que tiene usuarios asignados.');
-                        }
-                    }),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
+          
             ->emptyStateHeading('No hay roles registrados')
             ->emptyStateDescription('Crea un nuevo rol para comenzar')
             ->emptyStateIcon('heroicon-o-shield-check')

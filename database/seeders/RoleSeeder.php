@@ -10,49 +10,76 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        // Crear los roles
-        $admin = Role::create(['name' => 'Administrador']);
-        $coordinador = Role::create(['name' => 'Coordinador']);
-        $docente = Role::create(['name' => 'Docente']);
+ 
+        Role::firstOrCreate(
+            ['name' => 'Administrador', 'guard_name' => 'web'],
+            ['description' => 'Acceso total al sistema']
+        );
+        
+        Role::firstOrCreate(
+            ['name' => 'Coordinador', 'guard_name' => 'web'],
+            ['description' => 'Gestiona evaluaciones y asignaciones']
+        );
+        
+        Role::firstOrCreate(
+            ['name' => 'Docente', 'guard_name' => 'web'],
+            ['description' => 'Realiza tests y ve resultados']
+        );
+        
 
-          // Crear permisos
-          $permissions = [
-            // **Permisos de Usuarios**
-            'ver usuarios',
-            'crear usuarios',
-            'editar usuarios',
-            'eliminar usuarios',
-
-            // **Permisos de Instituciones**
-            'ver instituciones',
-            'crear instituciones',
-            'editar instituciones',
-            'eliminar instituciones',
-
-            // **Permisos de Tests**
-            'ver tests',
-            'crear tests',
-            'editar tests',
-            'eliminar tests',
-
-            // **Permisos de Asignación de Tests**
-            'asignar tests',
-            'ver asignaciones de tests',
-
-            // **Permisos de Roles y Permisos**
-            'ver roles y permisos',
-            'asignar roles y permisos',
+        // 2. Definir permisos por módulo (basado en tu captura)
+        $modules = [
+            'evaluaciones' => [
+                'Realizar test' => 'Realizar Test',
+                'Asignar evaluaciones' => 'Gestionar Asignaciones de Evaluaciones',
+                'Crear evaluaciones' => 'Crear Evaluaciones',
+            ],
+ 
+            'instituciones' => [
+                'Crear institucion' => 'Crear Institución',
+                'Editar institucion' => 'Editar Institución',
+                'Eliminar institucion' => 'Eliminar Institución',
+                'Ver institucion' => 'Ver Instituciones',
+            ],
+            'permisos' => [
+                'Crear permiso' => 'Crear Permiso',
+                'Editar permiso' => 'Editar Permiso',
+                'Eliminar permiso' => 'Eliminar Permiso',
+                'Ver permisos' => 'Ver Permisos',
+            ],
+            'tests' => [
+                'Crear test' => 'Crear Test',
+                'Editar test' => 'Editar Test',
+                'Eliminar test' => 'Eliminar Test',
+                'Ver tests' => 'Ver Tests',
+            ],
+            'asignacion_tests' => [
+                'Asignar test' => 'Asignar Test',
+                'Ver asignaciones' => 'Ver Asignaciones',
+                'Editar asignaciones' => 'Editar Asignaciones',
+                'Eliminar asignaciones' => 'Eliminar Asignaciones',
+            ],
+            'usuarios' => [
+                'Crear usuario' => 'Crear Usuario',
+                'Editar usuario' => 'Editar Usuario',
+                'Eliminar usuario' => 'Eliminar Usuario',
+                'Ver usuarios' => 'Ver Usuarios',
+            ],
         ];
-
-        foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+        
+        // 3. Crear permisos en la base de datos
+        foreach ($modules as $module => $permissions) {
+            foreach ($permissions as $key => $description) {
+                Permission::firstOrCreate([
+                    'name' => $key,
+                    'description' => $description,
+                    'module' => $module, // Agrupa en Filament
+                ]);
+            }
         }
 
-
-        // Asignar permisos a los roles
-        $admin->givePermissionTo($permissions);
-        $docente->givePermissionTo([]);
-        $coordinador->givePermissionTo([]);
-
+        // 4. Opcional: Asignar todos los permisos al Administrador
+        $admin = Role::findByName('Administrador');
+        $admin->givePermissionTo(Permission::all());
     }
 }

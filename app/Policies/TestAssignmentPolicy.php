@@ -4,49 +4,39 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\TestAssignment;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TestAssignmentPolicy
 {
-    use HandlesAuthorization;
-
-    /**
-     * Permitir que solo los administradores o coordinadores vean las asignaciones de tests.
-     */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('Administrador') || $user->hasRole('Coordinador');
+        return $user->can('Ver asignaciones');
     }
 
-    /**
-     * Permitir que solo los administradores o coordinadores vean una asignación específica.
-     */
-    public function view(User $user, TestAssignment $testAssignment): bool
+    public function view(User $user, TestAssignment $assignment): bool
     {
-        return $user->hasRole('Administrador') || $user->hasRole('Coordinador');
+        return $user->can('Ver asignaciones') || 
+               ($assignment->user_id === $user->id && $user->can('ver_asignaciones_propias'));
     }
 
-    /**
-     * Permitir que solo los administradores o coordinadores creen asignaciones de tests.
-     */
     public function create(User $user): bool
     {
-        return $user->hasRole('Administrador') || $user->hasRole('Coordinador');
+        return $user->can('asignar_test');
     }
 
-    /**
-     * Permitir que solo los administradores o coordinadores actualicen asignaciones de tests.
-     */
-    public function update(User $user, TestAssignment $testAssignment): bool
+    public function update(User $user, TestAssignment $assignment): bool
     {
-        return $user->hasRole('Administrador') || $user->hasRole('Coordinador');
+        return $user->can('editar_asignaciones');
     }
 
-    /**
-     * Permitir que solo los administradores o coordinadores eliminen asignaciones de tests.
-     */
-    public function delete(User $user, TestAssignment $testAssignment): bool
+    public function delete(User $user, TestAssignment $assignment): bool
     {
-        return $user->hasRole('Administrador') || $user->hasRole('Coordinador');
+        return $user->can('eliminar_asignaciones');
+    }
+
+    public function viewResults(User $user, TestAssignment $assignment): bool
+    {
+        return $user->can('ver_resultados') || 
+               ($assignment->user_id === $user->id);
     }
 }
+// Activa Asignaciones De Evaluaciones y Test Asignados
