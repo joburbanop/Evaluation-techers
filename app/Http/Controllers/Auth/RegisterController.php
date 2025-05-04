@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
+use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
+    use RegistersUsers;
+
     /*
     |--------------------------------------------------------------------------
     | Register Controller
@@ -31,7 +35,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
+    protected $redirectTo = '/email/verify';
 
     /**
      * Create a new controller instance.
@@ -80,6 +84,42 @@ class RegisterController extends Controller
         } catch (\Exception $e) {
             $fail('Error al validar la ciudad.');
         }
+    }
+
+    protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'document_type' => ['required', 'string'],
+            'document_number' => ['required', 'string', 'unique:users'],
+            'departamento_id' => ['required', 'exists:departamentos,id'],
+            'ciudad_id' => ['required', 'exists:ciudades,id'],
+            'institution' => ['required', 'string'],
+        ]);
+    }
+
+    protected function create(array $data)
+    {
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'document_type' => $data['document_type'],
+            'document_number' => $data['document_number'],
+            'departamento_id' => $data['departamento_id'],
+            'ciudad_id' => $data['ciudad_id'],
+            'institution' => $data['institution'],
+        ]);
+
+        Log::info('Usuario creado exitosamente', ['user_id' => $user->id]);
+        
+        // Asignar rol de docente por defecto
+        $user->assignRole('Docente');
+        Log::info('Rol de docente asignado correctamente', ['user_id' => $user->id]);
+
+        return $user;
     }
 
     public function register(Request $request)

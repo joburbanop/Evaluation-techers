@@ -9,86 +9,69 @@
                 <div class="hidden md:block md:w-2/5 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex items-center justify-center relative">
                     <div class="absolute inset-0 opacity-10 bg-pattern"></div>
                     <div class="relative z-10 text-center">
-                        <h2 class="text-3xl font-bold text-white mb-6">Verifica tu Correo</h2>
-                        <p class="text-blue-100 mb-8 text-lg">Por favor, verifica tu dirección de correo electrónico para continuar.</p>
+                        <h2 class="text-3xl font-bold text-white mb-6">Verificación de Email</h2>
+                        <p class="text-blue-100 mb-8 text-lg">Por favor verifica tu correo electrónico para continuar.</p>
                         <div class="flex justify-center">
                             <img src="{{ asset('img/image.png') }}" alt="Logo" class="w-96 rounded-xl border-4 border-white/30 shadow-2xl transform hover:scale-105 transition-transform duration-300">
                         </div>
                     </div>
                 </div>
 
-                <!-- Columna Derecha - Formulario -->
+                <!-- Columna Derecha - Contenido -->
                 <div class="w-full md:w-3/5 p-6 md:p-12">
                     <div class="sm:mx-auto sm:w-full sm:max-w-md">
                         <h2 class="text-3xl font-extrabold text-center text-gray-900 mb-2">
-                            Verificación de Correo
+                            Verifica tu Email
                         </h2>
                         <p class="mt-2 text-center text-gray-600">
-                            Se ha enviado un enlace de verificación a tu correo
+                            Hemos enviado un enlace de verificación a tu correo
                         </p>
+                        <div class="mt-8 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-100 shadow-inner">
+                            <div class="flex flex-col items-center space-y-4">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="text-xl font-semibold text-blue-800 tracking-wide">
+                                        {{ auth()->user()->email }}
+                                    </p>
+                                </div>
+                                <p class="text-center text-sm text-blue-600">
+                                    Revisa tu bandeja de entrada y la carpeta de spam
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+                    <div class="mt-12 sm:mx-auto sm:w-full sm:max-w-md">
                         @if (session('resent'))
-                            <div class="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-check-circle text-green-400"></i>
-                                    </div>
-                                    <div class="ml-3">
-                                        <p class="text-sm font-medium text-green-800">
-                                            Se ha enviado un nuevo enlace de verificación a tu correo electrónico.
-                                        </p>
-                                    </div>
+                            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 rounded-lg shadow-inner">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>{{ __('Se ha enviado un nuevo enlace de verificación a tu dirección de correo electrónico.') }}</span>
                                 </div>
                             </div>
                         @endif
 
-                        @if (session('error'))
-                            <div class="mb-4 p-4 bg-red-50 rounded-lg border border-red-200">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-exclamation-circle text-red-400"></i>
-                                    </div>
-                                    <div class="ml-3">
-                                        <p class="text-sm font-medium text-red-800">
-                                            {{ session('error') }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
+                        <form method="POST" action="{{ route('verification.send') }}" class="mt-8">
+                            @csrf
+                            <button type="submit" class="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                {{ __('Reenviar correo de verificación') }}
+                            </button>
+                        </form>
 
-                        <div class="text-center mb-8">
-                            <i class="fas fa-envelope-open-text text-6xl text-indigo-500 mb-4"></i>
-                            <p class="text-gray-600 mb-2">
-                                Por favor, revisa tu correo electrónico:
-                            </p>
-                            <p class="text-lg font-semibold text-indigo-600">
-                                {{ auth()->user()->email }}
-                            </p>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="text-gray-600 mb-4">
-                                Si no has recibido el correo electrónico, puedes solicitar uno nuevo.
-                            </p>
-                            <div class="space-y-4">
-                                <form class="d-inline" method="POST" action="{{ route('verification.send') }}">
-                                    @csrf
-                                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
-                                        <i class="fas fa-paper-plane mr-2"></i>
-                                        Reenviar correo de verificación
-                                    </button>
-                                </form>
-
-                                <div>
-                                    <a href="{{ route('login') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
-                                        <i class="fas fa-arrow-left mr-2"></i>
-                                        Volver al Login
-                                    </a>
-                                </div>
-                            </div>
+                        <div class="mt-8 text-center">
+                            <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                                {{ __('Volver al inicio de sesión') }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -27,7 +29,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
@@ -41,13 +43,8 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        if (!$user->hasVerifiedEmail()) {
-            Auth::logout();
-            return redirect()->route('login')
-                ->with('error', 'Tu cuenta no ha sido verificada. Por favor, verifica tu correo electrónico.');
-        }
-
-        return redirect()->intended($this->redirectPath());
+        Log::info('Redirección según rol', ['user_id' => $user->id, 'role' => $user->getRoleNames()->first()]);
+        return redirect()->route('dashboard');
     }
 
     protected function sendFailedLoginResponse(Request $request)

@@ -18,23 +18,23 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\EnsureUserHasRole;
-use App\Filament\Pages\Docente\Dashboard;
+use App\Filament\Docente\Pages\Dashboard;
 
 class DocentePanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('docentePanel')
-            ->path('docentePanel')
+            ->id('docente')
+            ->path('docente')
             ->login()
             ->colors([
                 'primary' => Color::Green,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages/Docente'), for: 'App\\Filament\\Pages\\Docente')
+            ->discoverPages(in: app_path('Filament/Docente/Pages'), for: 'App\\Filament\\Docente\\Pages')
             ->pages([
-                Dashboard::class,
+                Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -56,6 +56,9 @@ class DocentePanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->authGuard('web')
-            ->spa();
+            ->spa()
+            ->default()
+            ->brandName('Panel de Docente')
+            ->maxContentWidth('full');
     }
 } 
