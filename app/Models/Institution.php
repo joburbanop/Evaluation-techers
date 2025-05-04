@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Institution extends Model
@@ -12,16 +14,51 @@ class Institution extends Model
     protected $table = 'institutions';
 
     protected $fillable = [
+        'nit',
         'name',
+        'tipo',
         'address',
+        'ciudad_id',
         'phone',
-        'email',
         'contact_person',
-        'foundation_date',
+        'contact_position',
+        'contact_phone',
+        'contact_email',
+        'email',
+        'website',
+        'logo',
+        'additional_notes'
     ];
 
-    public function tests()
+    /**
+     * Los tipos de institución disponibles
+     */
+    public const TIPOS = [
+        'colegio' => 'Colegio',
+        'universidad' => 'Universidad'
+    ];
+
+    /**
+     * Obtiene la ciudad a la que pertenece la institución.
+     */
+    public function ciudad(): BelongsTo
     {
-        return $this->belongsToMany(Test::class, 'institution_test');
+        return $this->belongsTo(Ciudad::class);
+    }
+
+    /**
+     * Obtiene los usuarios de la institución.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    /**
+     * Obtiene los tests asignados a la institución.
+     */
+    public function tests(): HasMany
+    {
+        return $this->hasMany(Test::class);
     }
 }

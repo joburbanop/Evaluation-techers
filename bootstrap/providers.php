@@ -2,7 +2,10 @@
 
 return [
     App\Providers\AppServiceProvider::class,
+    App\Providers\AuthServiceProvider::class,
+    App\Providers\EventServiceProvider::class,
+    App\Providers\RouteServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\Filament\CoordinadorPanelPanelProvider::class,
-    App\Providers\Filament\DocentePanelPanelProvider::class,
+    App\Providers\Filament\CoordinadorPanelProvider::class,
+    App\Providers\Filament\DocentePanelProvider::class,
 ];
