@@ -34,7 +34,7 @@ class DocentePanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Docente/Pages'), for: 'App\\Filament\\Docente\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -50,15 +50,14 @@ class DocentePanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                EnsureUserHasRole::class . ':docente',
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureUserHasRole::class . ':Docente',
             ])
             ->authGuard('web')
-            ->spa()
-            ->default()
             ->brandName('Panel de Docente')
-            ->maxContentWidth('full');
+            ->maxContentWidth('full')
+            ->spa();
     }
 } 

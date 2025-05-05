@@ -10,26 +10,10 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\VerificationController;
-use App\Http\Controllers\Panel\DocenteController;
-use App\Http\Controllers\Panel\CoordinadorController;
-use App\Http\Controllers\Panel\AdminController;
+use App\Http\Controllers\RiasController;
 
-// Ruta raíz: redirige al panel correspondiente según el rol del usuario o al login
-Route::get('/', function () {
-    if (Auth::check()) {
-        $user = Auth::user();
-
-        if ($user->hasRole('Administrador')) {
-            return redirect('/admin');
-        } elseif ($user->hasRole('Coordinador')) {
-            return redirect('/coordinador');
-        } elseif ($user->hasRole('Docente')) {
-            return redirect('/docente');
-        }
-    }
-
-    return redirect()->route('login');
-});
+// Ruta de inicio que redirige al dashboard según el rol
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Ruta principal: redirige al panel correspondiente según el rol del usuario
 Route::middleware(['auth'])->group(function () {
@@ -96,16 +80,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.update-email');
 });
 
-// Rutas de redirección para los paneles
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/coordinador', [CoordinadorController::class, 'dashboard'])->name('coordinador.dashboard');
-    Route::get('/docente', [DocenteController::class, 'dashboard'])->name('docente.dashboard');
-});
 
-// Rutas de Filament
-Route::middleware(['web', 'auth', 'verified'])->group(function () {
-    Route::get('/docente/dashboard', [DocenteController::class, 'dashboard'])->name('filament.docente.pages.dashboard');
-});
+
+// Las rutas de los paneles /admin, /coordinador y /docente son gestionadas automáticamente por Filament mediante los PanelProviders
+// Por tanto, no es necesario definir rutas manuales aquí.
 
 

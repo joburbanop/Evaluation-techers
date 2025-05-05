@@ -50,12 +50,14 @@ class CoordinadorPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                EnsureUserHasRole::class . ':coordinador',
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureUserHasRole::class . ':Coordinador',
             ])
             ->authGuard('web')
+            ->brandName('Panel de Coordinador')
+            ->maxContentWidth('full')
             ->spa();
     }
 } 

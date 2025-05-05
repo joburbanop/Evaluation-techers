@@ -8,7 +8,7 @@ class Dashboard extends BasePage
 {
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
-    protected static ?string $navigationLabel = 'Dashboard';
+    protected static ?string $navigationLabel = 'Inicio Administrador';
 
     protected static ?string $title = 'Panel de Administración';
 
