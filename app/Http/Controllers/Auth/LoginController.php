@@ -55,4 +55,14 @@ class LoginController extends Controller
                 'email' => 'auth.failed',
             ]);
     }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();  // Cerrar sesión
+        $request->session()->invalidate();  // Invalidar la sesión
+        $request->session()->regenerateToken();  // Regenerar el token CSRF
+
+        // Redirigir siempre al login
+        return redirect()->route('login');  // Redirige a la página de login
+    }
 }

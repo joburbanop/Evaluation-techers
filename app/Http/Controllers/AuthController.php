@@ -28,12 +28,4 @@ class AuthController extends Controller
         return back()->withErrors(['email' => 'Credenciales incorrectas']);
     }
 
-    public function logout()
-{
-   
-    Auth::logout();
-    return redirect('/login');
-}
-
-    
 }

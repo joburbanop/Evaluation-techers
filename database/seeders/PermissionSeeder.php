@@ -5,52 +5,67 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Crear permisos para usuarios
-        Permission::create(['name' => 'Ver usuarios', 'module' => 'administracion', 'description' => 'Ver listado de usuarios']);
-        Permission::create(['name' => 'Crear usuario', 'module' => 'administracion', 'description' => 'Crear nuevos usuarios']);
-        Permission::create(['name' => 'Editar usuario', 'module' => 'administracion', 'description' => 'Editar usuarios existentes']);
-        Permission::create(['name' => 'Eliminar usuario', 'module' => 'administracion', 'description' => 'Eliminar usuarios']);
+        // 1. Olvidar caché de permisos para que Spatie recargue bien
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Permisos para roles
-        Permission::create(['name' => 'Ver Gestion de roles', 'module' => 'administracion', 'description' => 'Ver gestión de roles']);
-        Permission::create(['name' => 'Crear permisos', 'module' => 'administracion', 'description' => 'Crear nuevos permisos']);
-        Permission::create(['name' => 'Editar permisos', 'module' => 'administracion', 'description' => 'Editar permisos existentes']);
-        Permission::create(['name' => 'Eliminar permiso', 'module' => 'administracion', 'description' => 'Eliminar permisos']);
+        // 2. Definir todos los permisos
+        $permisos = [
+            // Usuarios
+            ['name' => 'Ver usuarios',        'module' => 'administracion', 'description' => 'Ver listado de usuarios'],
+            ['name' => 'Crear usuario',       'module' => 'administracion', 'description' => 'Crear nuevos usuarios'],
+            ['name' => 'Editar usuario',      'module' => 'administracion', 'description' => 'Editar usuarios existentes'],
+            ['name' => 'Eliminar usuario',    'module' => 'administracion', 'description' => 'Eliminar usuarios'],
 
-        // Permisos para instituciones
-        Permission::create(['name' => 'Ver instituciones', 'module' => 'instituciones', 'description' => 'Ver listado de instituciones']);
-        Permission::create(['name' => 'Crear institucion', 'module' => 'instituciones', 'description' => 'Crear nuevas instituciones']);
-        Permission::create(['name' => 'Editar institucion', 'module' => 'instituciones', 'description' => 'Editar instituciones existentes']);
-        Permission::create(['name' => 'Eliminar institucion', 'module' => 'instituciones', 'description' => 'Eliminar instituciones']);
+            // Roles / permisos
+            ['name' => 'Ver Gestion de roles', 'module' => 'administracion', 'description' => 'Ver gestión de roles'],
+            ['name' => 'Ver permisos',         'module' => 'administracion', 'description' => 'Ver listado de permisos'],
+            ['name' => 'Crear permisos',       'module' => 'administracion', 'description' => 'Crear nuevos permisos'],
+            ['name' => 'Editar permisos',      'module' => 'administracion', 'description' => 'Editar permisos existentes'],
+            ['name' => 'Eliminar permiso',     'module' => 'administracion', 'description' => 'Eliminar permisos'],
 
-        // Permisos para tests
-        Permission::create(['name' => 'Ver tests', 'module' => 'evaluaciones', 'description' => 'Ver listado de tests']);
-        Permission::create(['name' => 'Crear test', 'module' => 'evaluaciones', 'description' => 'Crear nuevos tests']);
-        Permission::create(['name' => 'Editar test', 'module' => 'evaluaciones', 'description' => 'Editar tests existentes']);
-        Permission::create(['name' => 'Eliminar test', 'module' => 'evaluaciones', 'description' => 'Eliminar tests']);
-        Permission::create(['name' => 'Asignar test', 'module' => 'evaluaciones', 'description' => 'Asignar tests a usuarios']);
-        Permission::create(['name' => 'Realizar test', 'module' => 'evaluaciones', 'description' => 'Realizar tests asignados']);
+            // Instituciones
+            ['name' => 'Ver instituciones',    'module' => 'instituciones',  'description' => 'Ver listado de instituciones'],
+            ['name' => 'Crear institucion',    'module' => 'instituciones',  'description' => 'Crear nuevas instituciones'],
+            ['name' => 'Editar institucion',   'module' => 'instituciones',  'description' => 'Editar instituciones existentes'],
+            ['name' => 'Eliminar institucion', 'module' => 'instituciones',  'description' => 'Eliminar instituciones'],
 
-        // Permisos para asignaciones de tests
-        Permission::create(['name' => 'Ver asignaciones', 'module' => 'evaluaciones', 'description' => 'Ver listado de asignaciones']);
-        Permission::create(['name' => 'Crear asignaciones', 'module' => 'evaluaciones', 'description' => 'Crear nuevas asignaciones']);
-        Permission::create(['name' => 'Editar asignaciones', 'module' => 'evaluaciones', 'description' => 'Editar asignaciones existentes']);
-        Permission::create(['name' => 'Eliminar asignaciones', 'module' => 'evaluaciones', 'description' => 'Eliminar asignaciones']);
-        Permission::create(['name' => 'Ver resultados', 'module' => 'evaluaciones', 'description' => 'Ver resultados de asignaciones']);
+            // Tests
+            ['name' => 'Ver tests',            'module' => 'evaluaciones',   'description' => 'Ver listado de tests'],
+            ['name' => 'Crear test',           'module' => 'evaluaciones',   'description' => 'Crear nuevos tests'],
+            ['name' => 'Editar test',          'module' => 'evaluaciones',   'description' => 'Editar tests existentes'],
+            ['name' => 'Eliminar test',        'module' => 'evaluaciones',   'description' => 'Eliminar tests'],
+            ['name' => 'Asignar test',         'module' => 'evaluaciones',   'description' => 'Asignar tests a usuarios'],
+            ['name' => 'Realizar test',        'module' => 'evaluaciones',   'description' => 'Realizar tests asignados'],
 
-        // Permisos para gestión de permisos
-        Permission::create(['name' => 'Ver permisos', 'module' => 'administracion', 'description' => 'Ver listado de permisos']);
-        Permission::create(['name' => 'Crear permisos', 'module' => 'administracion', 'description' => 'Crear nuevos permisos']);
-        Permission::create(['name' => 'Editar permisos', 'module' => 'administracion', 'description' => 'Editar permisos existentes']);
-        Permission::create(['name' => 'Eliminar permiso', 'module' => 'administracion', 'description' => 'Eliminar permisos']);
+            // Asignaciones de tests
+            ['name' => 'Ver asignaciones',     'module' => 'evaluaciones',   'description' => 'Ver listado de asignaciones'],
+            ['name' => 'Crear asignaciones',   'module' => 'evaluaciones',   'description' => 'Crear nuevas asignaciones'],
+            ['name' => 'Editar asignaciones',  'module' => 'evaluaciones',   'description' => 'Editar asignaciones existentes'],
+            ['name' => 'Eliminar asignaciones','module' => 'evaluaciones',   'description' => 'Eliminar asignaciones'],
+            ['name' => 'Ver resultados',       'module' => 'evaluaciones',   'description' => 'Ver resultados de asignaciones'],
+        ];
 
-        // Asignar todos los permisos al rol Administrador
-        $adminRole = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+        // 3. Crear o recuperar cada permiso
+        foreach ($permisos as $perm) {
+            Permission::firstOrCreate(
+                ['name' => $perm['name'], 'guard_name' => 'web'],
+                ['module' => $perm['module'], 'description' => $perm['description']]
+            );
+        }
+
+        // 4. Asignar todos los permisos al rol Administrador
+        $adminRole = Role::firstOrCreate(
+            ['name'       => 'Administrador', 'guard_name' => 'web'],
+            ['guard_name' => 'web']
+        );
+        $coordinador = Role::firstOrCreate(['name' => 'Coordinador', 'guard_name' => 'web']);
+        $docente = Role::firstOrCreate(['name' => 'Docente', 'guard_name' => 'web']);
         $adminRole->syncPermissions(Permission::all());
     }
-} 
+}

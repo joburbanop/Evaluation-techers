@@ -114,6 +114,19 @@
 </style>
 @endpush
 
+@if (session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#4f46e5'
+            });
+        });
+    </script>
+@endif
+
 @if (session('status'))
     <script>
         document.addEventListener('DOMContentLoaded', function() {

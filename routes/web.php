@@ -32,10 +32,13 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 });
 
-// Ruta para cerrar sesión
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Filament automáticamente maneja el logout.
+Route::get('/logout', function () {
+    auth()->logout();
+    return redirect()->route('login');
+})->name('logout');
 
-// Rutas para recuperación de contraseña
+// Ruta para recuperación de contraseña
 Route::post('/password/reset', function (Request $request) {
     $request->validate([
         'email' => 'required|email',
@@ -52,10 +55,14 @@ Route::post('/password/reset', function (Request $request) {
         }
     );
     
-    return $status === Password::PASSWORD_RESET
-        ? redirect()->route('login')->with('status', __($status))
-        : back()->withErrors(['email' => [__($status)]]);
+    if ($status === Password::PASSWORD_RESET) {
+        return redirect()->route('login')->with('success', '¡Tu contraseña ha sido restablecida con éxito! Por favor, inicia sesión con tu nueva contraseña.');
+    } else {
+        return back()->withErrors(['email' => [__($status)]]);
+    }
 })->name('password.update');
+
+
 
 // Rutas de autenticación con verificación de email
 Auth::routes(['verify' => true]);
