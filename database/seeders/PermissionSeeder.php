@@ -36,21 +36,21 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'Asignar test', 'module' => 'evaluaciones', 'description' => 'Asignar tests a usuarios']);
         Permission::create(['name' => 'Realizar test', 'module' => 'evaluaciones', 'description' => 'Realizar tests asignados']);
 
-        // Crear rol de Administrador y asignar todos los permisos
-        $adminRole = Role::create(['name' => 'Administrador']);
-        $adminRole->givePermissionTo(Permission::all());
+        // Permisos para asignaciones de tests
+        Permission::create(['name' => 'Ver asignaciones', 'module' => 'evaluaciones', 'description' => 'Ver listado de asignaciones']);
+        Permission::create(['name' => 'Crear asignaciones', 'module' => 'evaluaciones', 'description' => 'Crear nuevas asignaciones']);
+        Permission::create(['name' => 'Editar asignaciones', 'module' => 'evaluaciones', 'description' => 'Editar asignaciones existentes']);
+        Permission::create(['name' => 'Eliminar asignaciones', 'module' => 'evaluaciones', 'description' => 'Eliminar asignaciones']);
+        Permission::create(['name' => 'Ver resultados', 'module' => 'evaluaciones', 'description' => 'Ver resultados de asignaciones']);
 
-        // Crear rol de Coordinador con permisos específicos
-        $coordinadorRole = Role::create(['name' => 'Coordinador']);
-        $coordinadorRole->givePermissionTo([
-            'Ver usuarios', 'Ver instituciones', 'Ver tests',
-            'Crear test', 'Editar test', 'Asignar test'
-        ]);
+        // Permisos para gestión de permisos
+        Permission::create(['name' => 'Ver permisos', 'module' => 'administracion', 'description' => 'Ver listado de permisos']);
+        Permission::create(['name' => 'Crear permisos', 'module' => 'administracion', 'description' => 'Crear nuevos permisos']);
+        Permission::create(['name' => 'Editar permisos', 'module' => 'administracion', 'description' => 'Editar permisos existentes']);
+        Permission::create(['name' => 'Eliminar permiso', 'module' => 'administracion', 'description' => 'Eliminar permisos']);
 
-        // Crear rol de Docente con permisos básicos
-        $docenteRole = Role::create(['name' => 'Docente']);
-        $docenteRole->givePermissionTo([
-            'Ver tests', 'Realizar test'
-        ]);
+        // Asignar todos los permisos al rol Administrador
+        $adminRole = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+        $adminRole->syncPermissions(Permission::all());
     }
 } 

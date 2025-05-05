@@ -179,7 +179,7 @@ class InstitutionResource extends Resource
                 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
-                    ->description(fn (Institution $record): string => $record->city ?? '')
+                    ->description(fn (Institution $record): string => $record->ciudad->name ?? '')
                     ->weight(FontWeight::Medium)
                     ->searchable()
                     ->sortable(),
@@ -212,9 +212,9 @@ class InstitutionResource extends Resource
                     ->description(fn (Institution $record): string => 'Hace '.$record->created_at->diffForHumans()),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('city')
+                Tables\Filters\SelectFilter::make('ciudad_id')
                     ->label('Ciudad')
-                    ->options(fn (): array => Institution::query()->pluck('city', 'city')->unique()->toArray())
+                    ->relationship('ciudad', 'name')
                     ->searchable()
                     ->preload(),
                 
@@ -245,7 +245,7 @@ class InstitutionResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->groups([
-                Tables\Grouping\Group::make('city')
+                Tables\Grouping\Group::make('ciudad.name')
                     ->label('Ciudad')
                     ->collapsible(),
             ])

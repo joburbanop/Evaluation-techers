@@ -8,8 +8,12 @@ use App\Models\User;
 use App\Models\Role;
 use App\Policies\UserPolicy;
 use App\Policies\RolePolicy;
-use App\Policies\AsignacionTestPolicy; 
-use App\Models\InstitutionTest;
+use Spatie\Permission\Models\Permission;
+use App\Policies\PermissionPolicy;
+use App\Models\Test;
+use App\Policies\TestPolicy;
+use App\Models\Institution;
+use App\Policies\InstitutionPolicy;
 use App\Models\TestAssignment;
 use App\Policies\TestAssignmentPolicy;
 
@@ -25,7 +29,8 @@ class AuthServiceProvider extends ServiceProvider
         Role::class => RolePolicy::class,
         Test::class => TestPolicy::class,
         TestAssignment::class => TestAssignmentPolicy::class,
-        
+        Institution::class => InstitutionPolicy::class,
+        Permission::class => PermissionPolicy::class,
     ];
 
     /**

@@ -7,6 +7,13 @@ use App\Models\TestAssignment;
 
 class TestAssignmentPolicy
 {
+    public function before(User $user, $ability)
+    {
+        if ($user->hasRole('Administrador')) {
+            return true;
+        }
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->can('Ver asignaciones');
@@ -15,7 +22,7 @@ class TestAssignmentPolicy
     public function view(User $user, TestAssignment $assignment): bool
     {
         return $user->can('Ver asignaciones') || 
-               ($assignment->user_id === $user->id && $user->can('ver_asignaciones_propias'));
+               ($assignment->user_id === $user->id);
     }
 
     public function create(User $user): bool

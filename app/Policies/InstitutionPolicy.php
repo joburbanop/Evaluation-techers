@@ -7,9 +7,16 @@ use App\Models\Institution;
 
 class InstitutionPolicy
 {
+    public function before(User $user, $ability)
+    {
+        if ($user->hasRole('Administrador')) {
+            return true;
+        }
+    }
+
     public function viewAny(User $user): bool
     {
-        return $user->can('Ver institucion');
+        return $user->can('Ver instituciones');
     }
 
     public function create(User $user): bool
