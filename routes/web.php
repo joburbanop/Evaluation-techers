@@ -67,31 +67,13 @@ Route::post('/docente/logout', function () {
     return redirect('/login');
 })->name('filament.docente.auth.logout');
 
-// Ruta para recuperación de contraseña
-Route::post('/password/reset', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'token' => 'required',
-        'password' => 'required|min:8|confirmed',
-    ]);
-    
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->forceFill([
-                'password' => bcrypt($password),
-            ])->save();
-        }
-    );
-    
-    if ($status === Password::PASSWORD_RESET) {
-        return redirect()->route('login')->with('success', '¡Tu contraseña ha sido restablecida con éxito! Por favor, inicia sesión con tu nueva contraseña.');
-    } else {
-        return back()->withErrors(['email' => [__($status)]]);
-    }
-})->name('password.update');
+// Rutas de restablecimiento de contraseña
+Route::get('/password/reset/{token}', function ($token) {
+    return view('auth.passwords.reset', ['token' => $token]);
+})->name('password.reset');
 
-
+Route::post('/password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])
+    ->name('password.update');
 
 // Rutas de autenticación con verificación de email
 Auth::routes(['verify' => true]);
@@ -115,8 +97,6 @@ Route::post('/email/verification-notification', [VerificationController::class, 
 Route::middleware(['auth'])->group(function () {
     Route::put('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.update-email');
 });
-
-
 
 // Las rutas de los paneles /admin, /coordinador y /docente son gestionadas automáticamente por Filament mediante los PanelProviders
 // Por tanto, no es necesario definir rutas manuales aquí.

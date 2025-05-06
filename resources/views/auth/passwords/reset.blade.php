@@ -122,14 +122,19 @@
 </style>
 @endpush
 
-@if (session('status'))
+@if (session('success'))
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'success',
                 title: '¡Éxito!',
-                text: '{{ session('status') }}',
+                text: '{{ session('success') }}',
+                confirmButtonText: 'Aceptar',
                 confirmButtonColor: '#4f46e5'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/';
+                }
             });
         });
     </script>
