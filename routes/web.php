@@ -32,11 +32,40 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 });
 
-// Filament automáticamente maneja el logout.
-Route::get('/logout', function () {
+// Interceptar rutas de login específicas y redirigir a login principal
+Route::get('/admin/login', function () {
+    return redirect('/login');
+});
+
+Route::get('/coordinador/login', function () {
+    return redirect('/login');
+});
+
+Route::get('/docente/login', function () {
+    return redirect('/login');
+});
+
+// Rutas para manejar el logout de cada panel
+Route::post('/admin/logout', function () {
     auth()->logout();
-    return redirect()->route('login');
-})->name('logout');
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/login');
+})->name('filament.admin.auth.logout');
+
+Route::post('/coordinador/logout', function () {
+    auth()->logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/login');
+})->name('filament.coordinador.auth.logout');
+
+Route::post('/docente/logout', function () {
+    auth()->logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/login');
+})->name('filament.docente.auth.logout');
 
 // Ruta para recuperación de contraseña
 Route::post('/password/reset', function (Request $request) {

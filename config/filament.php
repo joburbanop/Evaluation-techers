@@ -25,4 +25,6 @@ return [
         ],
     ],
     'default' => 'docente',
+    'home_url' => '/login',
+    'after_logout_redirect_url' => '/login',
 ]; 
