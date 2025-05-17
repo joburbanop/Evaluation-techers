@@ -2,13 +2,27 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Test extends Model
 {
-    protected $fillable = ['name','category','description'];
+    use HasFactory;
 
-    public function questions()
+    protected $fillable = [
+        'name',
+        'description',
+        'category_id',
+    ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function questions(): HasMany
     {
         return $this->hasMany(Question::class);
     }
@@ -22,10 +36,4 @@ class Test extends Model
     {
         return $this->hasMany(TestAssignment::class);
     }
-
-    // En app/Models/Test.php
-public function category()
-{
-    return $this->belongsTo(Category::class); // Ajusta según tu modelo de categoría
-}
 }

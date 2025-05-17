@@ -9,8 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Filament\Models\Contracts\FilamentUser;   // interfaz
+use Filament\Panel;                           // tipo Panel
 
-class User extends Authenticatable implements MustVerifyEmail
+
+class User extends Authenticatable implements MustVerifyEmail,FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
@@ -89,4 +92,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(Ciudad::class);
     }
+    public function canAccessPanel(Panel $panel): bool
+{
+    return match ($panel->getId()) {
+        'admin'       => $this->hasRole('Administrador'),
+        'coordinador' => $this->hasRole('Coordinador'),
+        'docente'     => $this->hasRole('Docente'),
+        default       => false,
+    };
+}
+
 }

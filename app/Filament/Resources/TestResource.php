@@ -51,20 +51,22 @@ class TestResource extends Resource
                                         ])
                                         ->columnSpanFull(),
                                         
-                                    Forms\Components\Select::make('category')
+                                    Forms\Components\Select::make('category_id')
                                         ->label('Categoría')
-                                        ->options([
-                                            'competencia_pedagogica' => 'Competencia Pedagógica',
-                                            'competencia_comunicativa' => 'Competencia Comunicativa',
-                                            'competencia_gestion' => 'Competencia de Gestión',
-                                            'competencia_tecnologica' => 'Competencia Tecnológica',
-                                            'competencia_investigativa' => 'Competencia Investigativa',
-                                        ])
+                                        ->relationship('category', 'name', fn ($query) => $query->where('is_active', true))
                                         ->required()
-                                        ->validationMessages([
-                                            'required' => '', 
+                                        ->searchable()
+                                        ->preload()
+                                        ->createOptionForm([
+                                            Forms\Components\TextInput::make('name')
+                                                ->label('Nombre')
+                                                ->required()
+                                                ->maxLength(255),
+                                            Forms\Components\Textarea::make('description')
+                                                ->label('Descripción')
+                                                ->maxLength(65535),
                                         ])
-                                        ->native(false),
+                                        ->columnSpanFull(),
                                         
                                     Forms\Components\Textarea::make('description')
                                         ->label('Descripción')
@@ -84,7 +86,7 @@ class TestResource extends Resource
                                 $errors[] = '• Nombre del Test';
                             }
                             
-                            if (empty($state['category'])) {
+                            if (empty($state['category_id'])) {
                                 $errors[] = '• Categoría';
                             }
                             
@@ -408,31 +410,13 @@ class TestResource extends Resource
                                 $record->description)
                             ->extraAttributes(['class' => 'max-w-md']),
                             
-                        BadgeColumn::make('category')
-                            ->sortable()
+                        BadgeColumn::make('category.name')
                             ->label('Categoría')
-                            ->formatStateUsing(function (string $state) {
-                                $categories = [
-                                    'competencia_pedagogica' => 'Pedagógica',
-                                    'competencia_comunicativa' => 'Comunicativa',
-                                    'competencia_gestion' => 'Gestión',
-                                    'competencia_tecnologica' => 'Tecnológica',
-                                    'competencia_investigativa' => 'Investigativa',
-                                ];
-                                return $categories[$state] ?? $state;
-                            })
-                            ->color(function (string $state) {
-                                return match ($state) {
-                                    'competencia_pedagogica' => 'success',
-                                    'competencia_comunicativa' => 'info',
-                                    'competencia_gestion' => 'warning',
-                                    'competencia_tecnologica' => 'primary',
-                                    'competencia_investigativa' => 'danger',
-                                    default => 'gray',
-                                };
-                            })
-                            ->icon('heroicon-o-tag')
-                            ->iconPosition('before')
+                            ->badge()
+                            ->color(fn ($record) => $record->category?->is_active ? 'success' : 'danger')
+                            ->formatStateUsing(fn ($state, $record) => $record->category?->is_active ? $state : $state . ' (Desactivada)')
+                            ->searchable()
+                            ->sortable(),
                     ]),
                     
                     Split::make([
