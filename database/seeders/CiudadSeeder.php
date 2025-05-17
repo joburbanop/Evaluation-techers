@@ -11,28 +11,134 @@ class CiudadSeeder extends Seeder
     public function run()
     {
         $ciudadesPorDepartamento = [
-            'Nariño' => [
-                'Pasto',
-                'Ipiales',
-                'Tumaco',
-                'Túquerres',
-                'La Unión'
-            ],
-            'Valle del Cauca' => [
-                'Cali',
-                'Buenaventura',
-                'Palmira',
-                'Tuluá',
-                'Cartago'
+            'Amazonas' => [
+                'Leticia',
             ],
             'Antioquia' => [
-                'Medellín',
+                'Andes',
+                'Apartadó',
                 'Bello',
-                'Itagüí',
+                'Caldas',
+                'El Carmen de Viboral',
                 'Envigado',
-                'Rionegro'
+                'Marinilla',
+                'Medellín',
+                'Rionegro',
+                'Sabaneta',
+                'Santa Fé de Antioquia',
+                'Santa Rosa de Osos',
+                'Turbo',
             ],
-            // Agrega más ciudades según necesites
+            'Arauca' => [
+                'Arauca',
+            ],
+            'Atlántico' => [
+                'Barranquilla',
+                'Malambo',
+                'Soledad',
+            ],
+            'Bogotá, D.C.' => [
+                'Bogotá, D.C.',
+            ],
+            'Bolívar' => [
+                'Cartagena',
+            ],
+            'Boyacá' => [
+                'Chiquinquirá',
+                'Duitama',
+                'Sogamoso',
+                'Tunja',
+            ],
+            'Caldas' => [
+                'Manizales',
+            ],
+            'Caquetá' => [
+                'Florencia',
+            ],
+            'Casanare' => [
+                'Yopal',
+            ],
+            'Cauca' => [
+                'Popayán',
+            ],
+            'Cesar' => [
+                'Valledupar',
+            ],
+            'Chocó' => [
+                'Quibdó',
+            ],
+            'Córdoba' => [
+                'Montería',
+            ],
+            'Cundinamarca' => [
+                'Fusagasugá',
+                'Girardot',
+                'Soacha',
+                'Zipaquirá',
+            ],
+            'Guainía' => [
+                'Inírida',
+            ],
+            'Guaviare' => [
+                'San José del Guaviare',
+            ],
+            'Huila' => [
+                'Neiva',
+            ],
+            'La Guajira' => [
+                'Riohacha',
+            ],
+            'Magdalena' => [
+                'Santa Marta',
+            ],
+            'Meta' => [
+                'Villavicencio',
+            ],
+            'Nariño' => [
+                'Ipiales',
+                'La Unión',
+                'Pasto',
+                'Tumaco',
+                'Túquerres',
+            ],
+            'Norte de Santander' => [
+                'Cúcuta',
+            ],
+            'Putumayo' => [
+                'Mocoa',
+            ],
+            'Quindío' => [
+                'Armenia',
+            ],
+            'Risaralda' => [
+                'Dosquebradas',
+                'Pereira',
+            ],
+            'Santander' => [
+                'Bucaramanga',
+                'Floridablanca',
+                'Piedecuesta',
+            ],
+            'Sucre' => [
+                'Sincelejo',
+            ],
+            'Tolima' => [
+                'Ibagué',
+                'Pitalito',
+            ],
+            'Valle del Cauca' => [
+                'Buenaventura',
+                'Cali',
+                'Cartago',
+                'Palmira',
+                'Tuluá',
+            ],
+            'Vaupés' => [
+                'Mitú',
+            ],
+            'Vichada' => [
+                'Puerto Carreño',
+            ],
         ];
 
         foreach ($ciudadesPorDepartamento as $departamentoNombre => $ciudades) {

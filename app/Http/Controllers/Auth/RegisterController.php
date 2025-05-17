@@ -96,7 +96,7 @@ class RegisterController extends Controller
             'document_number' => ['required', 'string', 'unique:users'],
             'departamento_id' => ['required', 'exists:departamentos,id'],
             'ciudad_id' => ['required', 'exists:ciudades,id'],
-            'institution' => ['required', 'string'],
+            'institution_id' => ['required', 'exists:institutions,id'],
         ]);
     }
 
@@ -110,7 +110,7 @@ class RegisterController extends Controller
             'document_number' => $data['document_number'],
             'departamento_id' => $data['departamento_id'],
             'ciudad_id' => $data['ciudad_id'],
-            'institution' => $data['institution'],
+            'institution_id' => $data['institution_id'],
         ]);
 
         Log::info('Usuario creado exitosamente', ['user_id' => $user->id]);
@@ -132,7 +132,7 @@ class RegisterController extends Controller
             'document_number' => ['required', 'string', 'max:20', 'unique:users'],
             'departamento_id' => ['nullable', 'string'],
             'ciudad_id' => ['nullable', 'string'],
-            'institution' => ['nullable', 'string', 'max:255'],
+            'institution_id' => ['required', 'exists:institutions,id'],
         ]);
 
         try {
@@ -144,7 +144,7 @@ class RegisterController extends Controller
                 'document_number' => $request->document_number,
                 'departamento_id' => $request->departamento_id,
                 'ciudad_id' => $request->ciudad_id,
-                'institution' => $request->institution,
+                'institution_id' => $request->institution_id,
                 'is_active' => true,
             ]);
 

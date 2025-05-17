@@ -3,11 +3,23 @@ namespace Database\Seeders;
 use App\Models\Question;
 use App\Models\Option;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class TestSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
+        DB::table('tests')->insert([
+            [
+                'id' => 1,
+                'name' => 'Evaluación Docente 2025',
+                'description' => 'Evaluación de desempeño docente para el año 2025',
+                'category' => 'evaluacion_docente',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ]);
+
         // Competencia Pedagógica (10 preguntas)
         $pedagogicalTest = \App\Models\Test::create([
             'name' => 'Competencia Pedagógica',

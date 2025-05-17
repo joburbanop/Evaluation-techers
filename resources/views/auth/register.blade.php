@@ -189,16 +189,17 @@
                         <div class="tab-content hidden" id="institution">
                             <!-- Institución -->
                             <div>
-                                <label for="institution" class="block text-sm font-medium text-gray-700">Nombre de la Institución</label>
+                                <label for="institution_id" class="block text-sm font-medium text-gray-700">Institución</label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <i class="fas fa-building text-gray-400"></i>
                                     </div>
-                                    <input type="text" id="institution" name="institution" value="{{ old('institution') }}" required
-                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('institution') border-red-500 @enderror"
-                                        placeholder="Ingrese el nombre de la institución">
+                                    <select id="institution_id" name="institution_id" required disabled
+                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('institution_id') border-red-500 @enderror">
+                                        <option value="">Seleccione una institución...</option>
+                                    </select>
                                 </div>
-                                @error('institution')
+                                @error('institution_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -415,6 +416,37 @@ $(document).ready(function() {
             });
         } else {
             ciudadSelect.prop('disabled', true);
+        }
+    });
+    
+    // Cargar instituciones según ciudad seleccionada
+    $('#ciudad_id').on('change', function() {
+        let ciudadId = $(this).val();
+        let institucionSelect = $('#institution_id');
+        institucionSelect.prop('disabled', true);
+        institucionSelect.empty().append('<option value="">Cargando instituciones...</option>');
+        if (ciudadId) {
+            $.ajax({
+                url: '/api/instituciones/ciudad/' + ciudadId,
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    institucionSelect.empty().append('<option value="">Seleccione una institución...</option>');
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.forEach(function(inst) {
+                            institucionSelect.append(new Option(inst.name, inst.id));
+                        });
+                        institucionSelect.prop('disabled', false);
+                    } else {
+                        institucionSelect.append('<option value="">No hay instituciones en esta ciudad</option>');
+                    }
+                },
+                error: function() {
+                    institucionSelect.empty().append('<option value="">Error al cargar instituciones</option>');
+                }
+            });
+        } else {
+            institucionSelect.empty().append('<option value="">Seleccione una ciudad primero</option>');
         }
     });
     

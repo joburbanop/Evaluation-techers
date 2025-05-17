@@ -43,7 +43,7 @@ class TestResource extends Resource
                                 ->description('Complete la información básica del test de evaluación')
                                 ->schema([
                                     Forms\Components\TextInput::make('name')
-                                        ->label('Nombre del Test')
+                                        ->label('Nombre del Test (Factor DigComEdu)')
                                         ->required()
                                         ->maxLength(255)
                                         ->validationMessages([
@@ -53,7 +53,7 @@ class TestResource extends Resource
                                         
                                     Forms\Components\Select::make('category_id')
                                         ->label('Categoría')
-                                        ->relationship('category', 'name', fn ($query) => $query->where('is_active', true))
+                                        ->relationship('category', 'name')
                                         ->required()
                                         ->searchable()
                                         ->preload()
@@ -410,13 +410,31 @@ class TestResource extends Resource
                                 $record->description)
                             ->extraAttributes(['class' => 'max-w-md']),
                             
-                        BadgeColumn::make('category.name')
+                        BadgeColumn::make('category')
+                            ->sortable()
                             ->label('Categoría')
-                            ->badge()
-                            ->color(fn ($record) => $record->category?->is_active ? 'success' : 'danger')
-                            ->formatStateUsing(fn ($state, $record) => $record->category?->is_active ? $state : $state . ' (Desactivada)')
-                            ->searchable()
-                            ->sortable(),
+                            ->formatStateUsing(function (string $state) {
+                                $categories = [
+                                    'competencia_pedagogica' => 'Pedagógica',
+                                    'competencia_comunicativa' => 'Comunicativa',
+                                    'competencia_gestion' => 'Gestión',
+                                    'competencia_tecnologica' => 'Tecnológica',
+                                    'competencia_investigativa' => 'Investigativa',
+                                ];
+                                return $categories[$state] ?? $state;
+                            })
+                            ->color(function (string $state) {
+                                return match ($state) {
+                                    'competencia_pedagogica' => 'success',
+                                    'competencia_comunicativa' => 'info',
+                                    'competencia_gestion' => 'warning',
+                                    'competencia_tecnologica' => 'primary',
+                                    'competencia_investigativa' => 'danger',
+                                    default => 'gray',
+                                };
+                            })
+                            ->icon('heroicon-o-tag')
+                            ->iconPosition('before')
                     ]),
                     
                     Split::make([
