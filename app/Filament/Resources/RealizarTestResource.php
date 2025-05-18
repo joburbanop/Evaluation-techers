@@ -92,15 +92,27 @@ class RealizarTestResource extends Resource
 
 ->actions([
     Tables\Actions\Action::make('responder')
-        ->label(fn (TestAssignment $record) => $record->status === 'completed' ? 'Revisar' : 'Comenzar/Continuar Test')
-        ->icon(fn (TestAssignment $record) => $record->status === 'completed' ? 'heroicon-o-eye' : 'heroicon-o-play')
-        ->color(fn (TestAssignment $record) => $record->status === 'completed' ? 'success' : 'primary')
+        ->label(fn (TestAssignment $record) => $record?->status === 'completed' ? 'Revisar' : 'Comenzar/Continuar Test')
+        ->icon(fn (TestAssignment $record) => $record?->status === 'completed' ? 'heroicon-o-eye' : 'heroicon-o-play')
+        ->color(fn (TestAssignment $record) => $record?->status === 'completed' ? 'success' : 'primary')
         ->button()
         ->size('sm')
-        ->modalHeading(fn (TestAssignment $record) => 'Test: ' . $record->test->name)
-        ->modalDescription(fn (TestAssignment $record) => $record->test->description)
+        ->modalHeading(fn (TestAssignment $record) => 'Test: ' . ($record?->test?->name ?? 'Test'))
+        ->modalDescription(fn (TestAssignment $record) => $record?->test?->description ?? '')
         ->modalWidth('5xl')
+        ->modalSubmitAction(false)
+        ->modalCancelAction(false)
         ->form(function (TestAssignment $record) {
+            if (!$record) {
+                return [
+                    Forms\Components\Placeholder::make('error')
+                        ->label('Error')
+                        ->content('No se pudo cargar el test.')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'bg-red-50 p-4 rounded-lg border border-red-200']),
+                ];
+            }
+            
             // Si el test está completado, mostramos los resultados
             if ($record->status === 'completed') {
                 $questions = $record->test->questions()
@@ -165,15 +177,6 @@ class RealizarTestResource extends Resource
                 Forms\Components\Hidden::make('current_page')
                     ->default(0),
                     
-                Forms\Components\Hidden::make('answers')
-                    ->default([])
-                    ->dehydrated(true)
-                    ->afterStateHydrated(function ($component, $state) {
-                        if (empty($state)) {
-                            $component->state([]);
-                        }
-                    }),
-                    
                 Forms\Components\Placeholder::make('progress')
                     ->label('Progreso del Test')
                     ->content(function ($get) use ($questions, $questionsPerPage) {
@@ -215,7 +218,7 @@ class RealizarTestResource extends Resource
                                                     'questionText' => $question->question
                                                 ]),
                                             
-                                            Forms\Components\Radio::make("answers.{$question->id}")
+                                                Forms\Components\Radio::make("answers.{$question->id}")
                                                 ->options(function() use ($question) {
                                                     $options = [];
                                                     foreach ($question->options as $option) {
@@ -235,17 +238,17 @@ class RealizarTestResource extends Resource
                                                 ->columnSpanFull()
                                                 ->extraAttributes(['class' => 'space-y-3'])
                                                 ->live()
+                                                ->dehydrated(true)
+                                                ->default(function (TestAssignment $record) use ($question) {
+                                                    return $record->responses()
+                                                        ->where('question_id', $question->id)
+                                                        ->value('option_id');
+                                                })
                                                 ->afterStateUpdated(function ($state, $set, $get) use ($question) {
-                                                    $currentAnswers = $get('answers') ?? [];
-                                                    if (!is_array($currentAnswers)) {
-                                                        $currentAnswers = [];
-                                                    }
-                                                    $currentAnswers[$question->id] = $state;
-                                                    $set('answers', $currentAnswers);
-                                                    \Log::info('Respuesta actualizada:', [
+                                                    \Log::info('Radio actualizado:', [
                                                         'question_id' => $question->id,
                                                         'state' => $state,
-                                                        'currentAnswers' => $currentAnswers
+                                                        'all_data' => $get()
                                                     ]);
                                                 }),
                                         ])
@@ -278,31 +281,69 @@ class RealizarTestResource extends Resource
                                 ->icon('heroicon-o-bookmark')
                                 ->iconPosition('before')
                                 ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700'])
-                                ->action(function (TestAssignment $record, array $data) {
-                                    \Log::info('Datos recibidos en guardar:', $data);
+                                ->action(function (TestAssignment $record, array $data, $get) use ($pageQuestions) {
+                                    \Log::info('Datos recibidos en guardar:', [
+                                        'data' => $data,
+                                        'all_data' => $get(),
+                                        'pageQuestions' => $pageQuestions->pluck('id')->toArray()
+                                    ]);
                                     
                                     $hasAnswers = false;
-                                    if (isset($data['answers']) && is_array($data['answers'])) {
-                                        foreach ($data['answers'] as $questionId => $optionId) {
-                                            if (!empty($optionId)) {
-                                                $hasAnswers = true;
-                                                $record->responses()->updateOrCreate(
-                                                    ['question_id' => $questionId],
-                                                    ['option_id' => $optionId, 'user_id' => auth()->id()]
-                                                );
-                                            }
+                                    $answers = [];
+                                    $allData = $get();
+                                    
+                                    foreach ($pageQuestions as $question) {
+                                        $answer = $allData['answers'][$question->id] ?? null;
+                                        
+                                        \Log::info('Verificando respuesta:', [
+                                            'question_id' => $question->id,
+                                            'value' => $answer,
+                                        ]);
+                                        
+                                        if (!empty($answer)) {
+                                            $hasAnswers = true;
+                                            $answers[$question->id] = $answer;
+                                            $record->responses()->updateOrCreate(
+                                                ['question_id' => $question->id],
+                                                ['option_id' => $answer, 'user_id' => auth()->id()]
+                                            );
                                         }
                                     }
-
+                                    
+                                    \Log::info('Resultado del guardado:', [
+                                        'hasAnswers' => $hasAnswers,
+                                        'answers' => $answers
+                                    ]);
+                                    
                                     if ($hasAnswers) {
                                         $record->update([
                                             'status' => 'in_progress',
                                         ]);
+
+                                        // Calcular el progreso
+                                        $totalQuestions = $record->test->questions()->count();
+                                        $answeredQuestions = $record->responses()->count();
+                                        $progress = round(($answeredQuestions / $totalQuestions) * 100);
+
                                         Notification::make()
                                             ->title('Avance guardado')
                                             ->success()
-                                            ->body('Tu avance ha sido guardado. Puedes continuar después.')
+                                            ->body(view('notifications.test-progress', [
+                                                'progress' => $progress,
+                                                'answeredQuestions' => $answeredQuestions,
+                                                'totalQuestions' => $totalQuestions,
+                                                'remainingQuestions' => $totalQuestions - $answeredQuestions
+                                            ]))
+                                            ->persistent()
+                                            ->actions([
+                                                \Filament\Notifications\Actions\Action::make('continuar')
+                                                    ->label('Continuar después')
+                                                    ->button()
+                                                    ->close(),
+                                            ])
                                             ->send();
+
+                                        return redirect()->to(RealizarTestResource::getUrl('index'));
                                     } else {
                                         Notification::make()
                                             ->title('Sin respuestas')
@@ -311,6 +352,7 @@ class RealizarTestResource extends Resource
                                             ->send();
                                     }
                                 }),
+                                
 
                             // Botón Siguiente
                             Forms\Components\Actions\Action::make('siguiente')
@@ -332,66 +374,52 @@ class RealizarTestResource extends Resource
                                 ->iconPosition('before')
                                 ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700'])
                                 ->hidden(fn ($get) => ($get('current_page') ?? 0) < ($totalPages - 1))
-                                ->action(function (TestAssignment $record, array $data) use ($questions, $questionsPerPage, $totalPages) {
-                                    \Log::info('Datos recibidos en enviar:', $data);
+                                ->action(function (TestAssignment $record, array $data, $get) use ($pageQuestions) {
+                                    \Log::info('Datos recibidos en enviar:', [
+                                        'data' => $data,
+                                        'all_data' => $get(),
+                                        'pageQuestions' => $pageQuestions->pluck('id')->toArray()
+                                    ]);
                                     
-                                    $currentPage = $data['current_page'] ?? 0;
-                                    $startIndex = $currentPage * $questionsPerPage;
-                                    $questionsInCurrentPage = $questions->slice($startIndex, $questionsPerPage);
+                                    $hasAnswers = false;
+                                    $answers = [];
+                                    $allData = $get();
                                     
-                                    $hasAnswersInCurrentPage = false;
-                                    $answeredQuestions = [];
-                                    
-                                    // Verificar si hay respuestas en la página actual
-                                    foreach ($questionsInCurrentPage as $question) {
-                                        $answerKey = "answers.{$question->id}";
-                                        if (isset($data[$answerKey]) && !empty($data[$answerKey])) {
-                                            $hasAnswersInCurrentPage = true;
-                                            $answeredQuestions[] = $question->id;
+                                    foreach ($pageQuestions as $question) {
+                                        $answer = $allData['answers'][$question->id] ?? null;
+                                        
+                                        \Log::info('Verificando respuesta para enviar:', [
+                                            'question_id' => $question->id,
+                                            'value' => $answer,
+                                        ]);
+                                        
+                                        if (!empty($answer)) {
+                                            $hasAnswers = true;
+                                            $answers[$question->id] = $answer;
+                                            $record->responses()->updateOrCreate(
+                                                ['question_id' => $question->id],
+                                                ['option_id' => $answer, 'user_id' => auth()->id()]
+                                            );
                                         }
                                     }
 
-                                    if (!$hasAnswersInCurrentPage) {
-                                        $questionIds = $questionsInCurrentPage->pluck('id')->toArray();
-                                        $providedAnswers = $answeredQuestions;
-                                        
-                                        \Log::info('Validación fallida:', [
-                                            'currentPage' => $currentPage + 1,
-                                            'totalPages' => $totalPages,
-                                            'questionIds' => $questionIds,
-                                            'providedAnswers' => $providedAnswers,
-                                            'data' => $data
-                                        ]);
-                                        
+                                    \Log::info('Resultado del envío:', [
+                                        'hasAnswers' => $hasAnswers,
+                                        'answers' => $answers
+                                    ]);
+
+                                    if (!$hasAnswers) {
                                         Notification::make()
                                             ->title('Respuestas requeridas')
                                             ->warning()
-                                            ->body(view('filament.notifications.test-validation', [
-                                                'currentPage' => $currentPage + 1,
-                                                'totalPages' => $totalPages,
-                                                'questionIds' => $questionIds,
-                                                'providedAnswers' => $providedAnswers,
-                                                'answers' => $data
-                                            ]))
+                                            ->body('Por favor, asegúrate de responder al menos una pregunta en esta página antes de enviar.')
                                             ->send();
                                         return;
                                     }
 
                                     try {
-                                        // Guardar todas las respuestas
-                                        foreach ($questionsInCurrentPage as $question) {
-                                            $answerKey = "answers.{$question->id}";
-                                            if (isset($data[$answerKey]) && !empty($data[$answerKey])) {
-                                                $record->responses()->updateOrCreate(
-                                                    ['question_id' => $question->id],
-                                                    ['option_id' => $data[$answerKey], 'user_id' => auth()->id()]
-                                                );
-                                            }
-                                        }
-
                                         $record->update([
                                             'status' => 'completed',
-                                            'completed_at' => now(),
                                         ]);
 
                                         Notification::make()
