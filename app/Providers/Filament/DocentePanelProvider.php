@@ -33,8 +33,9 @@ class DocentePanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Docente/Pages'), for: 'App\\Filament\\Docente\\Pages')
+            ->discoverWidgets(in: app_path('Filament/Docente/Widgets'), for: 'App\\Filament\\Docente\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -15,10 +15,5 @@ class Dashboard extends BasePage
 
     protected static ?int $navigationSort = 1;
 
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            StatsOverview::class,
-        ];
-    }
+  
 } 

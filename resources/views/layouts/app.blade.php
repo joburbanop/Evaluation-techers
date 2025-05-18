@@ -21,6 +21,8 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- En tu layout principal -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="h-full font-sans antialiased">
     <div id="app" class="min-h-screen bg-gray-50">

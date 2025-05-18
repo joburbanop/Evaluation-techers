@@ -9,7 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('test_assignments', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'completed', 'expired'])->default('pending');
+            $table->enum('status', ['pending', 'in_progress', 'completed', 'expired'])->default('pending');
         });
     }
     
