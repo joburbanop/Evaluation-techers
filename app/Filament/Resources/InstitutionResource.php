@@ -39,85 +39,46 @@ class InstitutionResource extends Resource
                         Tabs\Tab::make('Información de la IES')
                             ->icon('heroicon-o-information-circle')
                             ->schema([
-                                Grid::make(3)
+                                Grid::make(2)
                                     ->schema([
-                                        Forms\Components\FileUpload::make('logo')
-                                            ->label('Logo de la Institución')
-                                            ->image()
-                                            ->directory('institutions/logos')
-                                            ->imageEditor()
-                                            ->imageResizeTargetWidth(500)
-                                            ->imageResizeTargetHeight(500)
-                                            ->imageResizeMode('cover')
-                                            ->maxSize(2048)
-                                            ->disk('public')
-                                            ->visibility('public')
-                                            ->columnSpan(1)
-                                            ->alignCenter()
-                                            ->helperText('Formatos aceptados: JPG, PNG, WEBP (Máx. 2MB)')
-                                            ->downloadable()
-                                            ->openable()
-                                            ->previewable(true)
-                                            ->loadingIndicatorPosition('right')
-                                            ->panelAspectRatio('3:2'),
+                                        Forms\Components\TextInput::make('name')
+                                            ->label('Nombre de la IES')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->helperText('Nombre completo según registro')
+                                            ->columnSpanFull(),
                                         
-                                        Grid::make(1)
-                                            ->columnSpan(2)
-                                            ->schema([
-                                                Forms\Components\TextInput::make('name')
-                                                    ->label('Nombre de la IES')
-                                                    ->required()
-                                                    ->maxLength(255)
-                                                    ->helperText('Nombre completo según registro')
-                                                    ->columnSpanFull(),
-                                                
-                                                Forms\Components\Select::make('academic_character')
-                                                    ->label('Carácter Académico')
-                                                    ->options([
-                                                        'universidad' => '🏛️ Universidad',
-                                                        'institucion_universitaria' => '🏫 Institución Universitaria o Escuela Tecnológica',
-                                                        'institucion_tecnologica' => '🏢 Institución Tecnológica',
-                                                        'institucion_tecnica' => '🛠️ Institución Técnica Profesional',
-                                                    ])
-                                                    ->required()
-                                                    ->helperText('Naturaleza institucional de la IES')
-                                                    ->columnSpanFull(),
-                                                
-                                                Forms\Components\TextInput::make('active_programs')
-                                                    ->label('Número de Programas Vigentes')
-                                                    ->numeric()
-                                                    ->required()
-                                                    ->minValue(1)
-                                                    ->helperText('Cantidad de programas académicos activos')
-                                                    ->columnSpan(1),
-                                                
-                                                Forms\Components\Toggle::make('is_accredited')
-                                                    ->label('¿Está Acreditada en Alta Calidad?')
-                                                    ->helperText('Indica si la institución tiene acreditación de alta calidad')
-                                                    ->columnSpan(1),
-                                                
-                                                Grid::make(2)
-                                                    ->columnSpanFull()
-                                                    ->schema([
-                                                        Forms\Components\Select::make('departamento_id')
-                                                            ->label('Departamento')
-                                                            ->relationship('departamento', 'name')
-                                                            ->searchable()
-                                                            ->preload()
-                                                            ->required()
-                                                            ->live()
-                                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('ciudad_id', null))
-                                                            ->columnSpan(1),
-                                                        
-                                                        Forms\Components\Select::make('ciudad_id')
-                                                            ->label('Ciudad/Municipio')
-                                                            ->relationship('ciudad', 'name')
-                                                            ->searchable()
-                                                            ->preload()
-                                                            ->required()
-                                                            ->columnSpan(1),
-                                                    ]),
-                                            ]),
+                                        Forms\Components\Select::make('academic_character')
+                                            ->label('Carácter Académico')
+                                            ->options([
+                                                'Universidad' => '🏛️ Universidad',
+                                                'Institución Universitaria' => '🏫 Institución Universitaria',
+                                                'Institución Tecnológica' => '🏢 Institución Tecnológica',
+                                                'Institución Técnica' => '🛠️ Institución Técnica',
+                                            ])
+                                            ->required()
+                                            ->helperText('Naturaleza institucional de la IES')
+                                            ->columnSpan(1),
+                                        
+                                        Forms\Components\TextInput::make('programas_vigentes')
+                                            ->label('Número de Programas Vigentes')
+                                            ->numeric()
+                                            ->required()
+                                            ->minValue(1)
+                                            ->helperText('Cantidad de programas académicos activos')
+                                            ->columnSpan(1),
+                                        
+                                        Forms\Components\TextInput::make('departamento_domicilio')
+                                            ->label('Departamento')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->columnSpan(1),
+                                        
+                                        Forms\Components\TextInput::make('municipio_domicilio')
+                                            ->label('Ciudad/Municipio')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->columnSpan(1),
                                     ]),
                             ]),
                         
@@ -125,48 +86,77 @@ class InstitutionResource extends Resource
                             ->icon('heroicon-o-user-group')
                             ->schema([
                                 Forms\Components\Section::make('Persona de Contacto')
-                                    ->description('Información del representante principal')
+                                    ->description('Información del representante principal (opcional)')
                                     ->schema([
                                         Grid::make(2)
                                             ->schema([
                                                 Forms\Components\TextInput::make('contact_person')
                                                     ->label('Nombre Completo')
-                                                    ->maxLength(100)
-                                                    ->required(),
+                                                    ->maxLength(100),
                                                 
                                                 Forms\Components\TextInput::make('contact_position')
                                                     ->label('Cargo/Puesto')
-                                                    ->maxLength(100)
-                                                    ->required(),
+                                                    ->maxLength(100),
                                                 
                                                 Forms\Components\TextInput::make('contact_phone')
                                                     ->label('Teléfono de Contacto')
                                                     ->tel()
-                                                    ->maxLength(20)
-                                                    ->required(),
+                                                    ->maxLength(20),
                                                 
                                                 Forms\Components\TextInput::make('contact_email')
                                                     ->label('Email de Contacto')
                                                     ->email()
-                                                    ->maxLength(255)
-                                                    ->required(),
+                                                    ->maxLength(255),
                                             ]),
                                     ]),
                                 
-                                Forms\Components\Section::make('Configuración Académica')
+                                    Forms\Components\Section::make('Configuración Académica')
                                     ->schema([
-                                        Forms\Components\Select::make('test_id')
-                                            ->label('Test Asociado')
-                                            ->options(Test::all()->pluck('name', 'id'))
+                                        Forms\Components\Select::make('tests')
+                                            ->label('Tests Asociados')
+                                            ->multiple()
+                                            ->relationship('tests', 'name')
                                             ->searchable()
-                                            ->required()
-                                            ->helperText('Selecciona el test principal para esta institución'),
-                                        
-                                        Forms\Components\Textarea::make('additional_notes')
-                                            ->label('Notas Adicionales')
-                                            ->columnSpanFull()
-                                            ->rows(3)
-                                            ->helperText('Información adicional relevante'),
+                                            ->preload()
+                                            ->createOptionForm([
+                                                Forms\Components\Grid::make(2)
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label('Nombre del Test')
+                                                            ->required()
+                                                            ->maxLength(255)
+                                                            ->columnSpan(1),
+                                                        
+                                                        Forms\Components\TextInput::make('description')
+                                                            ->label('Descripción')
+                                                            ->maxLength(255)
+                                                            ->columnSpan(1),
+                                                        
+                                                        Forms\Components\ColorPicker::make('color')
+                                                            ->label('Color identificativo')
+                                                            ->columnSpan(1),
+                                                            
+                                                        Forms\Components\FileUpload::make('icon')
+                                                            ->label('Icono')
+                                                            ->image()
+                                                            ->directory('test-icons')
+                                                            ->columnSpan(1),
+                                                    ])
+                                            ])
+                                            ->helperText('Selecciona o crea tests para asociar a esta institución')
+                                            ->optionsLimit(20)
+                                            ->maxItems(10)
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                                $set('tests_count', count($state ?? []));
+                                            })
+                                            ->columnSpanFull(),
+                                            
+                                        Forms\Components\Placeholder::make('tests_info')
+                                            ->content(fn ($get): string => count($get('tests') ?? []) > 0 
+                                                ? '✅ ' . count($get('tests')) . ' tests asociados' 
+                                                : '⚠️ No hay tests asociados')
+                                            ->columnSpanFull(),
                                     ]),
                             ]),
                     ])
@@ -179,17 +169,9 @@ class InstitutionResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('logo')
-                    ->label('Logo')
-                    ->circular()
-                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&color=FFFFFF&background=4f46e5')
-                    ->size(40)
-                    ->disk('public')
-                    ->visibility('public'),
-                
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
-                    ->description(fn (Institution $record): string => $record->ciudad->name ?? '')
+                    ->description(fn (Institution $record): string => $record->municipio_domicilio ?? '')
                     ->weight(FontWeight::Medium)
                     ->searchable()
                     ->sortable(),
@@ -197,30 +179,29 @@ class InstitutionResource extends Resource
                 Tables\Columns\TextColumn::make('academic_character')
                     ->label('Carácter Académico')
                     ->formatStateUsing(fn (string $state): string => match($state) {
-                        'universidad' => '🏛️ Universidad',
-                        'institucion_universitaria' => '🏫 Institución Universitaria',
-                        'institucion_tecnologica' => '🏢 Institución Tecnológica',
-                        'institucion_tecnica' => '🛠️ Institución Técnica',
+                        'Universidad' => '🏛️ Universidad',
+                        'Institución Universitaria' => '🏫 Institución Universitaria',
+                        'Institución Tecnológica' => '🏢 Institución Tecnológica',
+                        'Institución Técnica' => '🛠️ Institución Técnica',
                         default => $state,
                     })
                     ->searchable()
                     ->sortable(),
                 
-                Tables\Columns\TextColumn::make('active_programs')
-                    ->label('Programas Activos')
+                Tables\Columns\TextColumn::make('programas_vigentes')
+                    ->label('Programas Vigentes')
                     ->numeric()
                     ->sortable(),
                 
-                Tables\Columns\IconColumn::make('is_accredited')
-                    ->label('Acreditada')
-                    ->boolean()
+                Tables\Columns\TextColumn::make('municipio_domicilio')
+                    ->label('Ciudad')
+                    ->searchable()
                     ->sortable(),
                 
-                Tables\Columns\TextColumn::make('contact_person')
-                    ->label('Contacto')
-                    ->description(fn (Institution $record): string => $record->contact_position ?? '')
+                Tables\Columns\TextColumn::make('departamento_domicilio')
+                    ->label('Departamento')
                     ->searchable()
-                    ->toggleable(),
+                    ->sortable(),
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Registrado')
@@ -233,23 +214,19 @@ class InstitutionResource extends Resource
                 Tables\Filters\SelectFilter::make('academic_character')
                     ->label('Carácter Académico')
                     ->options([
-                        'universidad' => 'Universidad',
-                        'institucion_universitaria' => 'Institución Universitaria',
-                        'institucion_tecnologica' => 'Institución Tecnológica',
-                        'institucion_tecnica' => 'Institución Técnica',
+                        'Universidad' => 'Universidad',
+                        'Institución Universitaria' => 'Institución Universitaria',
+                        'Institución Tecnológica' => 'Institución Tecnológica',
+                        'Institución Técnica' => 'Institución Técnica',
                     ]),
                 
-                Tables\Filters\SelectFilter::make('ciudad_id')
-                    ->label('Ciudad')
-                    ->relationship('ciudad', 'name')
-                    ->searchable()
-                    ->preload(),
+                Tables\Filters\SelectFilter::make('departamento_domicilio')
+                    ->label('Departamento')
+                    ->searchable(),
                 
-                Tables\Filters\TernaryFilter::make('is_accredited')
-                    ->label('Acreditada')
-                    ->placeholder('Todas')
-                    ->trueLabel('Acreditadas')
-                    ->falseLabel('No acreditadas'),
+                Tables\Filters\SelectFilter::make('municipio_domicilio')
+                    ->label('Ciudad')
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -277,8 +254,8 @@ class InstitutionResource extends Resource
                 Tables\Grouping\Group::make('academic_character')
                     ->label('Carácter Académico')
                     ->collapsible(),
-                Tables\Grouping\Group::make('ciudad.name')
-                    ->label('Ciudad')
+                Tables\Grouping\Group::make('departamento_domicilio')
+                    ->label('Departamento')
                     ->collapsible(),
             ])
             ->emptyStateHeading('No hay instituciones registradas')

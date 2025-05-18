@@ -28,9 +28,9 @@ class Test extends Model
         return $this->hasMany(Question::class);
     }
 
-    public function institutions(): BelongsToMany
+    public function institutions()
     {
-        return $this->belongsToMany(Institution::class, 'institution_test');
+        return $this->belongsToMany(Institution::class);
     }
 
     public function teachers(): BelongsToMany

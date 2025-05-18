@@ -39,4 +39,9 @@ class Institution extends Model
     {
         return $this->belongsTo(Ciudad::class, 'ciudad_id');
     }
+
+    public function tests()
+    {
+        return $this->belongsToMany(Test::class);
+    }
 }
