@@ -37,7 +37,6 @@ class TestResource extends Resource
                     Wizard\Step::make('Información Básica')
                         ->icon('heroicon-o-information-circle')
                         ->description('Datos principales del test')
-                        
                         ->schema([
                             Forms\Components\Section::make('Detalles del Test')
                                 ->description('Complete la información básica del test de evaluación')
@@ -46,10 +45,8 @@ class TestResource extends Resource
                                         ->label('Nombre del Test (Factor DigComEdu)')
                                         ->required()
                                         ->maxLength(255)
-                                        ->validationMessages([
-                                            'required' => '', 
-                                        ])
-                                        ->columnSpanFull(),
+                                        ->columnSpanFull()
+                                        ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500']),
                                         
                                     Forms\Components\Select::make('category_id')
                                         ->label('Categoría')
@@ -66,43 +63,19 @@ class TestResource extends Resource
                                                 ->label('Descripción')
                                                 ->maxLength(65535),
                                         ])
-                                        ->columnSpanFull(),
+                                        ->columnSpanFull()
+                                        ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500']),
                                         
                                     Forms\Components\Textarea::make('description')
                                         ->label('Descripción')
                                         ->required()
                                         ->rows(4)
-                                        ->validationMessages([
-                                            'required' => '', 
-                                        ])
-                                        ->columnSpanFull(),
+                                        ->columnSpanFull()
+                                        ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500']),
                                 ])
-                                ->columns(1),
-                        ])
-                        ->afterValidation(function ($state, $set) {
-                            $errors = [];
-                        
-                            if (empty($state['name'])) {
-                                $errors[] = '• Nombre del Test';
-                            }
-                            
-                            if (empty($state['category_id'])) {
-                                $errors[] = '• Categoría';
-                            }
-                            
-                            if (empty($state['description'])) {
-                                $errors[] = '• Descripción';
-                            }
-                            
-                            if (!empty($errors)) {
-                                Notification::make()
-                                    ->title('Campos obligatorios faltantes')
-                                    ->body("Debe completar los siguientes campos:\n\n" . implode("\n", $errors))
-                                    ->danger()
-                                    ->persistent()
-                                    ->send();
-                            }
-                        }),
+                                ->columns(1)
+                                ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
+                        ]),
                         
                     Wizard\Step::make('Preguntas')
                         ->icon('heroicon-o-question-mark-circle')
@@ -112,7 +85,7 @@ class TestResource extends Resource
                                 ->schema([
                                     Forms\Components\Placeholder::make('instrucciones')
                                         ->content('Cada test puede contener múltiples preguntas. Para cada pregunta, agregue opciones de respuesta y marque la respuesta correcta.')
-                                        ->extraAttributes(['class' => 'text-sm text-primary-600 mb-4'])
+                                        ->extraAttributes(['class' => 'text-sm text-primary-600 mb-4 p-3 bg-primary-50 rounded-lg border border-primary-100'])
                                         ->columnSpanFull(),
                                     
                                     Forms\Components\Repeater::make('questions')
@@ -120,7 +93,7 @@ class TestResource extends Resource
                                         ->label('')
                                         ->schema([
                                             Forms\Components\Section::make()
-                                                ->extraAttributes(['class' => 'bg-white rounded-xl shadow-sm border-2 border-primary-100'])
+                                                ->extraAttributes(['class' => 'bg-white rounded-xl shadow-sm border-2 border-gray-200 hover:border-primary-300 transition-colors duration-200'])
                                                 ->schema([
                                                     Forms\Components\Textarea::make('question')
                                                         ->label('Texto de la Pregunta')
@@ -128,13 +101,13 @@ class TestResource extends Resource
                                                         ->required()
                                                         ->maxLength(500)
                                                         ->rows(2)
-                                                        ->extraAttributes(['class' => 'font-medium text-lg'])
+                                                        ->extraAttributes(['class' => 'font-medium text-lg border-b border-gray-200 pb-2 mb-3'])
                                                         ->columnSpanFull(),
                                                     
                                                     Forms\Components\Section::make('Opciones de Respuesta')
                                                         ->description('Agregue las opciones y seleccione la respuesta correcta')
                                                         ->collapsible(false)
-                                                        ->extraAttributes(['class' => 'bg-gray-50 rounded-lg mt-2'])
+                                                        ->extraAttributes(['class' => 'bg-gray-50 rounded-lg mt-2 p-4 border border-gray-200'])
                                                         ->schema([
                                                             Forms\Components\Repeater::make('options')
                                                                 ->relationship('options')
@@ -150,7 +123,7 @@ class TestResource extends Resource
                                                                                 ->required()
                                                                                 ->maxLength(255)
                                                                                 ->columnSpan(2)
-                                                                                ->extraAttributes(['class' => 'font-medium']),
+                                                                                ->extraAttributes(['class' => 'font-medium border border-gray-300 rounded-lg px-3 py-2']),
                                                                             
                                                                             Forms\Components\Toggle::make('is_correct')
                                                                                 ->label('Correcta')
@@ -161,6 +134,21 @@ class TestResource extends Resource
                                                                                 ->columnSpan(1)
                                                                                 ->inline(true),
                                                                         ]),
+                                                                        
+                                                                        // Mejorado el campo de Valor de la Pregunta
+                                                                        Forms\Components\TextInput::make('score')
+                                                                            ->label('Valor de la Pregunta')
+                                                                            ->numeric()
+                                                                            ->minValue(1)
+                                                                            ->maxValue(100)
+                                                                            ->default(1)
+                                                                            ->required()
+                                                                            ->columnSpanFull()
+                                                                            ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-3 py-2 mt-2'])
+                                                                            ->prefixIcon('heroicon-o-star')
+                                                                            ->prefixIconColor('primary')
+                                                                            ->suffix('puntos')
+                                                                            
                                                                 ])
                                                                 ->itemLabel(fn (array $state): ?string => 
                                                                     (!empty($state['option']) ? 
@@ -188,7 +176,8 @@ class TestResource extends Resource
                                         ->extraAttributes(['class' => 'space-y-6'])
                                         ->columnSpanFull(),
                                 ])
-                                ->columns(1),
+                                ->columns(1)
+                                ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
                         ]),
                         
                     Wizard\Step::make('Revisión')
@@ -196,62 +185,9 @@ class TestResource extends Resource
                         ->schema([
                             Forms\Components\Section::make('Resumen Final')
                                 ->description('Revise toda la información antes de guardar')
-                                ->extraAttributes(['class' => 'bg-white rounded-xl shadow-md border border-gray-200'])
+                                ->extraAttributes(['class' => 'bg-white rounded-xl shadow-md border-2 border-primary-200'])
                                 ->schema([
-                                    // En el paso de Revisión del wizard, modifica esta parte:
-                                Forms\Components\Placeholder::make('review_header')
-                                ->content(function ($get) {
-                                    $categoryLabels = [
-                                        'competencia_pedagogica' => 'Competencia Pedagógica',
-                                        'competencia_comunicativa' => 'Competencia Comunicativa',
-                                        'competencia_gestion' => 'Competencia de Gestión',
-                                        'competencia_tecnologica' => 'Competencia Tecnológica',
-                                        'competencia_investigativa' => 'Competencia Investigativa',
-                                    ];
-                                    
-                                    $name = $get('name') ?? 'Sin nombre';
-                                    $category = $get('category') ?? 'Sin categoría';
-                                    $categoryName = $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category));
-                                    $questions = $get('questions') ?? [];
-                                    
-                                    // Solución: Asegurar que el conteo sea numérico
-                                    if (!is_array($questions)) {
-                                        $questions = [];
-                                    }
-                                    
-                                    if (empty($questions)) {
-                                        return new HtmlString("
-                                            <div class='text-center py-4'>
-                                                <p class='text-gray-500'>No hay preguntas agregadas todavía.</p>
-                                            </div>
-                                        ");
-                                    }
-                                    
-                                    
-                                    return new HtmlString("
-                                        <div class='text-center mb-6'>
-                                            <h2 class='text-xl font-bold text-primary-600 mb-1'>$name</h2>
-                                            <span class='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800'>
-                                                <svg class='w-4 h-4 mr-1.5' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
-                                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'></path>
-                                                </svg>
-                                                $categoryName
-                                            </span>
-                                        </div>
-                                        
-                                        <div class='flex justify-between items-center px-4 py-3 bg-gray-50 rounded-lg mb-5'>
-                                            <div class='flex items-center'>
-                                                <svg class='w-5 h-5 mr-2 text-primary-500' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
-                                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path>
-                                                </svg>
-                                                <span class='text-lg font-medium'>Total de Preguntas</span>
-                                            </div>
-                                            <span class='text-xl font-bold " . ($questionsCount == 0 ? 'text-red-600' : ($questionsCount < 5 ? 'text-amber-600' : 'text-green-600')) . "'>
-                                                " . (int)$questionsCount . " <!-- Conversión explícita a entero -->
-                                            </span>
-                                        </div>
-                                    ");
-                                })
+                                    Forms\Components\Placeholder::make('review_header')
                                         ->content(function ($get) {
                                             $categoryLabels = [
                                                 'competencia_pedagogica' => 'Competencia Pedagógica',
@@ -270,7 +206,7 @@ class TestResource extends Resource
                                             return new HtmlString("
                                                 <div class='text-center mb-6'>
                                                     <h2 class='text-xl font-bold text-primary-600 mb-1'>$name</h2>
-                                                    <span class='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800'>
+                                                    <span class='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 border border-primary-200'>
                                                         <svg class='w-4 h-4 mr-1.5' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
                                                             <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'></path>
                                                         </svg>
@@ -278,7 +214,7 @@ class TestResource extends Resource
                                                     </span>
                                                 </div>
                                                 
-                                                <div class='flex justify-between items-center px-4 py-3 bg-gray-50 rounded-lg mb-5'>
+                                                <div class='flex justify-between items-center px-4 py-3 bg-gray-50 rounded-lg mb-5 border border-gray-200'>
                                                     <div class='flex items-center'>
                                                         <svg class='w-5 h-5 mr-2 text-primary-500' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
                                                             <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path>
@@ -296,7 +232,7 @@ class TestResource extends Resource
                                     Forms\Components\Section::make('Descripción')
                                         ->collapsed(false)
                                         ->collapsible()
-                                        ->extraAttributes(['class' => 'bg-white rounded-lg border border-gray-200'])
+                                        ->extraAttributes(['class' => 'bg-white rounded-lg border border-gray-200 p-4'])
                                         ->schema([
                                             Forms\Components\Placeholder::make('description_content')
                                                 ->content(function ($get) {
@@ -313,7 +249,7 @@ class TestResource extends Resource
                                     Forms\Components\Section::make('Preguntas y Respuestas')
                                         ->collapsed(false)
                                         ->collapsible()
-                                        ->extraAttributes(['class' => 'bg-white rounded-lg border border-gray-200'])
+                                        ->extraAttributes(['class' => 'bg-white rounded-lg border border-gray-200 p-4'])
                                         ->schema([
                                             Forms\Components\Placeholder::make('questions_preview')
                                                 ->content(function ($get) {
@@ -334,9 +270,9 @@ class TestResource extends Resource
                                                         $questionText = $question['question'] ?? 'Sin texto';
                                                         
                                                         $output .= "
-                                                            <div class='bg-gray-50 rounded-lg p-4 border border-gray-200'>
+                                                            <div class='bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-primary-300 transition-colors duration-200'>
                                                                 <div class='flex items-start mb-3'>
-                                                                    <span class='flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-800 font-bold text-sm mr-3'>$questionNumber</span>
+                                                                    <span class='flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-800 font-bold text-sm mr-3 border border-primary-200'>$questionNumber</span>
                                                                     <p class='font-medium text-gray-900'>$questionText</p>
                                                                 </div>
                                                         ";
@@ -354,11 +290,19 @@ class TestResource extends Resource
                                                                     ? 'bg-green-100 text-green-800 border-green-200' 
                                                                     : 'bg-gray-100 text-gray-800 border-gray-200';
                                                                 
+                                                                $scoreValue = $option['score'] ?? 1;
+                                                                
                                                                 $output .= "
-                                                                    <div class='flex items-center'>
-                                                                        <span class='flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-xs mr-2'>$optionLetter</span>
+                                                                    <div class='flex items-center group'>
+                                                                        <span class='flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-xs mr-2 border border-gray-300'>$optionLetter</span>
                                                                         <span class='flex-1'>$optionText</span>
-                                                                        " . ($isCorrect ? "<span class='ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium $badgeClass'>Correcta</span>" : "") . "
+                                                                        " . ($isCorrect ? "<span class='ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium $badgeClass border'>Correcta</span>" : "") . "
+                                                                        <span class='ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800 border border-blue-100'>
+                                                                            <svg class='w-3 h-3 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
+                                                                                <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z'></path>
+                                                                            </svg>
+                                                                            $scoreValue pts
+                                                                        </span>
                                                                     </div>
                                                                 ";
                                                             }
@@ -454,7 +398,7 @@ class TestResource extends Resource
                     ])->extraAttributes(['class' => 'gap-4']),
                 ])
                 ->space(3)
-                ->extraAttributes(['class' => 'p-6 shadow-sm border border-gray-200 bg-white rounded-xl hover:shadow-md transition duration-200']),
+                ->extraAttributes(['class' => 'p-6 shadow-sm border-2 border-gray-200 bg-white rounded-xl hover:shadow-md transition duration-200']),
             ])
             ->contentGrid([
                 'md' => 1,
@@ -470,13 +414,16 @@ class TestResource extends Resource
                         'competencia_gestion' => 'Competencia de Gestión',
                         'competencia_tecnologica' => 'Competencia Tecnológica',
                         'competencia_investigativa' => 'Competencia Investigativa',
-                    ]),
+                    ])
+                    ->indicator('Categoría'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->iconButton(),
+                    ->iconButton()
+                    ->color('primary'),
                 Tables\Actions\DeleteAction::make()
-                    ->iconButton(),
+                    ->iconButton()
+                    ->color('danger'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

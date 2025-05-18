@@ -49,19 +49,23 @@ class AdminUserSeeder extends Seeder
         ];
 
         foreach ($docentes as $docente) {
-            User::create([
-                'name' => $docente['name'],
-                'email' => $docente['email'],
-                'email_verified_at' => Carbon::now(),
-                'password' => Hash::make('12345678'),
-                'document_type' => $docente['document_type'],
-                'document_number' => $docente['document_number'],
-                'is_active' => true,
-                'phone' => null,
-                'departamento_id' => null,
-                'ciudad_id' => null,
-                'institution' => null,
-            ])->assignRole('Docente');
+            User::updateOrCreate(
+                [
+                    'email' => $docente['email'],
+                ],
+                [
+                    'name' => $docente['name'],
+                    'email_verified_at' => Carbon::now(),
+                    'password' => Hash::make('12345678'),
+                    'document_type' => $docente['document_type'],
+                    'document_number' => $docente['document_number'],
+                    'is_active' => true,
+                    'phone' => null,
+                    'departamento_id' => null,
+                    'ciudad_id' => null,
+                    'institution' => null,
+                ]
+            )->assignRole('Docente');
         }
 
         // Crear dos usuarios coordinadores
