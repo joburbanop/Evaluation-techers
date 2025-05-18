@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Filament\Admin\Pages;
+namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BasePage;
+use App\Filament\Widgets\StatsOverview;
 
 class Dashboard extends BasePage
 {
@@ -13,4 +14,11 @@ class Dashboard extends BasePage
     protected static ?string $title = 'Panel de Administración';
 
     protected static ?int $navigationSort = 1;
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            StatsOverview::class,
+        ];
+    }
 } 

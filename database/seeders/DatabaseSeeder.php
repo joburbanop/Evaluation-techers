@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
            
         );
 
+        // Ejecutar el seeder de roles
+        $this->call(RoleSeeder::class);
 
         // Ejecutar otros seeders
         $this->call([
