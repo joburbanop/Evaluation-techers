@@ -13,10 +13,22 @@ class Test extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'title',
         'description',
         'category_id',
+        'is_active',
+        'time_limit',
+        'passing_score'
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'time_limit' => 'integer',
+        'passing_score' => 'integer'
+    ];
+
+    // Eager loading por defecto
+    protected $with = ['category'];
 
     public function category(): BelongsTo
     {
@@ -25,12 +37,14 @@ class Test extends Model
 
     public function questions(): HasMany
     {
-        return $this->hasMany(Question::class);
+        return $this->hasMany(Question::class)->orderBy('order');
     }
 
-    public function institutions()
+    public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class);
+        return $this->belongsToMany(Institution::class)
+            ->withPivot('is_active')
+            ->withTimestamps();
     }
 
     public function teachers(): BelongsToMany
@@ -45,8 +59,30 @@ class Test extends Model
         return $this->hasMany(TestTeacherAssignment::class);
     }
 
-    public function testAssignments()
+    public function assignments(): HasMany
     {
         return $this->hasMany(TestAssignment::class);
+    }
+
+    // Scopes para consultas comunes
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeByCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
+    }
+
+    // Métodos de ayuda
+    public function getQuestionCount(): int
+    {
+        return $this->questions()->count();
+    }
+
+    public function isActive(): bool
+    {
+        return $this->is_active;
     }
 }

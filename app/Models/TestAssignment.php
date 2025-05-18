@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TestAssignment extends Model
 {
@@ -13,26 +14,21 @@ class TestAssignment extends Model
     protected $fillable = [
         'test_id',
         'user_id',
-        'assigned_by',
+        'institution_id',
         'status',
-        'assigned_at',
-        'due_at',
-        'started_at',
-        'completed_at',
-        'score',
-        'feedback'
+        'completed_at'
     ];
 
     protected $casts = [
-        'assigned_at' => 'datetime',
-        'due_at' => 'datetime',
-        'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
 
+    // Eager loading por defecto
+    protected $with = ['test', 'user'];
+
     public function test(): BelongsTo
     {
-        return $this->belongsTo(Test::class);
+        return $this->belongsTo(Test::class)->with(['questions.options']);
     }
 
     public function user(): BelongsTo
@@ -40,14 +36,25 @@ class TestAssignment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function assignedBy(): BelongsTo
+    public function institution(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'assigned_by');
+        return $this->belongsTo(Institution::class);
     }
 
+    public function responses(): HasMany
+    {
+        return $this->hasMany(TestResponse::class);
+    }
+
+    // Scopes para consultas comunes
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    public function scopeInProgress($query)
+    {
+        return $query->where('status', 'in_progress');
     }
 
     public function scopeCompleted($query)
@@ -60,13 +67,22 @@ class TestAssignment extends Model
         return $query->where('status', 'expired');
     }
 
-    public function scopeInProgress($query)
+    // Métodos de ayuda
+    public function isCompleted(): bool
     {
-        return $query->where('status', 'in_progress');
+        return $this->status === 'completed';
     }
 
-    public function responses()
+    public function isInProgress(): bool
     {
-        return $this->hasMany(TestResponse::class);
+        return $this->status === 'in_progress';
+    }
+
+    public function markAsCompleted(): void
+    {
+        $this->update([
+            'status' => 'completed',
+            'completed_at' => now()
+        ]);
     }
 }

@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained()->onDelete('cascade');
             $table->foreignId('test_id')->constrained()->onDelete('cascade');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            // Evitar duplicados
+            // Índices para optimizar consultas
             $table->unique(['institution_id', 'test_id']);
+            $table->index('is_active');
         });
     }
 
