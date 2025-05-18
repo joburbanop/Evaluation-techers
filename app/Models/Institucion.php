@@ -2,18 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Institucion extends Model
+class Institution extends Model
 {
-    use HasFactory;
+    // si tu tabla se llama "institutions":
+    protected $table = 'institutions';
 
-    protected $table = 'instituciones';
-    
-    protected $fillable = [
-        'nombre',
-        'departamento_id',
-        'ciudad_id'
-    ];
-} 
+    // si tus columnas de nombre son 'name' deja esto, si usas 'nombre' cámbialo:
+    protected $fillable = ['name', 'ciudad_id'];
+
+    // Si tu tabla no tiene timestamps, puedes agregar:
+    // public $timestamps = false;
+}

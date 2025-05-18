@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@stack('styles')
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
@@ -241,6 +241,9 @@
     
     /* Mejoras visuales para los select */
     select {
+        background-color: #fff !important;
+        color: #222 !important;
+        opacity: 1 !important;
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
         background-position: right 0.5rem center;
         background-repeat: no-repeat;
@@ -328,9 +331,9 @@ $(document).ready(function() {
     // Mostrar la primera pestaña al cargar
     showTab(currentTab);
 
-    // Cargar departamentos
+    // Cargar departamentos desde la base de datos
     $.ajax({
-        url: 'https://api-colombia.com/api/v1/Department',
+        url: '/api/departamentos',
         method: 'GET',
         dataType: 'json',
         success: function(data) {
@@ -339,11 +342,8 @@ $(document).ready(function() {
             
             if (Array.isArray(data)) {
                 data.forEach(function(dep) {
-                    departamentoSelect.append(new Option(dep.name, dep.id.toString()));
+                    departamentoSelect.append(new Option(dep.nombre, dep.id));
                 });
-                @if(old('departamento_id'))
-                    departamentoSelect.val('{{ old('departamento_id') }}').trigger('change');
-                @endif
             } else {
                 console.error('Formato de datos inesperado:', data);
                 Swal.fire({
@@ -378,13 +378,13 @@ $(document).ready(function() {
         if (departamentoId) {
             ciudadSelect.prop('disabled', false);
             $.ajax({
-                url: `https://api-colombia.com/api/v1/Department/${departamentoId}/cities`,
+                url: `/api/ciudades/${departamentoId}`,
                 method: 'GET',
                 dataType: 'json',
                 success: function(data) {
                     if (Array.isArray(data)) {
                         data.forEach(function(city) {
-                            ciudadSelect.append(new Option(city.name, city.id.toString()));
+                            ciudadSelect.append(new Option(city.nombre, city.nombre));
                         });
                         @if(old('ciudad_id'))
                             ciudadSelect.val('{{ old('ciudad_id') }}');
@@ -425,6 +425,7 @@ $(document).ready(function() {
         let institucionSelect = $('#institution_id');
         institucionSelect.prop('disabled', true);
         institucionSelect.empty().append('<option value="">Cargando instituciones...</option>');
+        
         if (ciudadId) {
             $.ajax({
                 url: '/api/instituciones/ciudad/' + ciudadId,
@@ -479,7 +480,7 @@ $(document).ready(function() {
         this.submit();
     });
 
-    // Agregar esto en la sección de scripts
+    // Configuración de CSRF token
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

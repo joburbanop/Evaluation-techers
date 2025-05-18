@@ -1,26 +1,14 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\LocationController;
-use App\Http\Controllers\API\InstitucionController;
+use Illuminate\Support\Facades\Route;           // ← IMPORTA EL FACADE Route
+use App\Http\Controllers\DepartamentoController;
+use App\Http\Controllers\CiudadController;
+use App\Http\Controllers\InstitutionController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
+// Rutas públicas para cargar datos desde la base de datos
+Route::get('/departamentos', [DepartamentoController::class, 'index']);
 
-// Rutas públicas para ubicación
-Route::get('/departamentos', [LocationController::class, 'getDepartamentos']);
-Route::get('/departamentos/{departamentoId}/ciudades', [LocationController::class, 'getCiudadesPorDepartamento']);
-
-// Rutas para instituciones
-Route::post('/instituciones', [InstitucionController::class, 'store']);
-Route::get('/instituciones/ciudad/{ciudad_id}', [InstitucionController::class, 'porCiudad']);
-Route::put('/instituciones/{id}', [InstitucionController::class, 'update']);
-Route::delete('/instituciones/{id}', [InstitucionController::class, 'destroy']);
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-}); 
+// Cambié los placeholders para que sean IDs y coincidan con los parámetros de tus controladores:
+Route::get('/ciudades/{departamentoId}', [CiudadController::class, 'getByDepartamento']);
+Route::get('/instituciones/ciudad/{ciudadId}', [InstitutionController::class, 'getByCity']);

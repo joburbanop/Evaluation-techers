@@ -2,63 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Institution extends Model
 {
     use HasFactory;
 
-    protected $table = 'institutions';
-
     protected $fillable = [
-        'nit',
         'name',
-        'tipo',
-        'address',
+        'academic_character',
+        'departamento_domicilio',
+        'municipio_domicilio',
+        'programas_vigentes',
+        'active_programs',
+        'is_accredited',
+        'departamento_id',
         'ciudad_id',
-        'phone',
         'contact_person',
         'contact_position',
         'contact_phone',
         'contact_email',
-        'email',
-        'website',
-        'logo',
-        'additional_notes'
+        'test_id',
+        'additional_notes',
     ];
 
     /**
-     * Los tipos de institución disponibles
+     * Si más adelante normalizas y usas claves foráneas:
      */
-    public const TIPOS = [
-        'colegio' => 'Colegio',
-        'universidad' => 'Universidad'
-    ];
-
-    /**
-     * Obtiene la ciudad a la que pertenece la institución.
-     */
-    public function ciudad(): BelongsTo
+    public function departamento()
     {
-        return $this->belongsTo(Ciudad::class);
+        return $this->belongsTo(Departamento::class, 'departamento_id');
     }
 
-    /**
-     * Obtiene los usuarios de la institución.
-     */
-    public function users(): HasMany
+    public function ciudad()
     {
-        return $this->hasMany(User::class);
-    }
-
-    /**
-     * Obtiene los tests asignados a la institución.
-     */
-    public function tests(): HasMany
-    {
-        return $this->hasMany(Test::class);
+        return $this->belongsTo(Ciudad::class, 'ciudad_id');
     }
 }
