@@ -68,16 +68,33 @@ class InstitutionResource extends Resource
                                             ->helperText('Cantidad de programas académicos activos')
                                             ->columnSpan(1),
                                         
-                                        Forms\Components\TextInput::make('departamento_domicilio')
+                                        Forms\Components\Select::make('departamento_domicilio')
                                             ->label('Departamento')
+                                            ->options(function () {
+                                                return \App\Models\Departamento::pluck('name', 'name');
+                                            })
+                                            ->searchable()
                                             ->required()
-                                            ->maxLength(255)
+                                            ->live()
+                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('municipio_domicilio', null))
                                             ->columnSpan(1),
                                         
-                                        Forms\Components\TextInput::make('municipio_domicilio')
+                                        Forms\Components\Select::make('municipio_domicilio')
                                             ->label('Ciudad/Municipio')
+                                            ->options(function (Forms\Get $get) {
+                                                $departamento = $get('departamento_domicilio');
+                                                if (!$departamento) {
+                                                    return [];
+                                                }
+                                                return \App\Models\Ciudad::where('departamento_id', function ($query) use ($departamento) {
+                                                    $query->select('id')
+                                                        ->from('departamentos')
+                                                        ->where('name', $departamento)
+                                                        ->first();
+                                                })->pluck('name', 'name');
+                                            })
+                                            ->searchable()
                                             ->required()
-                                            ->maxLength(255)
                                             ->columnSpan(1),
                                     ]),
                             ]),
