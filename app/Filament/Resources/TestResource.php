@@ -148,6 +148,18 @@ class TestResource extends Resource
                                                                             ->prefixIcon('heroicon-o-star')
                                                                             ->prefixIconColor('primary')
                                                                             ->suffix('puntos')
+                                                                            ->rules([
+                                                                                'required',
+                                                                                'numeric',
+                                                                                'min:1',
+                                                                                'max:100'
+                                                                            ])
+                                                                            ->validationMessages([
+                                                                                'min' => 'El valor mínimo debe ser 1 punto',
+                                                                                'max' => 'El valor máximo debe ser 100 puntos',
+                                                                                'numeric' => 'El valor debe ser un número',
+                                                                                'required' => 'Este campo es obligatorio'
+                                                                            ])
                                                                             
                                                                 ])
                                                                 ->itemLabel(fn (array $state): ?string => 
@@ -189,17 +201,11 @@ class TestResource extends Resource
                                 ->schema([
                                     Forms\Components\Placeholder::make('review_header')
                                         ->content(function ($get) {
-                                            $categoryLabels = [
-                                                'competencia_pedagogica' => 'Competencia Pedagógica',
-                                                'competencia_comunicativa' => 'Competencia Comunicativa',
-                                                'competencia_gestion' => 'Competencia de Gestión',
-                                                'competencia_tecnologica' => 'Competencia Tecnológica',
-                                                'competencia_investigativa' => 'Competencia Investigativa',
-                                            ];
+                                            $category = $get('category_id');
+                                            $categoryModel = \App\Models\Category::find($category);
+                                            $categoryName = $categoryModel ? $categoryModel->name : 'Sin categoría';
                                             
                                             $name = $get('name') ?? 'Sin nombre';
-                                            $category = $get('category') ?? 'Sin categoría';
-                                            $categoryName = $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category));
                                             $questions = $get('questions') ?? [];
                                             $questionsCount = is_countable($questions) ? count($questions) : 0;
                                             
@@ -210,7 +216,8 @@ class TestResource extends Resource
                                                         <svg class='w-4 h-4 mr-1.5' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
                                                             <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'></path>
                                                         </svg>
-                                                        $categoryName
+                                                        $categoryName 
+                                                       
                                                     </span>
                                                 </div>
                                                 
@@ -354,31 +361,9 @@ class TestResource extends Resource
                                 $record->description)
                             ->extraAttributes(['class' => 'max-w-md']),
                             
-                        BadgeColumn::make('category')
-                            ->sortable()
+                        BadgeColumn::make('category.name')
                             ->label('Categoría')
-                            ->formatStateUsing(function (string $state) {
-                                $categories = [
-                                    'competencia_pedagogica' => 'Pedagógica',
-                                    'competencia_comunicativa' => 'Comunicativa',
-                                    'competencia_gestion' => 'Gestión',
-                                    'competencia_tecnologica' => 'Tecnológica',
-                                    'competencia_investigativa' => 'Investigativa',
-                                ];
-                                return $categories[$state] ?? $state;
-                            })
-                            ->color(function (string $state) {
-                                return match ($state) {
-                                    'competencia_pedagogica' => 'success',
-                                    'competencia_comunicativa' => 'info',
-                                    'competencia_gestion' => 'warning',
-                                    'competencia_tecnologica' => 'primary',
-                                    'competencia_investigativa' => 'danger',
-                                    default => 'gray',
-                                };
-                            })
-                            ->icon('heroicon-o-tag')
-                            ->iconPosition('before')
+                            ->color('primary')
                     ]),
                     
                     Split::make([
