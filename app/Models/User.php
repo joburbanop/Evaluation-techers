@@ -9,8 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Filament\Models\Contracts\FilamentUser;   // interfaz
-use Filament\Panel;                           // tipo Panel
+use Filament\Models\Contracts\FilamentUser;   
+use Filament\Panel;                           
 
 
 class User extends Authenticatable implements MustVerifyEmail,FilamentUser

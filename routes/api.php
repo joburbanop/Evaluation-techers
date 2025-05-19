@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;           // ← IMPORTA EL FACADE Route
+use Illuminate\Support\Facades\Route;          
 use App\Http\Controllers\DepartamentoController;
 use App\Http\Controllers\CiudadController;
 use App\Http\Controllers\InstitutionController;
