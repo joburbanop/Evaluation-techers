@@ -16,13 +16,23 @@ class EnsureUserHasRole
             return redirect('/login');
         }
 
+        $user = auth()->user();
+
         // Si el usuario está autenticado pero no tiene el rol requerido
-        if (!auth()->user()->hasRole($role)) {
-            // Si está intentando acceder a una ruta de logout, login o auth de Filament, permitir el acceso
+        if (!$user->hasRole($role)) {
+            // Si está intentando acceder a una ruta de Filament
+            if ($request->is('filament/*')) {
+                // Verificar si el usuario tiene acceso al panel de Filament
+                if ($user->canAccessPanel(\Filament\Facades\Filament::getCurrentPanel())) {
+                    return $next($request);
+                }
+                return redirect('/login');
+            }
+
+            // Si está intentando acceder a una ruta de logout, login o auth
             if ($request->is('*/logout') || 
                 $request->is('*/login') || 
-                $request->is('*/auth/*') ||
-                $request->is('filament.*')) {
+                $request->is('*/auth/*')) {
                 return $next($request);
             }
             

@@ -34,49 +34,6 @@ class TestResource extends Resource
         return $form
             ->schema([
                 Wizard::make([
-                    Wizard\Step::make('Información Básica')
-                        ->icon('heroicon-o-information-circle')
-                        ->description('Datos principales del test')
-                        ->schema([
-                            Forms\Components\Section::make('Detalles del Test')
-                                ->description('Complete la información básica del test de evaluación')
-                                ->schema([
-                                    Forms\Components\TextInput::make('name')
-                                        ->label('Nombre del Test (Factor DigComEdu)')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->columnSpanFull()
-                                        ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500']),
-                                        
-                                    Forms\Components\Select::make('category_id')
-                                        ->label('Categoría')
-                                        ->relationship('category', 'name')
-                                        ->required()
-                                        ->searchable()
-                                        ->preload()
-                                        ->createOptionForm([
-                                            Forms\Components\TextInput::make('name')
-                                                ->label('Nombre')
-                                                ->required()
-                                                ->maxLength(255),
-                                            Forms\Components\Textarea::make('description')
-                                                ->label('Descripción')
-                                                ->maxLength(65535),
-                                        ])
-                                        ->columnSpanFull()
-                                        ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500']),
-                                        
-                                    Forms\Components\Textarea::make('description')
-                                        ->label('Descripción')
-                                        ->required()
-                                        ->rows(4)
-                                        ->columnSpanFull()
-                                        ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500']),
-                                ])
-                                ->columns(1)
-                                ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
-                        ]),
-                        
                     Wizard\Step::make('Preguntas')
                         ->icon('heroicon-o-question-mark-circle')
                         ->schema([
@@ -87,7 +44,7 @@ class TestResource extends Resource
                                         ->content('Cada test puede contener múltiples preguntas. Para cada pregunta, agregue opciones de respuesta y marque la respuesta correcta.')
                                         ->extraAttributes(['class' => 'text-sm text-primary-600 mb-4 p-3 bg-primary-50 rounded-lg border border-primary-100'])
                                         ->columnSpanFull(),
-                                    
+
                                     Forms\Components\Repeater::make('questions')
                                         ->relationship('questions')
                                         ->label('')
@@ -95,19 +52,40 @@ class TestResource extends Resource
                                             Forms\Components\Section::make()
                                                 ->extraAttributes(['class' => 'bg-white rounded-xl shadow-sm border-2 border-gray-200 hover:border-primary-300 transition-colors duration-200'])
                                                 ->schema([
-                                                    Forms\Components\Textarea::make('question')
-                                                        ->label('Texto de la Pregunta')
+                                                    Forms\Components\TextInput::make('factor_digcomedu')
+                                                        ->label('Factor DigComEdu')
+                                                        ->required()
+                                                        ->maxLength(255)
+                                                        ->columnSpanFull()
+                                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
+                                                        ->prefixIcon('heroicon-o-academic-cap')
+                                                        ->prefixIconColor('primary'),
+
+                                                    Forms\Components\Select::make('area')
+                                                        ->label('Área')
+                                                        ->required()
+                                                        ->options(fn () => \App\Models\Category::pluck('name', 'name'))
+                                                        ->searchable()
+                                                        ->preload()
+                                                        ->columnSpanFull()
+                                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
+                                                        ->prefixIcon('heroicon-o-bookmark')
+                                                        ->prefixIconColor('primary'),
+
+                                                    Forms\Components\Textarea::make('pregunta')
+                                                        ->label('Pregunta')
                                                         ->helperText('Escriba la pregunta de manera clara y concisa')
                                                         ->required()
                                                         ->maxLength(500)
-                                                        ->rows(2)
-                                                        ->extraAttributes(['class' => 'font-medium text-lg border-b border-gray-200 pb-2 mb-3'])
-                                                        ->columnSpanFull(),
-                                                    
+                                                        ->rows(4)
+                                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4 bg-white'])
+                                                        ->columnSpanFull()
+                                                        ->placeholder('Escriba aquí su pregunta...'),
+
                                                     Forms\Components\Section::make('Opciones de Respuesta')
                                                         ->description('Agregue las opciones y seleccione la respuesta correcta')
                                                         ->collapsible(false)
-                                                        ->extraAttributes(['class' => 'bg-gray-50 rounded-lg mt-2 p-4 border border-gray-200'])
+                                                        ->extraAttributes(['class' => 'bg-gray-50 rounded-lg mt-4 p-6 border-2 border-primary-100 shadow-sm'])
                                                         ->schema([
                                                             Forms\Components\Repeater::make('options')
                                                                 ->relationship('options')
@@ -123,50 +101,50 @@ class TestResource extends Resource
                                                                                 ->required()
                                                                                 ->maxLength(255)
                                                                                 ->columnSpan(2)
-                                                                                ->extraAttributes(['class' => 'font-medium border border-gray-300 rounded-lg px-3 py-2']),
-                                                                            
+                                                                                ->extraAttributes(['class' => 'text-base font-medium border-2 border-gray-200 focus:border-primary-500 rounded-lg shadow-sm'])
+                                                                                ->prefixIcon('heroicon-o-chat-bubble-left-right'),
+
                                                                             Forms\Components\Toggle::make('is_correct')
                                                                                 ->label('Correcta')
-                                                                                ->onIcon('heroicon-m-check-circle')
-                                                                                ->offIcon('heroicon-m-x-circle')
+                                                                                ->onIcon('heroicon-o-check-circle')
+                                                                                ->offIcon('heroicon-o-x-circle')
                                                                                 ->onColor('success')
                                                                                 ->offColor('danger')
                                                                                 ->columnSpan(1)
-                                                                                ->inline(true),
+                                                                                ->inline(true)
+                                                                                ->extraAttributes(['class' => 'text-base']),
                                                                         ]),
-                                                                        
-                                                                        // Mejorado el campo de Valor de la Pregunta
+
                                                                         Forms\Components\TextInput::make('score')
                                                                             ->label('Valor de la Pregunta')
                                                                             ->numeric()
-                                                                            ->minValue(1)
+                                                                            ->minValue(0)
                                                                             ->maxValue(100)
                                                                             ->default(1)
                                                                             ->required()
                                                                             ->columnSpanFull()
-                                                                            ->extraAttributes(['class' => 'border border-gray-300 rounded-lg px-3 py-2 mt-2'])
+                                                                            ->extraAttributes(['class' => 'text-base font-medium border-2 border-gray-200 focus:border-primary-500 rounded-lg shadow-sm mt-3'])
                                                                             ->prefixIcon('heroicon-o-star')
                                                                             ->prefixIconColor('primary')
                                                                             ->suffix('puntos')
                                                                             ->rules([
                                                                                 'required',
                                                                                 'numeric',
-                                                                                'min:1',
+                                                                                'min:0',
                                                                                 'max:100'
                                                                             ])
                                                                             ->validationMessages([
-                                                                                'min' => 'El valor mínimo debe ser 1 punto',
+                                                                                'min' => 'El valor mínimo debe ser 0 puntos',
                                                                                 'max' => 'El valor máximo debe ser 100 puntos',
                                                                                 'numeric' => 'El valor debe ser un número',
                                                                                 'required' => 'Este campo es obligatorio'
                                                                             ])
-                                                                            
                                                                 ])
-                                                                ->itemLabel(fn (array $state): ?string => 
-                                                                    (!empty($state['option']) ? 
-                                                                    ($state['is_correct'] ? '✓ ' : '') . mb_substr((string)$state['option'], 0, 40) . (mb_strlen((string)$state['option']) > 40 ? '...' : '') 
+                                                                ->itemLabel(fn (array $state): ?string =>
+                                                                    (!empty($state['option']) ?
+                                                                    ($state['is_correct'] ? '✓ ' : '') . mb_substr((string)$state['option'], 0, 40) . (mb_strlen((string)$state['option']) > 40 ? '...' : '')
                                                                     : 'Nueva opción'))
-                                                                ->extraAttributes(['class' => 'space-y-3']),
+                                                                ->extraAttributes(['class' => 'space-y-4']),
                                                         ])
                                                         ->columnSpanFull(),
                                                 ]),
@@ -178,9 +156,9 @@ class TestResource extends Resource
                                         ->deleteAction(
                                             fn (Forms\Components\Actions\Action $action) => $action->requiresConfirmation()
                                         )
-                                        ->itemLabel(fn (array $state): ?string => 
-                                            (!empty($state['question']) ? 
-                                            'Pregunta: ' . mb_substr(strip_tags((string)$state['question']), 0, 50) . (mb_strlen(strip_tags((string)$state['question'])) > 50 ? '...' : '') 
+                                        ->itemLabel(fn (array $state): ?string =>
+                                            (!empty($state['pregunta']) ?
+                                            'Pregunta: ' . mb_substr(strip_tags((string)$state['pregunta']), 0, 50) . (mb_strlen(strip_tags((string)$state['pregunta'])) > 50 ? '...' : '')
                                             : 'Nueva pregunta'))
                                         ->collapsed(false)
                                         ->collapsible()
@@ -191,7 +169,7 @@ class TestResource extends Resource
                                 ->columns(1)
                                 ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
                         ]),
-                        
+
                     Wizard\Step::make('Revisión')
                         ->icon('heroicon-o-check-circle')
                         ->schema([
@@ -204,11 +182,11 @@ class TestResource extends Resource
                                             $category = $get('category_id');
                                             $categoryModel = \App\Models\Category::find($category);
                                             $categoryName = $categoryModel ? $categoryModel->name : 'Sin categoría';
-                                            
+
                                             $name = $get('name') ?? 'Sin nombre';
                                             $questions = $get('questions') ?? [];
                                             $questionsCount = is_countable($questions) ? count($questions) : 0;
-                                            
+
                                             return new HtmlString("
                                                 <div class='text-center mb-6'>
                                                     <h2 class='text-xl font-bold text-primary-600 mb-1'>$name</h2>
@@ -216,11 +194,11 @@ class TestResource extends Resource
                                                         <svg class='w-4 h-4 mr-1.5' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
                                                             <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'></path>
                                                         </svg>
-                                                        $categoryName 
-                                                       
+                                                        $categoryName
+
                                                     </span>
                                                 </div>
-                                                
+
                                                 <div class='flex justify-between items-center px-4 py-3 bg-gray-50 rounded-lg mb-5 border border-gray-200'>
                                                     <div class='flex items-center'>
                                                         <svg class='w-5 h-5 mr-2 text-primary-500' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
@@ -235,7 +213,7 @@ class TestResource extends Resource
                                             ");
                                         })
                                         ->columnSpanFull(),
-                                        
+
                                     Forms\Components\Section::make('Descripción')
                                         ->collapsed(false)
                                         ->collapsible()
@@ -252,7 +230,7 @@ class TestResource extends Resource
                                                 }),
                                         ])
                                         ->columnSpanFull(),
-                                        
+
                                     Forms\Components\Section::make('Preguntas y Respuestas')
                                         ->collapsed(false)
                                         ->collapsible()
@@ -261,7 +239,7 @@ class TestResource extends Resource
                                             Forms\Components\Placeholder::make('questions_preview')
                                                 ->content(function ($get) {
                                                     $questions = $get('questions') ?? [];
-                                                    
+
                                                     if (empty($questions)) {
                                                         return new HtmlString("
                                                             <div class='text-center py-4'>
@@ -269,13 +247,13 @@ class TestResource extends Resource
                                                             </div>
                                                         ");
                                                     }
-                                                    
+
                                                     $output = "<div class='space-y-4'>";
-                                                    
+
                                                     foreach ($questions as $index => $question) {
                                                         $questionNumber = (int)$index + 1;
-                                                        $questionText = $question['question'] ?? 'Sin texto';
-                                                        
+                                                        $questionText = $question['pregunta'] ?? 'Sin texto';
+
                                                         $output .= "
                                                             <div class='bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-primary-300 transition-colors duration-200'>
                                                                 <div class='flex items-start mb-3'>
@@ -283,22 +261,22 @@ class TestResource extends Resource
                                                                     <p class='font-medium text-gray-900'>$questionText</p>
                                                                 </div>
                                                         ";
-                                                        
+
                                                         $options = isset($question['options']) && is_array($question['options']) ? array_values($question['options']) : [];
                                                         if (!empty($options)) {
                                                             $output .= "<div class='ml-9 space-y-2'>";
-                                                            
+
                                                             foreach ($options as $optionIndex => $option) {
                                                                 $optionText = $option['option'] ?? 'Sin texto';
                                                                 $isCorrect = !empty($option['is_correct']);
                                                                 $optionLetter = chr(65 + (int)$optionIndex);
-                                                                
-                                                                $badgeClass = $isCorrect 
-                                                                    ? 'bg-green-100 text-green-800 border-green-200' 
+
+                                                                $badgeClass = $isCorrect
+                                                                    ? 'bg-green-100 text-green-800 border-green-200'
                                                                     : 'bg-gray-100 text-gray-800 border-gray-200';
-                                                                
+
                                                                 $scoreValue = $option['score'] ?? 1;
-                                                                
+
                                                                 $output .= "
                                                                     <div class='flex items-center group'>
                                                                         <span class='flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-xs mr-2 border border-gray-300'>$optionLetter</span>
@@ -313,15 +291,15 @@ class TestResource extends Resource
                                                                     </div>
                                                                 ";
                                                             }
-                                                            
+
                                                             $output .= "</div>";
                                                         }
-                                                        
+
                                                         $output .= "</div>";
                                                     }
-                                                    
+
                                                     $output .= "</div>";
-                                                    
+
                                                     return new HtmlString($output);
                                                 }),
                                         ])
@@ -355,17 +333,18 @@ class TestResource extends Resource
                             ->weight('bold')
                             ->size('lg')
                             ->color('primary')
-                            ->description(fn (Test $record): string => 
-                                mb_strlen($record->description) > 120 ? 
-                                mb_substr($record->description, 0, 120) . '...' : 
-                                $record->description)
+                            ->description(fn (Test $record): string =>
+                                $record->description ? 
+                                (mb_strlen($record->description) > 120 ?
+                                mb_substr($record->description, 0, 120) . '...' :
+                                $record->description) : 'Sin descripción')
                             ->extraAttributes(['class' => 'max-w-md']),
-                            
+
                         BadgeColumn::make('category.name')
                             ->label('Categoría')
                             ->color('primary')
                     ]),
-                    
+
                     Split::make([
                         TextColumn::make('questions_count')
                             ->label('Preguntas')
@@ -373,7 +352,7 @@ class TestResource extends Resource
                             ->color('success')
                             ->icon('heroicon-o-question-mark-circle')
                             ->extraAttributes(['class' => 'font-medium']),
-                            
+
                         TextColumn::make('created_at')
                             ->label('Creado')
                             ->dateTime('d/m/Y H:i')

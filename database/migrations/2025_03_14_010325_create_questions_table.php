@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('test_id'); 
-            $table->text('question'); 
+            $table->unsignedBigInteger('test_id');
+            $table->unsignedBigInteger('category_id');
+            $table->string('factor_digcomedu')->default('Compromiso profesional');
+            $table->text('pregunta');
+            $table->integer('order')->default(0);
             $table->timestamps();
-        
+
             $table->foreign('test_id')->references('id')->on('tests')->onDelete('cascade');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }
 

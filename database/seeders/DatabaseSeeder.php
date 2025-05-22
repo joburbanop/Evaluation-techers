@@ -30,8 +30,8 @@ class DatabaseSeeder extends Seeder
 
         // Ejecutar otros seeders
         $this->call([
-            TestsSeeder::class,
             CategorySeeder::class,
+            TestsSeeder::class,
             AdminUserSeeder::class,
             InstitutionSeeder::class,
         ]);

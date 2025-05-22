@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->integer('order')->default(0)->after('id');
+            $table->string('area')->nullable()->after('factor_digcomedu');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->dropColumn('order');
+            $table->dropColumn('area');
         });
     }
 };
