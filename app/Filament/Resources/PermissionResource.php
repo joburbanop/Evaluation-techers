@@ -100,13 +100,6 @@ class PermissionResource extends Resource
                             titleAttribute: 'name',
                             modifyQueryUsing: fn($query) => $query->where('module', $module)
                         )
-                        ->default(function ($record) use ($permissions) {
-                            if (! $record) return [];
-                            return $record->permissions
-                                ->whereIn('id', $permissions->pluck('id'))
-                                ->pluck('id')
-                                ->toArray();
-                        })
                         ->bulkToggleable()
                         ->gridDirection('row')
                         ->columns(1)
