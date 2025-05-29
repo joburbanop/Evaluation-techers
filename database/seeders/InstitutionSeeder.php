@@ -9,6 +9,16 @@ class InstitutionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Asegúrate de que el test con ID 1 exista
+        \App\Models\Test::firstOrCreate(
+            ['id' => 1],
+            [
+                'name' => 'Test por defecto',
+                'description' => 'Test creado automáticamente para instituciones',
+                // Agrega aquí otros campos requeridos por tu modelo Test si es necesario
+            ]
+        );
+
         $institutions = [
             ['name' => 'UNIVERSIDAD POPULAR DEL CESAR', 'academic_character' => 'Universidad', 'departamento_domicilio' => 'Cesar', 'municipio_domicilio' => 'Aguachica', 'programas_vigentes' => 11, 'active_programs' => 11, 'test_id' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'UNIVERSIDAD DE ANTIOQUIA', 'academic_character' => 'Universidad', 'departamento_domicilio' => 'Antioquia', 'municipio_domicilio' => 'Andes', 'programas_vigentes' => 32, 'active_programs' => 32, 'test_id' => 1, 'created_at' => now(), 'updated_at' => now()],
