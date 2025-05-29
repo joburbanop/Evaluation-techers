@@ -67,6 +67,30 @@ class TestResource extends Resource
                                                         ->options(fn () => \App\Models\Category::pluck('name', 'name'))
                                                         ->searchable()
                                                         ->preload()
+                                                        ->createOptionForm([
+                                                            Forms\Components\TextInput::make('name')
+                                                                ->label('Nombre del Área')
+                                                                ->required()
+                                                                ->maxLength(255)
+                                                                ->unique('categories', 'name'),
+                                                            Forms\Components\Textarea::make('description')
+                                                                ->label('Descripción')
+                                                                ->maxLength(65535)
+                                                                ->columnSpanFull(),
+                                                            Forms\Components\Toggle::make('is_active')
+                                                                ->label('Activo')
+                                                                ->default(true)
+                                                                ->required(),
+                                                        ])
+                                                        ->createOptionUsing(function (array $data) {
+                                                            return \App\Models\Category::create($data)->name;
+                                                        })
+                                                        ->createOptionAction(
+                                                            fn (Forms\Components\Actions\Action $action) => $action
+                                                                ->modalHeading('Crear Nueva Área')
+                                                                ->modalSubmitActionLabel('Crear Área')
+                                                                ->modalWidth('md')
+                                                        )
                                                         ->columnSpanFull()
                                                         ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
                                                         ->prefixIcon('heroicon-o-bookmark')

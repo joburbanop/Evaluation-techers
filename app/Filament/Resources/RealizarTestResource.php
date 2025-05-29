@@ -86,8 +86,7 @@ class RealizarTestResource extends Resource
                         'completed' => 'Completados',
                         'expired' => 'Expirados',
                     ])
-                    ->label('Estado')
-                    ->default('pending'),
+                    ->label('Estado'),
             ])
 
 ->actions([

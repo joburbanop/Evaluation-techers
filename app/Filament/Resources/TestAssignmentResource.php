@@ -38,14 +38,25 @@ class TestAssignmentResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('user_id')
                                     ->label('Docente')
-                                    ->options(User::role('Docente')->get()->pluck('name', 'id'))
+                                    ->options(function() {
+                                        return User::role('Docente')
+                                            ->whereNotNull('name')
+                                            ->pluck('name', 'id')
+                                            ->filter()
+                                            ->toArray();
+                                    })
                                     ->searchable()
                                     ->required()
                                     ->columnSpan(1),
                                 
                                 Forms\Components\Select::make('test_id')
                                     ->label('Evaluación')
-                                    ->options(Test::all()->pluck('name', 'id'))
+                                    ->options(function() {
+                                        return Test::whereNotNull('name')
+                                            ->pluck('name', 'id')
+                                            ->filter()
+                                            ->toArray();
+                                    })
                                     ->searchable()
                                     ->required()
                                     ->columnSpan(1),
@@ -94,12 +105,23 @@ class TestAssignmentResource extends Resource
             ->filters([
                 SelectFilter::make('test_id')
                     ->label('Evaluación')
-                    ->options(Test::all()->pluck('name', 'id'))
+                    ->options(function() {
+                        return Test::whereNotNull('name')
+                            ->pluck('name', 'id')
+                            ->filter()
+                            ->toArray();
+                    })
                     ->searchable(),
                     
                 SelectFilter::make('user_id')
                     ->label('Docente')
-                    ->options(User::role('Docente')->get()->pluck('name', 'id'))
+                    ->options(function() {
+                        return User::role('Docente')
+                            ->whereNotNull('name')
+                            ->pluck('name', 'id')
+                            ->filter()
+                            ->toArray();
+                    })
                     ->searchable(),
                     
                 Tables\Filters\Filter::make('pending')
