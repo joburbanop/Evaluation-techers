@@ -72,19 +72,8 @@ class TestResource extends Resource
                                                                 ->label('Nombre del Área')
                                                                 ->required()
                                                                 ->maxLength(255)
-                                                                ->unique('categories', 'name'),
-                                                            Forms\Components\Textarea::make('description')
-                                                                ->label('Descripción')
-                                                                ->maxLength(65535)
-                                                                ->columnSpanFull(),
-                                                            Forms\Components\Toggle::make('is_active')
-                                                                ->label('Activo')
-                                                                ->default(true)
-                                                                ->required(),
+                                                                ->unique('categories', 'name')
                                                         ])
-                                                        ->createOptionUsing(function (array $data) {
-                                                            return \App\Models\Category::create($data)->name;
-                                                        })
                                                         ->createOptionAction(
                                                             fn (Forms\Components\Actions\Action $action) => $action
                                                                 ->modalHeading('Crear Nueva Área')

@@ -52,10 +52,9 @@ class TestAssignmentResource extends Resource
                                 Forms\Components\Select::make('test_id')
                                     ->label('Evaluación')
                                     ->options(function() {
-                                        return Test::whereNotNull('name')
-                                            ->pluck('name', 'id')
-                                            ->filter()
-                                            ->toArray();
+                                        return \App\Models\Test::withCount('questions')->get()->mapWithKeys(function($test) {
+                                            return [$test->id => 'Test #' . $test->id . ' (' . $test->questions_count . ' preguntas)'];
+                                        })->toArray();
                                     })
                                     ->searchable()
                                     ->required()

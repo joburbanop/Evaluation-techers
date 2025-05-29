@@ -36,24 +36,32 @@ class RealizarTestResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('test.image')
-                    ->label('')
-                    ->circular()
-                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->test->name).'&color=FFFFFF&background=4f46e5'),
-                
-                Tables\Columns\TextColumn::make('test.name')
-                    ->label('Test')
-                    ->description(fn ($record) => $record->test->description)
-                    ->searchable()
-                    ->sortable()
-                    ->wrap()
-                    ->weight('bold'),
-                
-                Tables\Columns\TextColumn::make('test.questions_count')
+                Tables\Columns\TextColumn::make('test.questions')
                     ->label('Preguntas')
-                    ->counts('test', 'questions')
-                    ->badge()
-                    ->color('primary'),
+                    ->formatStateUsing(function ($state, $record) {
+                        if (!$record->test) {
+                            return '<span style="color: red;">Sin test</span>';
+                        }
+                        $count = $record->test->questions ? $record->test->questions->count() : 0;
+                        return '<span style="display: inline-flex; align-items: center; font-weight: bold; color: #4f46e5;">'
+                            .'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+                            .$count.' preguntas</span>';
+                    })
+                    ->html(),
+
+                Tables\Columns\TextColumn::make('avance_calculado')
+                    ->label('Avance')
+                    ->getStateUsing(function ($record) {
+                        $total = $record->test?->questions?->count() ?? 0;
+                        $respondidas = $record->responses?->count() ?? 0;
+                        $porcentaje = $total > 0 ? round(($respondidas / $total) * 100) : 0;
+                
+                        return '<span style="display: inline-flex; align-items: center; font-weight: bold; color: #059669;">'
+                            .'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">'
+                            .'<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" /></svg>'
+                            .$porcentaje.'%</span>';
+                    })
+                    ->html(),
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Asignado')
@@ -481,7 +489,7 @@ class RealizarTestResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('user_id', auth()->id())
-            ->with(['test.questions.options'])
+            ->with(['test.questions', 'responses'])
             ->orderByRaw("CASE 
                 WHEN status = 'pending' THEN 1 
                 WHEN status = 'in_progress' THEN 2 
