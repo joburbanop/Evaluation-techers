@@ -54,8 +54,11 @@ class RealizarTestResource extends Resource
                     ->getStateUsing(function ($record) {
                         $total = $record->test?->questions?->count() ?? 0;
                         $respondidas = $record->responses?->count() ?? 0;
-                        $porcentaje = $total > 0 ? round(($respondidas / $total) * 100) : 0;
-                
+                        // Si el estado es completado, siempre 100%
+                        $porcentaje = $record->status === 'completed'
+                            ? 100
+                            : ($total > 0 ? round(($respondidas / $total) * 100) : 0);
+
                         return '<span style="display: inline-flex; align-items: center; font-weight: bold; color: #059669;">'
                             .'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">'
                             .'<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" /></svg>'
@@ -269,17 +272,7 @@ class RealizarTestResource extends Resource
                             ->columnSpanFull(),
                         
                         Forms\Components\Actions::make([
-                            // Botón Regresar
-                            Forms\Components\Actions\Action::make('regresar')
-                                ->label('Regresar')
-                                ->color('gray')
-                                ->icon('heroicon-o-arrow-left')
-                                ->iconPosition('before')
-                                ->extraAttributes(['class' => 'px-4 py-2 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50'])
-                                ->hidden(fn ($get) => ($get('current_page') ?? 0) === 0)
-                                ->action(function ($set, $get) {
-                                    $set('current_page', ($get('current_page') ?? 0) - 1);
-                                }),
+                          
 
                             // Botón Guardar
                             Forms\Components\Actions\Action::make('guardar')
@@ -372,6 +365,17 @@ class RealizarTestResource extends Resource
                                 ->action(function ($set, $get) {
                                     $set('current_page', ($get('current_page') ?? 0) + 1);
                                 }),
+                                  // Botón Regresar
+                            Forms\Components\Actions\Action::make('regresar')
+                            ->label('Regresar')
+                            ->color('gray')
+                            ->icon('heroicon-o-arrow-left')
+                            ->iconPosition('before')
+                            ->extraAttributes(['class' => 'px-4 py-2 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50'])
+                            ->hidden(fn ($get) => ($get('current_page') ?? 0) === 0)
+                            ->action(function ($set, $get) {
+                                $set('current_page', ($get('current_page') ?? 0) - 1);
+                            }),
 
                             // Botón Enviar
                             Forms\Components\Actions\Action::make('enviar')
