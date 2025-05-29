@@ -202,4 +202,9 @@ class PermissionResource extends Resource
     {
         return parent::getEloquentQuery()->withCount(['users', 'permissions']);
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('Gestionar roles') || auth()->user()?->can('Gestionar permisos');
+    }
 }

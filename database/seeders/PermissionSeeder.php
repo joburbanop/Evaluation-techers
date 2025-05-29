@@ -24,7 +24,6 @@ class PermissionSeeder extends Seeder
 
             // Roles / permisos
             ['name' => 'Ver Gestion de roles', 'module' => 'administracion', 'description' => 'Ver gestión de roles'],
-            ['name' => 'Ver permisos',         'module' => 'administracion', 'description' => 'Ver listado de permisos'],
             ['name' => 'Crear permisos',       'module' => 'administracion', 'description' => 'Crear nuevos permisos'],
             ['name' => 'Editar permisos',      'module' => 'administracion', 'description' => 'Editar permisos existentes'],
             ['name' => 'Eliminar permiso',     'module' => 'administracion', 'description' => 'Eliminar permisos'],
@@ -40,8 +39,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'Crear test',           'module' => 'evaluaciones',   'description' => 'Crear nuevos tests'],
             ['name' => 'Editar test',          'module' => 'evaluaciones',   'description' => 'Editar tests existentes'],
             ['name' => 'Eliminar test',        'module' => 'evaluaciones',   'description' => 'Eliminar tests'],
-            ['name' => 'Asignar test',         'module' => 'evaluaciones',   'description' => 'Asignar tests a usuarios'],
-            ['name' => 'Realizar test',        'module' => 'evaluaciones',   'description' => 'Realizar tests asignados'],
 
             // Asignaciones de tests
             ['name' => 'Ver asignaciones',     'module' => 'evaluaciones',   'description' => 'Ver listado de asignaciones'],
@@ -49,6 +46,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'Editar asignaciones',  'module' => 'evaluaciones',   'description' => 'Editar asignaciones existentes'],
             ['name' => 'Eliminar asignaciones','module' => 'evaluaciones',   'description' => 'Eliminar asignaciones'],
             ['name' => 'Ver resultados',       'module' => 'evaluaciones',   'description' => 'Ver resultados de asignaciones'],
+            ['name' => 'Realizar test',        'module' => 'evaluaciones',   'description' => 'Realizar tests asignados'],
+
+            // Categorías
+            ['name' => 'Ver categorías',       'module' => 'evaluaciones',   'description' => 'Ver listado de categorías'],
+            ['name' => 'Crear categoría',      'module' => 'evaluaciones',   'description' => 'Crear nuevas categorías'],
+            ['name' => 'Editar categoría',     'module' => 'evaluaciones',   'description' => 'Editar categorías existentes'],
+            ['name' => 'Eliminar categoría',   'module' => 'evaluaciones',   'description' => 'Eliminar categorías'],
         ];
 
         // 3. Crear o recuperar cada permiso
