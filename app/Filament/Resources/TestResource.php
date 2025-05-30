@@ -34,6 +34,32 @@ class TestResource extends Resource
         return $form
             ->schema([
                 Wizard::make([
+                    Wizard\Step::make('Información Básica')
+                        ->icon('heroicon-o-document-text')
+                        ->schema([
+                            Forms\Components\Section::make('Información del Test')
+                                ->description('Ingrese la información básica del test')
+                                ->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Nombre del Test')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->columnSpanFull()
+                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
+                                        ->prefixIcon('heroicon-o-document-text')
+                                        ->prefixIconColor('primary'),
+
+                                    Forms\Components\Textarea::make('description')
+                                        ->label('Descripción')
+                                        ->maxLength(500)
+                                        ->columnSpanFull()
+                                        ->extraAttributes(['class' => 'text-base font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4'])
+                                        ->placeholder('Ingrese una descripción detallada del test...'),
+                                ])
+                                ->columns(1)
+                                ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
+                        ]),
+
                     Wizard\Step::make('Preguntas')
                         ->icon('heroicon-o-question-mark-circle')
                         ->schema([
@@ -64,7 +90,7 @@ class TestResource extends Resource
                                                     Forms\Components\Select::make('area')
                                                         ->label('Área')
                                                         ->required()
-                                                        ->options(fn () => \App\Models\Category::pluck('name', 'name'))
+                                                        ->options(fn () => \App\Models\Category::pluck('name', 'id'))
                                                         ->searchable()
                                                         ->preload()
                                                         ->createOptionForm([
@@ -80,10 +106,21 @@ class TestResource extends Resource
                                                                 ->modalSubmitActionLabel('Crear Área')
                                                                 ->modalWidth('md')
                                                         )
+                                                        ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                                            if ($state) {
+                                                                $category = \App\Models\Category::find($state);
+                                                                if ($category) {
+                                                                    $set('category_id', $category->id);
+                                                                }
+                                                            }
+                                                        })
                                                         ->columnSpanFull()
                                                         ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
                                                         ->prefixIcon('heroicon-o-bookmark')
                                                         ->prefixIconColor('primary'),
+
+                                                    Forms\Components\Hidden::make('category_id')
+                                                        ->required(),
 
                                                     Forms\Components\Textarea::make('pregunta')
                                                         ->label('Pregunta')

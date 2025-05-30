@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             TestsSeeder::class,
             AdminUserSeeder::class,
             InstitutionSeeder::class,
+            TestSeeder::class,
         ]);
     }
 }

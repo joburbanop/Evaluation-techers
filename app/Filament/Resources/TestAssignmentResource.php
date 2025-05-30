@@ -41,23 +41,28 @@ class TestAssignmentResource extends Resource
                                     ->options(function() {
                                         return User::role('Docente')
                                             ->whereNotNull('name')
+                                            ->where('is_active', true)
                                             ->pluck('name', 'id')
                                             ->filter()
                                             ->toArray();
                                     })
                                     ->searchable()
                                     ->required()
+                                    ->preload()
                                     ->columnSpan(1),
                                 
                                 Forms\Components\Select::make('test_id')
                                     ->label('Evaluación')
                                     ->options(function() {
-                                        return \App\Models\Test::withCount('questions')->get()->mapWithKeys(function($test) {
-                                            return [$test->id => 'Test #' . $test->id . ' (' . $test->questions_count . ' preguntas)'];
-                                        })->toArray();
+                                        return Test::where('is_active', true)
+                                            ->whereNotNull('name')
+                                            ->pluck('name', 'id')
+                                            ->filter()
+                                            ->toArray();
                                     })
                                     ->searchable()
                                     ->required()
+                                    ->preload()
                                     ->columnSpan(1),
                             ]),
                             
@@ -79,22 +84,26 @@ class TestAssignmentResource extends Resource
                     ->label('Docente')
                     ->searchable()
                     ->sortable()
-                    ->description(fn (TestAssignment $record) => $record->user->name),
+                    ->formatStateUsing(fn ($state) => $state ?? 'N/A'),
 
                 TextColumn::make('test.name')
                     ->label('Evaluación')
                     ->searchable()
                     ->sortable()
-                    ->description(fn (TestAssignment $record) => $record->test->name),
+                    ->formatStateUsing(fn ($state) => $state ?? 'N/A'),
                     
                 BadgeColumn::make('status')
                     ->label('Estado')
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'completed',
+                        'danger' => 'expired',
                     ])
-                    ->getStateUsing(function (TestAssignment $record): string {
-                        return $record->is_completed ? 'completed' : 'pending';
+                    ->formatStateUsing(fn ($state) => match($state) {
+                        'pending' => 'Pendiente',
+                        'completed' => 'Completado',
+                        'expired' => 'Expirado',
+                        default => 'Desconocido'
                     }),
                     
                 IconColumn::make('is_completed')
@@ -105,7 +114,8 @@ class TestAssignmentResource extends Resource
                 SelectFilter::make('test_id')
                     ->label('Evaluación')
                     ->options(function() {
-                        return Test::whereNotNull('name')
+                        return Test::where('is_active', true)
+                            ->whereNotNull('name')
                             ->pluck('name', 'id')
                             ->filter()
                             ->toArray();
@@ -117,6 +127,7 @@ class TestAssignmentResource extends Resource
                     ->options(function() {
                         return User::role('Docente')
                             ->whereNotNull('name')
+                            ->where('is_active', true)
                             ->pluck('name', 'id')
                             ->filter()
                             ->toArray();
@@ -125,11 +136,11 @@ class TestAssignmentResource extends Resource
                     
                 Tables\Filters\Filter::make('pending')
                     ->label('Pendientes')
-                    ->query(fn ($query) => $query->where('is_completed', false)),
+                    ->query(fn ($query) => $query->where('status', 'pending')),
                     
                 Tables\Filters\Filter::make('completed')
                     ->label('Completadas')
-                    ->query(fn ($query) => $query->where('is_completed', true)),
+                    ->query(fn ($query) => $query->where('status', 'completed')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -57,17 +57,14 @@ class PermissionResource extends Resource
 
     protected static function getPermissionSections(): \Filament\Forms\Components\Group
     {
-       
         $permissions = Permission::all()->groupBy('module');
     
-    
         $sections = $permissions->map(function ($permissions, $module) {
-            
             $permissionOptions = $permissions->mapWithKeys(function ($permission) {
                 return [
-                    $permission->id => $permission->description
+                    $permission->id => $permission->description ?? $permission->name
                 ];
-            });
+            })->filter();
     
             // Nombre legible del módulo
             $moduleName = match($module) {

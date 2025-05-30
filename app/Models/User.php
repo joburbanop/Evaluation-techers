@@ -93,13 +93,30 @@ class User extends Authenticatable implements MustVerifyEmail,FilamentUser
         return $this->belongsTo(Ciudad::class);
     }
     public function canAccessPanel(Panel $panel): bool
-{
-    return match ($panel->getId()) {
-        'admin'       => $this->hasRole('Administrador'),
-        'coordinador' => $this->hasRole('Coordinador'),
-        'docente'     => $this->hasRole('Docente'),
-        default       => false,
-    };
-}
+    {
+        if (!$panel) {
+            return false;
+        }
+
+        try {
+            $panelId = $panel->getId();
+            if (!$panelId) {
+                return false;
+            }
+
+            return match ($panelId) {
+                'admin'       => $this->hasRole('Administrador'),
+                'coordinador' => $this->hasRole('Coordinador'),
+                'docente'     => $this->hasRole('Docente'),
+                default       => false,
+            };
+        } catch (\Exception $e) {
+            \Log::error('Error al verificar acceso al panel: ' . $e->getMessage(), [
+                'user_id' => $this->id,
+                'panel_id' => $panel->getId() ?? 'unknown'
+            ]);
+            return false;
+        }
+    }
 
 }
