@@ -16,7 +16,9 @@ class TestResponse extends Model
         'option_id',
         'user_id',
         'score',
-        'is_correct'
+        'is_correct',
+        'feedback',
+        'justification'
     ];
 
     protected $casts = [
@@ -79,11 +81,32 @@ class TestResponse extends Model
         return $this->score ?? 0;
     }
 
+    public function getCompetencyLevel(): ?CompetencyLevel
+    {
+        $totalScore = $this->calculateTotalScore();
+        return CompetencyLevel::getLevelByScore($totalScore);
+    }
+
+    public function calculateTotalScore(): int
+    {
+        // Obtener todas las respuestas del mismo test_assignment
+        $responses = static::where('test_assignment_id', $this->test_assignment_id)->get();
+        
+        // Calcular el puntaje total
+        $totalScore = $responses->sum('score');
+        
+        // Calcular el porcentaje (asumiendo que cada pregunta vale 4 puntos)
+        $maxPossibleScore = $responses->count() * 4;
+        $percentageScore = ($totalScore / $maxPossibleScore) * 100;
+        
+        return (int) round($percentageScore);
+    }
+
     public function markAsCorrect(): void
     {
         $this->update([
             'is_correct' => true,
-            'score' => $this->question->score ?? 1
+            'score' => $this->question->score ?? 4
         ]);
     }
 

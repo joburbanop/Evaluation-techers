@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\RiasController;
+use App\Http\Controllers\TestResultController;
 
 // Ruta de inicio que redirige al dashboard según el rol
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -97,6 +98,9 @@ Route::post('/email/verification-notification', [VerificationController::class, 
 Route::middleware(['auth'])->group(function () {
     Route::put('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.update-email');
 });
+
+// Rutas de resultados de test
+Route::get('/test-results/{assignment}', [TestResultController::class, 'show'])->name('test.results');
 
 // Las rutas de los paneles /admin, /coordinador y /docente son gestionadas automáticamente por Filament mediante los PanelProviders
 // Por tanto, no es necesario definir rutas manuales aquí.

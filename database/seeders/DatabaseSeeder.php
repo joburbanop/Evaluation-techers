@@ -17,13 +17,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartamentoSeeder::class,
             CiudadSeeder::class,
-           
         ]);
 
         // Ejecutar el seeder de permisos y roles
-        $this->call(PermissionSeeder::class,
-           
-        );
+        $this->call(PermissionSeeder::class);
 
         // Ejecutar el seeder de roles
         $this->call(RoleSeeder::class);
@@ -31,10 +28,11 @@ class DatabaseSeeder extends Seeder
         // Ejecutar otros seeders
         $this->call([
             CategorySeeder::class,
+            AreaFactorSeeder::class,
+            CompetencyLevelSeeder::class,
             TestsSeeder::class,
             AdminUserSeeder::class,
             InstitutionSeeder::class,
-            TestSeeder::class,
         ]);
     }
 }

@@ -6,18 +6,38 @@ use Illuminate\Database\Seeder;
 use App\Models\Test;
 use App\Models\Question;
 use App\Models\Option;
+use App\Models\Area;
+use App\Models\Factor;
 
 class TestsSeeder extends Seeder
 {
     public function run()
     {
-        $test = Test::create([]);
+        // Asegurarnos de que existan áreas y factores
+        if (!Area::exists() || !Factor::exists()) {
+            $this->call(AreaFactorSeeder::class);
+        }
 
+        $test = Test::create([
+            'name' => 'Evaluación de Competencias Digitales Docentes',
+            'description' => 'Test para evaluar las competencias digitales de los docentes según el marco DigCompEdu',
+            'is_active' => true
+        ]);
+
+        // Obtener el primer área y factor para asignarlos a las preguntas
+        $area = Area::first();
+        $factor = Factor::first();
+
+        if (!$area || !$factor) {
+            throw new \Exception('No se encontraron áreas o factores. Por favor, ejecute primero el AreaFactorSeeder.');
+        }
 
         $question1 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo sistemáticamente diferentes canales de comunicación para mejorar la comunicación con estudiantes y colegas.   Por ejemplo: correos electrónicos, blogs, sitio web de la institución, aplicaciones…",
-            'category_id' => 1
+            'question' => "Utilizo sistemáticamente diferentes canales de comunicación para mejorar la comunicación con estudiantes y colegas. Por ejemplo: correos electrónicos, blogs, sitio web de la institución, aplicaciones…",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 1
         ]);
 
         Option::create([
@@ -46,15 +66,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question1->id,
-            'option' => "Reflexiono, discuto y desarrollo mis estrategias de comunicación de forma proactiva.",
+            'option' => "Reflexiono, discuto y desarrollo mis estrategias de comunicación de forma proactiva.",
             'is_correct' => true,
         ]);
 
 
         $question2 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo tecnologías digitales para trabajar con colegas dentro y fuera de mi institución.",
-            'category_id' => 1
+            'question' => "Utilizo tecnologías digitales para trabajar con colegas dentro y fuera de mi institución.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 2
         ]);
 
         Option::create([
@@ -83,15 +105,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question2->id,
-            'option' => "Creo materiales junto con otros colegas en una red online de profesionales de diferentes instituciones.",
+            'option' => "Creo materiales junto con otros colegas en una red online de profesionales de diferentes instituciones.",
             'is_correct' => true,
         ]);
 
 
         $question3 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Desarrollo activamente mis habilidades de enseñanza digital.",
-            'category_id' => 1
+            'question' => "Desarrollo activamente mis habilidades de enseñanza digital.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 3
         ]);
 
         Option::create([
@@ -127,8 +151,10 @@ class TestsSeeder extends Seeder
 
         $question4 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Participo en capacitaciones en línea cuando tengo la oportunidad. Por ejemplo: cursos online, MOOCs, webinars, congresos virtuales…",
-            'category_id' => 1
+            'question' => "Participo en capacitaciones en línea cuando tengo la oportunidad. Por ejemplo: cursos online, MOOCs, webinars, congresos virtuales…",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 4
         ]);
 
         Option::create([
@@ -157,15 +183,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question4->id,
-            'option' => "Participo frecuentemente en todo tipo de capacitaciones en línea",
+            'option' => "Participo frecuentemente en todo tipo de capacitaciones en línea",
             'is_correct' => true,
         ]);
 
 
         $question5 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo diferentes sitios web y estrategias de búsqueda para encontrar y seleccionar diferentes recursos digitales.",
-            'category_id' => 1
+            'question' => "Utilizo diferentes sitios web y estrategias de búsqueda para encontrar y seleccionar diferentes recursos digitales.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 5
         ]);
 
         Option::create([
@@ -194,15 +222,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question5->id,
-            'option' => "Recomiendo recursos y estrategias de investigación a mis colegas.",
+            'option' => "Recomiendo recursos y estrategias de investigación a mis colegas.",
             'is_correct' => true,
         ]);
 
 
         $question6 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Creo mis propios recursos digitales y adapto los recursos existentes en función de mis necesidades.",
-            'category_id' => 1
+            'question' => "Creo mis propios recursos digitales y adapto los recursos existentes en función de mis necesidades.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 6
         ]);
 
         Option::create([
@@ -231,15 +261,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question6->id,
-            'option' => "Organizo y adapto recursos complejos e interactivos.",
+            'option' => "Organizo y adapto recursos complejos e interactivos.",
             'is_correct' => true,
         ]);
 
 
         $question7 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Protejo eficazmente el contenido sensible. Por ejemplo: exámenes, calificaciones, datos personales de los estudiantes.",
-            'category_id' => 1
+            'question' => "Protejo eficazmente el contenido sensible. Por ejemplo: exámenes, calificaciones, datos personales de los estudiantes.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 7
         ]);
 
         Option::create([
@@ -268,15 +300,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question7->id,
-            'option' => "Protejo los datos personales de forma integral, por ejemplo, combinando contraseñas difíciles de adivinar con cifrado y actualizaciones de software frecuentes.",
+            'option' => "Protejo los datos personales de forma integral, por ejemplo, combinando contraseñas difíciles de adivinar con cifrado y actualizaciones de software frecuentes.",
             'is_correct' => true,
         ]);
 
 
         $question8 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Considero cuidadosamente cómo, cuándo y por qué utilizar tecnologías digitales en el aula para asegurar que agreguen valor al proceso de enseñanza y aprendizaje.",
-            'category_id' => 1
+            'question' => "Considero cuidadosamente cómo, cuándo y por qué utilizar tecnologías digitales en el aula para asegurar que agreguen valor al proceso de enseñanza y aprendizaje.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 8
         ]);
 
         Option::create([
@@ -305,15 +339,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question8->id,
-            'option' => "Utilizo herramientas digitales para implementar estrategias pedagógicas innovadoras.",
+            'option' => "Utilizo herramientas digitales para implementar estrategias pedagógicas innovadoras.",
             'is_correct' => true,
         ]);
 
 
         $question9 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Superviso las actividades e interacciones de los estudiantes en los entornos colaborativos en línea que utilizamos.",
-            'category_id' => 1
+            'question' => "Superviso las actividades e interacciones de los estudiantes en los entornos colaborativos en línea que utilizamos.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 9
         ]);
 
         Option::create([
@@ -342,15 +378,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question9->id,
-            'option' => "Intervengo periódicamente con comentarios motivadores o correctivos.",
+            'option' => "Intervengo periódicamente con comentarios motivadores o correctivos.",
             'is_correct' => true,
         ]);
 
 
         $question10 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Cuando mis estudiantes trabajan en grupos, utilizan tecnologías digitales para construir y documentar conocimientos.",
-            'category_id' => 1
+            'question' => "Cuando mis estudiantes trabajan en grupos, utilizan tecnologías digitales para construir y documentar conocimientos.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 10
         ]);
 
         Option::create([
@@ -379,15 +417,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question10->id,
-            'option' => "Mis estudiantes intercambian evidencia y crean conocimiento juntos en un espacio colaborativo en línea.",
+            'option' => "Mis estudiantes intercambian evidencia y crean conocimiento juntos en un espacio colaborativo en línea.",
             'is_correct' => true,
         ]);
 
 
         $question11 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo tecnologías digitales para permitir a los estudiantes planificar, documentar y supervisar su aprendizaje.Por ejemplo: cuestionario online de autoevaluación, e-portafolios para documentación y difusión, diarios/blogs online de reflexión…",
-            'category_id' => 1
+            'question' => "Utilizo tecnologías digitales para permitir a los estudiantes planificar, documentar y supervisar su aprendizaje.Por ejemplo: cuestionario online de autoevaluación, e-portafolios para documentación y difusión, diarios/blogs online de reflexión…",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 11
         ]);
 
         Option::create([
@@ -416,15 +456,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question11->id,
-            'option' => "Integro diferentes herramientas digitales para planificar y monitorear el progreso de los estudiantes.",
+            'option' => "Integro diferentes herramientas digitales para planificar y monitorear el progreso de los estudiantes.",
             'is_correct' => true,
         ]);
 
 
         $question12 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo herramientas de evaluación digital para monitorear el progreso de los estudiantes.",
-            'category_id' => 1
+            'question' => "Utilizo herramientas de evaluación digital para monitorear el progreso de los estudiantes.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 12
         ]);
 
         Option::create([
@@ -453,15 +495,17 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question12->id,
-            'option' => "Utilizo sistemáticamente una variedad de herramientas digitales para monitorear el progreso de los estudiantes.",
+            'option' => "Utilizo sistemáticamente una variedad de herramientas digitales para monitorear el progreso de los estudiantes.",
             'is_correct' => true,
         ]);
 
 
         $question13 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Analizo todos los datos disponibles de los estudiantes para identificar eficazmente a aquellos que necesitan apoyo adicional.",
-            'category_id' => 1
+            'question' => "Analizo todos los datos disponibles de los estudiantes para identificar eficazmente a aquellos que necesitan apoyo adicional.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 13
         ]);
 
         Option::create([
@@ -497,8 +541,10 @@ class TestsSeeder extends Seeder
 
         $question14 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo tecnologías digitales para brindar retroalimentación efectiva.",
-            'category_id' => 1
+            'question' => "Utilizo tecnologías digitales para brindar retroalimentación efectiva.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 14
         ]);
 
         Option::create([
@@ -534,8 +580,10 @@ class TestsSeeder extends Seeder
 
         $question15 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Cuando creo tareas digitales para estudiantes, considero y abordo posibles dificultades prácticas o técnicas. Por ejemplo: “acceso equitativo a dispositivos y recursos digitales, problemas de interoperabilidad y conversión, falta de habilidades digitales, ....”.",
-            'category_id' => 1
+            'question' => 'Cuando creo tareas digitales para estudiantes, considero y abordo posibles dificultades prácticas o técnicas. Por ejemplo: "acceso equitativo a dispositivos y recursos digitales, problemas de interoperabilidad y conversión, falta de habilidades digitales, ....".',
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 15
         ]);
 
         Option::create([
@@ -571,8 +619,10 @@ class TestsSeeder extends Seeder
 
         $question16 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo tecnologías digitales para brindarles a los estudiantes oportunidades de aprendizaje personalizadas. Por ejemplo: \"Les doy a los estudiantes diferentes tareas digitales para satisfacer sus necesidades de aprendizaje, preferencias e intereses individuales\".",
-            'category_id' => 1
+            'question' => 'Utilizo tecnologías digitales para brindarles a los estudiantes oportunidades de aprendizaje personalizadas. Por ejemplo: "Les doy a los estudiantes diferentes tareas digitales para satisfacer sus necesidades de aprendizaje, preferencias e intereses individuales".',
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 16
         ]);
 
         Option::create([
@@ -608,8 +658,10 @@ class TestsSeeder extends Seeder
 
         $question17 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Utilizo tecnologías digitales para que los estudiantes participen activamente en las clases.",
-            'category_id' => 1
+            'question' => "Utilizo tecnologías digitales para que los estudiantes participen activamente en las clases.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 17
         ]);
 
         Option::create([
@@ -645,8 +697,10 @@ class TestsSeeder extends Seeder
 
         $question18 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Enseño a mis estudiantes cómo evaluar la confiabilidad de la información, identificar inexactitudes e información distorsionada.",
-            'category_id' => 1
+            'question' => "Enseño a mis estudiantes cómo evaluar la confiabilidad de la información, identificar inexactitudes e información distorsionada.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 18
         ]);
 
         Option::create([
@@ -682,8 +736,10 @@ class TestsSeeder extends Seeder
 
         $question19 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Preparo tareas que requieren que los estudiantes utilicen medios digitales para comunicarse y colaborar entre sí o con una audiencia externa.",
-            'category_id' => 1
+            'question' => "Preparo tareas que requieren que los estudiantes utilicen medios digitales para comunicarse y colaborar entre sí o con una audiencia externa.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 19
         ]);
 
         Option::create([
@@ -719,8 +775,10 @@ class TestsSeeder extends Seeder
 
         $question20 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Preparo tareas que requieren que los estudiantes creen contenido digital. Por ejemplo: “vídeos, audios, fotos, presentaciones digitales, blogs, wikis…”.",
-            'category_id' => 1
+            'question' => 'Preparo tareas que requieren que los estudiantes creen contenido digital. Por ejemplo: "vídeos, audios, fotos, presentaciones digitales, blogs, wikis…".',
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 20
         ]);
 
         Option::create([
@@ -756,8 +814,10 @@ class TestsSeeder extends Seeder
 
         $question21 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Enseño a los estudiantes cómo utilizar la tecnología digital de forma segura y responsable.",
-            'category_id' => 1
+            'question' => "Enseño a los estudiantes cómo utilizar la tecnología digital de forma segura y responsable.",
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 21
         ]);
 
         Option::create([
@@ -793,8 +853,10 @@ class TestsSeeder extends Seeder
 
         $question22 = Question::create([
             'test_id' => $test->id,
-            'pregunta' => "Animo a los estudiantes a utilizar las tecnologías digitales de forma creativa para resolver problemas del mundo real. Por ejemplo: “superar obstáculos o desafíos emergentes en el proceso de aprendizaje”.",
-            'category_id' => 1
+            'question' => 'Animo a los estudiantes a utilizar las tecnologías digitales de forma creativa para resolver problemas del mundo real. Por ejemplo: "superar obstáculos o desafíos emergentes en el proceso de aprendizaje".',
+            'area_id' => $area->id,
+            'factor_id' => $factor->id,
+            'order' => 22
         ]);
 
         Option::create([

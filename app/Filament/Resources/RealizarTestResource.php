@@ -132,36 +132,167 @@ class RealizarTestResource extends Resource
                     ->get();
                 
                 $fields = [
-                    Forms\Components\Placeholder::make('completed_info')
-                        ->label('Resultados del Test')
-                        ->content('Este test ya ha sido completado. A continuación puedes revisar tus respuestas:')
-                        ->columnSpanFull()
-                        ->extraAttributes(['class' => 'bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6']),
+                    Forms\Components\Section::make('Resumen General')
+                        ->schema([
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Card::make()
+                                        ->schema([
+                                            Forms\Components\Placeholder::make('total_score')
+                                                ->label('Puntuación Total')
+                                                ->content(function () use ($record) {
+                                                    // Suma de las puntuaciones de las respuestas seleccionadas
+                                                    $totalScore = $record->responses->sum(function ($response) {
+                                                        return $response->option->score ?? 0;
+                                                    });
+                                                    
+                                                    // Suma de las puntuaciones máximas posibles
+                                                    $maxPossibleScore = $record->responses->sum(function ($response) {
+                                                        return $response->question->options->max('score');
+                                                    });
+                                                    
+                                                    $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
+                                                    
+                                                    return view('components.score-display', [
+                                                        'score' => "{$totalScore}/{$maxPossibleScore}",
+                                                        'percentage' => $percentage,
+                                                        'icon' => 'heroicon-o-academic-cap'
+                                                    ]);
+                                                })
+                                        ]),
+
+                                    Forms\Components\Card::make()
+                                        ->schema([
+                                            Forms\Components\Placeholder::make('competency_level')
+                                                ->label('Nivel total de todas las Competencias')
+                                                ->content(function () use ($record) {
+                                                    // Suma de las puntuaciones de las respuestas seleccionadas
+                                                    $totalScore = $record->responses->sum(function ($response) {
+                                                        return $response->option->score ?? 0;
+                                                    });
+                                                    
+                                                    // Suma de las puntuaciones máximas posibles
+                                                    $maxPossibleScore = $record->responses->sum(function ($response) {
+                                                        return $response->question->options->max('score');
+                                                    });
+                                                    
+                                                    $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
+                                                    
+                                                    $level = match(true) {
+                                                        $percentage >= 90 => 'Experto',
+                                                        $percentage >= 75 => 'Avanzado',
+                                                        $percentage >= 60 => 'Intermedio',
+                                                        $percentage >= 40 => 'Básico',
+                                                        default => 'Novato'
+                                                    };
+                                                    
+                                                    return view('components.score-display', [
+                                                        'score' => $level,
+                                                        'percentage' => round($percentage),
+                                                        'icon' => 'heroicon-o-academic-cap'
+                                                    ]);
+                                                })
+                                        ]),
+                                ]),
+                        ]),
+
+                    Forms\Components\Section::make('Progreso por Área')
+                        ->schema([
+                            Forms\Components\Grid::make(2)
+                                ->schema(function () use ($record) {
+                                    $areas = $record->test->questions()
+                                        ->with('area')
+                                        ->get()
+                                        ->pluck('area')
+                                        ->unique('id')
+                                        ->filter();
+
+                                    return $areas->map(function ($area) use ($record) {
+                                        // Calcular puntuación para esta área
+                                        $areaResponses = $record->responses()
+                                            ->whereHas('question', function ($query) use ($area) {
+                                                $query->where('area_id', $area->id);
+                                            })->get();
+
+                                        $totalScore = $areaResponses->sum(function ($response) {
+                                            return $response->option->score ?? 0;
+                                        });
+
+                                        $maxPossibleScore = $areaResponses->sum(function ($response) {
+                                            return $response->question->options->max('score');
+                                        });
+
+                                        $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
+
+                                        // Determinar nivel de competencia para esta área
+                                        $level = match(true) {
+                                            $percentage >= 90 => 'Experto',
+                                            $percentage >= 75 => 'Avanzado',
+                                            $percentage >= 60 => 'Intermedio',
+                                            $percentage >= 40 => 'Básico',
+                                            default => 'Novato'
+                                        };
+
+                                        return Forms\Components\Card::make()
+                                            ->schema([
+                                                Forms\Components\Placeholder::make("area_{$area->id}_name")
+                                                    ->label($area->name)
+                                                    ->content(function () use ($totalScore, $maxPossibleScore, $percentage, $level) {
+                                                        return view('components.area-score-display', [
+                                                            'score' => "{$totalScore}/{$maxPossibleScore}",
+                                                            'percentage' => round($percentage),
+                                                            'level' => $level,
+                                                            'icon' => 'heroicon-o-academic-cap'
+                                                        ]);
+                                                    })
+                                            ]);
+                                    })->toArray();
+                                }),
+                        ]),
                 ];
                 
                 foreach ($questions as $index => $question) {
                     $selectedOptionId = $question->responses->first()->option_id ?? null;
-                    $correctOptionId = $question->options->where('is_correct', true)->first()->id ?? null;
+                    $selectedOption = $question->options->firstWhere('id', $selectedOptionId);
                     
-                    $fields[] = Forms\Components\Card::make()
+                    // Encontrar la mejor respuesta (correcta o con mayor puntuación)
+                    $bestOption = $question->options->first(function ($option) {
+                        return $option->is_correct;
+                    }) ?? $question->options->sortByDesc('score')->first();
+                    
+                    $fields[] = Forms\Components\Section::make("Pregunta " . ($index + 1))
+                        ->description($question->question)
                         ->schema([
-                            Forms\Components\ViewField::make("question_{$question->id}_header")
-                                ->view('question-header', [
-                                    'index' => $index + 1,
-                                    'totalQuestions' => $questions->count(),
-                                    'questionText' => $question->question
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Placeholder::make("your_answer_{$question->id}")
+                                        ->label('Tu Respuesta')
+                                        ->content(function () use ($selectedOption) {
+                                            if (!$selectedOption) return 'No respondida';
+                                            
+                                            return view('components.answer-box', [
+                                                'text' => $selectedOption->option,
+                                                'score' => $selectedOption->score,
+                                                'isCorrect' => $selectedOption->is_correct
+                                            ]);
+                                        }),
+
+                                    Forms\Components\Placeholder::make("best_answer_{$question->id}")
+                                        ->label('Mejor Respuesta')
+                                        ->content(function () use ($bestOption, $selectedOption) {
+                                            if (!$bestOption) return 'No disponible';
+                                            
+                                            $isSelected = $selectedOption && $selectedOption->id === $bestOption->id;
+                                            return view('components.answer-box', [
+                                                'text' => $bestOption->option,
+                                                'score' => $bestOption->score,
+                                                'isCorrect' => $isSelected,
+                                                'isBestAnswer' => true
+                                            ]);
+                                        }),
                                 ]),
-                            
-                            Forms\Components\ViewField::make("answers.{$question->id}")
-                                ->view('test-result', [
-                                    'options' => $question->options,
-                                    'selectedOptionId' => $selectedOptionId,
-                                    'correctOptionId' => $correctOptionId
-                                ])
-                                ->columnSpanFull(),
                         ])
-                        ->columnSpanFull()
-                        ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
+                        ->collapsible();
                 }
                 
                 return $fields;

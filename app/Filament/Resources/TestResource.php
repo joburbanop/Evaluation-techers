@@ -78,19 +78,44 @@ class TestResource extends Resource
                                             Forms\Components\Section::make()
                                                 ->extraAttributes(['class' => 'bg-white rounded-xl shadow-sm border-2 border-gray-200 hover:border-primary-300 transition-colors duration-200'])
                                                 ->schema([
-                                                    Forms\Components\TextInput::make('factor_digcomedu')
-                                                        ->label('Factor DigComEdu')
+                                                    Forms\Components\Select::make('factor_id')
+                                                        ->label('Factor')
                                                         ->required()
-                                                        ->maxLength(255)
+                                                        ->options(fn () => \App\Models\Factor::pluck('name', 'id'))
+                                                        ->searchable()
+                                                        ->preload()
+                                                        ->createOptionForm([
+                                                            Forms\Components\TextInput::make('name')
+                                                                ->label('Nombre del Factor')
+                                                                ->required()
+                                                                ->maxLength(255)
+                                                                ->unique('factors', 'name'),
+                                                            Forms\Components\Select::make('area_id')
+                                                                ->label('Área')
+                                                                ->required()
+                                                                ->options(fn () => \App\Models\Area::pluck('name', 'id'))
+                                                                ->searchable()
+                                                                ->preload()
+                                                        ])
+                                                        ->createOptionUsing(function (array $data) {
+                                                            $factor = \App\Models\Factor::create($data);
+                                                            return $factor->id;
+                                                        })
+                                                        ->createOptionAction(
+                                                            fn (Forms\Components\Actions\Action $action) => $action
+                                                                ->modalHeading('Crear Nuevo Factor')
+                                                                ->modalSubmitActionLabel('Crear Factor')
+                                                                ->modalWidth('md')
+                                                        )
                                                         ->columnSpanFull()
                                                         ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
                                                         ->prefixIcon('heroicon-o-academic-cap')
                                                         ->prefixIconColor('primary'),
 
-                                                    Forms\Components\Select::make('area')
+                                                    Forms\Components\Select::make('area_id')
                                                         ->label('Área')
                                                         ->required()
-                                                        ->options(fn () => \App\Models\Category::pluck('name', 'id'))
+                                                        ->options(fn () => \App\Models\Area::pluck('name', 'id'))
                                                         ->searchable()
                                                         ->preload()
                                                         ->createOptionForm([
@@ -98,31 +123,27 @@ class TestResource extends Resource
                                                                 ->label('Nombre del Área')
                                                                 ->required()
                                                                 ->maxLength(255)
-                                                                ->unique('categories', 'name')
+                                                                ->unique('areas', 'name'),
+                                                            Forms\Components\Textarea::make('description')
+                                                                ->label('Descripción')
+                                                                ->maxLength(500)
                                                         ])
+                                                        ->createOptionUsing(function (array $data) {
+                                                            $area = \App\Models\Area::create($data);
+                                                            return $area->id;
+                                                        })
                                                         ->createOptionAction(
                                                             fn (Forms\Components\Actions\Action $action) => $action
                                                                 ->modalHeading('Crear Nueva Área')
                                                                 ->modalSubmitActionLabel('Crear Área')
                                                                 ->modalWidth('md')
                                                         )
-                                                        ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                                            if ($state) {
-                                                                $category = \App\Models\Category::find($state);
-                                                                if ($category) {
-                                                                    $set('category_id', $category->id);
-                                                                }
-                                                            }
-                                                        })
                                                         ->columnSpanFull()
                                                         ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
                                                         ->prefixIcon('heroicon-o-bookmark')
                                                         ->prefixIconColor('primary'),
 
-                                                    Forms\Components\Hidden::make('category_id')
-                                                        ->required(),
-
-                                                    Forms\Components\Textarea::make('pregunta')
+                                                    Forms\Components\Textarea::make('question')
                                                         ->label('Pregunta')
                                                         ->helperText('Escriba la pregunta de manera clara y concisa')
                                                         ->required()
@@ -166,27 +187,28 @@ class TestResource extends Resource
                                                                         ]),
 
                                                                         Forms\Components\TextInput::make('score')
-                                                                            ->label('Valor de la Pregunta')
+                                                                            ->label('Puntuación')
                                                                             ->numeric()
                                                                             ->minValue(0)
-                                                                            ->maxValue(100)
-                                                                            ->default(1)
+                                                                            ->maxValue(4)
+                                                                            ->default(0)
                                                                             ->required()
                                                                             ->columnSpanFull()
                                                                             ->extraAttributes(['class' => 'text-base font-medium border-2 border-gray-200 focus:border-primary-500 rounded-lg shadow-sm mt-3'])
                                                                             ->prefixIcon('heroicon-o-star')
                                                                             ->prefixIconColor('primary')
                                                                             ->suffix('puntos')
+                                                                            ->helperText('Puntuación de 0 a 4 puntos por respuesta')
                                                                             ->rules([
                                                                                 'required',
                                                                                 'numeric',
                                                                                 'min:0',
-                                                                                'max:100'
+                                                                                'max:4'
                                                                             ])
                                                                             ->validationMessages([
-                                                                                'min' => 'El valor mínimo debe ser 0 puntos',
-                                                                                'max' => 'El valor máximo debe ser 100 puntos',
-                                                                                'numeric' => 'El valor debe ser un número',
+                                                                                'min' => 'La puntuación mínima debe ser 0 puntos',
+                                                                                'max' => 'La puntuación máxima debe ser 4 puntos',
+                                                                                'numeric' => 'La puntuación debe ser un número',
                                                                                 'required' => 'Este campo es obligatorio'
                                                                             ])
                                                                 ])
@@ -207,14 +229,27 @@ class TestResource extends Resource
                                             fn (Forms\Components\Actions\Action $action) => $action->requiresConfirmation()
                                         )
                                         ->itemLabel(fn (array $state): ?string =>
-                                            (!empty($state['pregunta']) ?
-                                            'Pregunta: ' . mb_substr(strip_tags((string)$state['pregunta']), 0, 50) . (mb_strlen(strip_tags((string)$state['pregunta'])) > 50 ? '...' : '')
+                                            (!empty($state['question']) ?
+                                            'Pregunta: ' . mb_substr(strip_tags((string)$state['question']), 0, 50) . (mb_strlen(strip_tags((string)$state['question'])) > 50 ? '...' : '')
                                             : 'Nueva pregunta'))
                                         ->collapsed(false)
                                         ->collapsible()
                                         ->cloneable()
                                         ->extraAttributes(['class' => 'space-y-6'])
-                                        ->columnSpanFull(),
+                                        ->columnSpanFull()
+                                        ->mutateDehydratedStateUsing(function ($state) {
+                                            if (is_array($state)) {
+                                                foreach ($state as &$question) {
+                                                    if (isset($question['area_id']) && is_array($question['area_id'])) {
+                                                        $question['area_id'] = $question['area_id']['id'] ?? $question['area_id'];
+                                                    }
+                                                    if (isset($question['factor_id']) && is_array($question['factor_id'])) {
+                                                        $question['factor_id'] = $question['factor_id']['id'] ?? $question['factor_id'];
+                                                    }
+                                                }
+                                            }
+                                            return $state;
+                                        }),
                                 ])
                                 ->columns(1)
                                 ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
@@ -229,8 +264,8 @@ class TestResource extends Resource
                                 ->schema([
                                     Forms\Components\Placeholder::make('review_header')
                                         ->content(function ($get) {
-                                            $category = $get('category_id');
-                                            $categoryModel = \App\Models\Category::find($category);
+                                            $category = $get('area_id');
+                                            $categoryModel = \App\Models\Area::find($category);
                                             $categoryName = $categoryModel ? $categoryModel->name : 'Sin categoría';
 
                                             $name = $get('name') ?? 'Sin nombre';
@@ -302,7 +337,7 @@ class TestResource extends Resource
 
                                                     foreach ($questions as $index => $question) {
                                                         $questionNumber = (int)$index + 1;
-                                                        $questionText = $question['pregunta'] ?? 'Sin texto';
+                                                        $questionText = $question['question'] ?? 'Sin texto';
 
                                                         $output .= "
                                                             <div class='bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-primary-300 transition-colors duration-200'>
@@ -390,7 +425,7 @@ class TestResource extends Resource
                                 $record->description) : 'Sin descripción')
                             ->extraAttributes(['class' => 'max-w-md']),
 
-                        BadgeColumn::make('category.name')
+                        BadgeColumn::make('area.name')
                             ->label('Categoría')
                             ->color('primary')
                     ]),
@@ -420,7 +455,7 @@ class TestResource extends Resource
             ])
             ->recordClasses(fn () => 'transition-all duration-300')
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
+                Tables\Filters\SelectFilter::make('area')
                     ->label('Categoría')
                     ->options([
                         'competencia_pedagogica' => 'Competencia Pedagógica',
