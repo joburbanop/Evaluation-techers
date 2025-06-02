@@ -41,28 +41,71 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
-    protected function authenticated(Request $request, $user)
+    protected function validateLogin(Request $request)
     {
-        Log::info('Redirección según rol', ['user_id' => $user->id, 'role' => $user->getRoleNames()->first()]);
-        return redirect()->route('dashboard');
+        $request->validate([
+            'email' => ['required', 'string', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'password' => ['required', 'string'],
+        ], [
+            'email.regex' => 'El formato del correo electrónico no es válido.',
+        ]);
     }
 
     protected function sendFailedLoginResponse(Request $request)
     {
+        $errors = ['email' => trans('auth.failed')];
+        
+        // Verificar si el usuario existe
+        $user = \App\Models\User::where('email', $request->email)->first();
+        
+        if (!$user) {
+            $errors['email'] = 'No existe una cuenta con este correo electrónico.';
+        } elseif (!\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+            $errors['password'] = 'La contraseña es incorrecta.';
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json($errors, 422);
+        }
+
         return redirect()->route('login')
             ->withInput($request->only('email', 'remember'))
-            ->withErrors([
-                'email' => 'auth.failed',
-            ]);
+            ->withErrors($errors);
+    }
+
+    protected function authenticated(Request $request, $user)
+    {
+        if (!$user->is_active) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Tu cuenta está desactivada. Por favor, contacta al administrador.']);
+        }
+
+        Log::info('Usuario autenticado exitosamente', [
+            'user_id' => $user->id,
+            'role' => $user->getRoleNames()->first(),
+            'ip' => $request->ip()
+        ]);
+
+        return redirect()->route('dashboard');
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();  // Cerrar sesión
-        $request->session()->invalidate();  // Invalidar la sesión
-        $request->session()->regenerateToken();  // Regenerar el token CSRF
+        $user = Auth::user();
+        if ($user) {
+            Log::info('Usuario cerró sesión', [
+                'user_id' => $user->id,
+                'role' => $user->getRoleNames()->first(),
+                'ip' => $request->ip()
+            ]);
+        }
 
-        // Redirigir siempre al login
-        return redirect()->route('login');  // Redirige a la página de login
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')
+            ->with('status', 'Has cerrado sesión exitosamente.');
     }
 }

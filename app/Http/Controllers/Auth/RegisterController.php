@@ -89,14 +89,19 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'document_type' => ['required', 'string'],
-            'document_number' => ['required', 'string', 'unique:users'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s\-]+$/u'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'],
+            'document_type' => ['required', 'string', 'in:CC,CE,TI,PP'],
+            'document_number' => ['required', 'string', 'max:20', 'unique:users', 'regex:/^[0-9]{8,12}$/'],
             'departamento_id' => ['required', 'exists:departamentos,id'],
             'ciudad_id' => ['required', 'exists:ciudades,id'],
             'institution_id' => ['required', 'exists:institutions,id'],
+        ], [
+            'name.regex' => 'El nombre solo puede contener letras y espacios.',
+            'email.regex' => 'El formato del correo electrónico no es válido.',
+            'password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial.',
+            'document_number.regex' => 'El número de documento debe contener entre 8 y 12 dígitos numéricos.',
         ]);
     }
 
@@ -125,14 +130,19 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s\-]+$/u'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults(), 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'],
             'document_type' => ['required', 'string', 'in:CC,CE,TI,PP'],
-            'document_number' => ['required', 'string', 'max:20', 'unique:users'],
-            'departamento_id' => ['nullable', 'string'],
-            'ciudad_id' => ['nullable', 'string'],
+            'document_number' => ['required', 'string', 'max:20', 'unique:users', 'regex:/^[0-9]{8,12}$/'],
+            'departamento_id' => ['required', 'exists:departamentos,id'],
+            'ciudad_id' => ['required', 'exists:ciudades,id'],
             'institution_id' => ['required', 'exists:institutions,id'],
+        ], [
+            'name.regex' => 'El nombre solo puede contener letras y espacios.',
+            'email.regex' => 'El formato del correo electrónico no es válido.',
+            'password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial.',
+            'document_number.regex' => 'El número de documento debe contener entre 8 y 12 dígitos numéricos.',
         ]);
 
         try {
