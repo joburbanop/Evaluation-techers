@@ -1,6 +1,6 @@
 @props([
     'score',
-    'percentage' => null,
+    'percentage',
     'icon'
 ])
 
@@ -17,7 +17,6 @@
             {{ $score }}
         </div>
         
-        @if($percentage !== null)
             <div class="mt-1">
                 <div class="w-full bg-gray-200 rounded-full h-2">
                     <div 
@@ -29,6 +28,5 @@
                     {{ $percentage }}%
                 </div>
             </div>
-        @endif
     </div>
 </div> 

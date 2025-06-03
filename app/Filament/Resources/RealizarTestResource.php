@@ -178,16 +178,10 @@ class RealizarTestResource extends Resource
                                                     
                                                     $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
                                                     
-                                                    $level = match(true) {
-                                                        $percentage >= 90 => 'Experto',
-                                                        $percentage >= 75 => 'Avanzado',
-                                                        $percentage >= 60 => 'Intermedio',
-                                                        $percentage >= 40 => 'Básico',
-                                                        default => 'Novato'
-                                                    };
+                                                    $level = \App\Models\CompetencyLevel::getLevelByScore($percentage);
                                                     
                                                     return view('components.score-display', [
-                                                        'score' => $level,
+                                                        'score' => $level ? $level->name : 'Sin nivel',
                                                         'percentage' => round($percentage),
                                                         'icon' => 'heroicon-o-academic-cap'
                                                     ]);
@@ -225,13 +219,7 @@ class RealizarTestResource extends Resource
                                         $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
 
                                         // Determinar nivel de competencia para esta área
-                                        $level = match(true) {
-                                            $percentage >= 90 => 'Experto',
-                                            $percentage >= 75 => 'Avanzado',
-                                            $percentage >= 60 => 'Intermedio',
-                                            $percentage >= 40 => 'Básico',
-                                            default => 'Novato'
-                                        };
+                                        $level = \App\Models\CompetencyLevel::getLevelByScore($percentage);
 
                                         return Forms\Components\Card::make()
                                             ->schema([
@@ -241,7 +229,7 @@ class RealizarTestResource extends Resource
                                                         return view('components.area-score-display', [
                                                             'score' => "{$totalScore}/{$maxPossibleScore}",
                                                             'percentage' => round($percentage),
-                                                            'level' => $level,
+                                                            'level' => $level ? $level->name : 'Sin nivel',
                                                             'icon' => 'heroicon-o-academic-cap'
                                                         ]);
                                                     })
@@ -299,9 +287,11 @@ class RealizarTestResource extends Resource
             }
             
             // Código para tests pendientes o en progreso
-            $questions = $record->test->questions()->with('options')->get();
-            $questionsPerPage = 5;
-            
+            $questions = $record->test->questions()
+                ->with(['options', 'factor', 'area'])
+                ->get()
+                ->groupBy('factor.name');
+
             if ($questions->isEmpty()) {
                 return [
                     Forms\Components\Placeholder::make('no-questions')
@@ -311,32 +301,36 @@ class RealizarTestResource extends Resource
                         ->extraAttributes(['class' => 'bg-yellow-50 p-4 rounded-lg border border-yellow-200']),
                 ];
             }
-        
-            $totalPages = ceil($questions->count() / $questionsPerPage);
-        
+
             $formFields = [
                 Forms\Components\Hidden::make('current_page')
                     ->default(0),
                     
                 Forms\Components\Placeholder::make('progress')
                     ->label('Progreso del Test')
-                    ->content(function ($get) use ($questions, $questionsPerPage) {
+                    ->content(function ($get) use ($questions) {
+                        $totalQuestions = $questions->flatten()->count();
                         $currentPage = $get('current_page') ?? 0;
+                        $questionsPerPage = 5;
                         $currentQuestion = ($currentPage * $questionsPerPage) + 1;
-                        $lastQuestion = min(($currentPage + 1) * $questionsPerPage, $questions->count());
-                        $progress = ($lastQuestion / $questions->count()) * 100;
+                        $lastQuestion = min(($currentPage + 1) * $questionsPerPage, $totalQuestions);
+                        $progress = ($lastQuestion / $totalQuestions) * 100;
                         
                         return view('test-progress', [
                             'currentRange' => $currentQuestion . '-' . $lastQuestion,
-                            'totalQuestions' => $questions->count(),
+                            'totalQuestions' => $totalQuestions,
                             'progress' => $progress
                         ]);
                     })
                     ->columnSpanFull(),
             ];
-        
+
+            $allQuestions = $questions->flatten();
+            $questionsPerPage = 5;
+            $totalPages = ceil($allQuestions->count() / $questionsPerPage);
+
             for ($page = 0; $page < $totalPages; $page++) {
-                $pageQuestions = $questions->slice($page * $questionsPerPage, $questionsPerPage);
+                $pageQuestions = $allQuestions->slice($page * $questionsPerPage, $questionsPerPage);
                 $firstQuestionNumber = ($page * $questionsPerPage) + 1;
                 
                 $formFields[] = Forms\Components\Group::make()
@@ -344,7 +338,7 @@ class RealizarTestResource extends Resource
                     ->hidden(fn ($get) => ($get('current_page') ?? 0) != $page)
                     ->schema([
                         Forms\Components\Group::make()
-                            ->schema(function () use ($pageQuestions, $questions, $firstQuestionNumber) {
+                            ->schema(function () use ($pageQuestions, $allQuestions, $firstQuestionNumber) {
                                 $fields = [];
                                 
                                 foreach ($pageQuestions as $index => $question) {
@@ -355,11 +349,13 @@ class RealizarTestResource extends Resource
                                             Forms\Components\ViewField::make("question_{$question->id}_header")
                                                 ->view('question-header', [
                                                     'index' => $globalIndex,
-                                                    'totalQuestions' => $questions->count(),
-                                                    'questionText' => $question->question
+                                                    'totalQuestions' => $allQuestions->count(),
+                                                    'questionText' => $question->question,
+                                                    'factor' => $question->factor->name,
+                                                    'area' => $question->area->name
                                                 ]),
                                             
-                                                Forms\Components\Radio::make("answers.{$question->id}")
+                                            Forms\Components\Radio::make("answers.{$question->id}")
                                                 ->options(function() use ($question) {
                                                     $options = [];
                                                     foreach ($question->options as $option) {
@@ -384,13 +380,6 @@ class RealizarTestResource extends Resource
                                                     return $record->responses()
                                                         ->where('question_id', $question->id)
                                                         ->value('option_id');
-                                                })
-                                                ->afterStateUpdated(function ($state, $set, $get) use ($question) {
-                                                    \Log::info('Radio actualizado:', [
-                                                        'question_id' => $question->id,
-                                                        'state' => $state,
-                                                        'all_data' => $get()
-                                                    ]);
                                                 }),
                                         ])
                                         ->columnSpanFull()
