@@ -17,21 +17,49 @@
             'color' => 'gray'
         ];
     }
+
+    // Definir colores para el nivel global
+    $globalBgColor = match($globalLevel['color']) {
+        'emerald' => 'bg-gradient-to-r from-emerald-50 to-emerald-100',
+        'blue' => 'bg-gradient-to-r from-blue-50 to-blue-100',
+        'amber' => 'bg-gradient-to-r from-amber-50 to-amber-100',
+        'orange' => 'bg-gradient-to-r from-orange-50 to-orange-100',
+        'red' => 'bg-gradient-to-r from-red-50 to-red-100',
+        default => 'bg-gradient-to-r from-gray-50 to-gray-100'
+    };
+
+    $globalTextColor = match($globalLevel['color']) {
+        'emerald' => 'text-emerald-700',
+        'blue' => 'text-blue-700',
+        'amber' => 'text-amber-700',
+        'orange' => 'text-orange-700',
+        'red' => 'text-red-700',
+        default => 'text-gray-700'
+    };
+
+    $globalBorderColor = match($globalLevel['color']) {
+        'emerald' => 'border-emerald-200',
+        'blue' => 'border-blue-200',
+        'amber' => 'border-amber-200',
+        'orange' => 'border-orange-200',
+        'red' => 'border-red-200',
+        default => 'border-gray-200'
+    };
 @endphp
 
 <div class="space-y-8">
     {{-- Header Section --}}
-    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+    <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-xl shadow-lg p-6 border border-indigo-200">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Resultados del Test</h1>
-                <p class="text-gray-600 mt-1">Detalle completo del desempeño en la evaluación</p>
+                <h1 class="text-2xl font-bold text-indigo-900">Resultados del Test</h1>
+                <p class="text-indigo-600 mt-1">Detalle completo del desempeño en la evaluación</p>
             </div>
-            <div class="bg-indigo-50 rounded-lg px-4 py-2">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Nivel Global</p>
-                <p class="text-2xl font-bold text-indigo-700 mt-1">{{ $globalLevel['name'] }}</p>
-                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div class="h-2 rounded-full" style="width: {{ $globalPercentage }}%; background-color: {{ match($globalLevel['color']) {
+            <div class="{{ $globalBgColor }} rounded-lg px-6 py-4 border {{ $globalBorderColor }} shadow-md">
+                <p class="text-xs font-semibold {{ $globalTextColor }} uppercase tracking-wider">Nivel Global</p>
+                <p class="text-3xl font-bold {{ $globalTextColor }} mt-2">{{ $globalLevel['name'] }}</p>
+                <div class="w-full bg-white/50 rounded-full h-3 mt-3">
+                    <div class="h-3 rounded-full" style="width: {{ $globalPercentage }}%; background-color: {{ match($globalLevel['color']) {
                         'emerald' => '#10b981',
                         'blue' => '#3b82f6',
                         'amber' => '#f59e0b',
@@ -40,81 +68,80 @@
                         default => '#3b82f6'
                     } }}"></div>
                 </div>
-                <p class="text-xs text-gray-500 mt-1 text-right">{{ $globalPercentage }}%</p>
+                <p class="text-sm {{ $globalTextColor }} mt-2 text-right font-medium">{{ $globalPercentage }}%</p>
             </div>
         </div>
     </div>
 
     {{-- General Information Card --}}
-    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+    <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl shadow-lg overflow-hidden border border-purple-200">
         <div class="p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <h2 class="text-lg font-semibold text-purple-900 mb-6 flex items-center">
+                <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 Información General
             </h2>
             <div class="grid md:grid-cols-3 gap-6">
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-500 flex items-center">
+                <div class="bg-white/50 rounded-lg p-4 border border-purple-100 shadow-sm">
+                    <p class="text-sm font-medium text-purple-600 flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                         Usuario
                     </p>
-                    <p class="text-lg font-medium text-gray-900">{{ $record->user->name }}</p>
+                    <p class="text-lg font-medium text-purple-900 mt-1">{{ $record->user->name }}</p>
                 </div>
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-500 flex items-center">
+                <div class="bg-white/50 rounded-lg p-4 border border-purple-100 shadow-sm">
+                    <p class="text-sm font-medium text-purple-600 flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                         </svg>
                         Test
                     </p>
-                    <p class="text-lg font-medium text-gray-900">{{ $record->test->name }}</p>
+                    <p class="text-lg font-medium text-purple-900 mt-1">{{ $record->test->name }}</p>
                 </div>
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-500 flex items-center">
+                <div class="bg-white/50 rounded-lg p-4 border border-purple-100 shadow-sm">
+                    <p class="text-sm font-medium text-purple-600 flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                         Fecha
                     </p>
-                    <p class="text-lg font-medium text-gray-900">{{ $record->created_at->format('d/m/Y H:i') }}</p>
+                    <p class="text-lg font-medium text-purple-900 mt-1">{{ $record->created_at->format('d/m/Y H:i') }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    
-
     {{-- Area Scores --}}
-    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+    <div class="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl shadow-lg overflow-hidden border border-pink-200">
         <div class="p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <h2 class="text-lg font-semibold text-pink-900 mb-6 flex items-center">
+                <svg class="w-5 h-5 text-pink-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                 </svg>
                 Puntuación por Área
             </h2>
+
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($areaScores as $area)
                 @php
                     $bgColor = match($area['level']['color']) {
-                        'emerald' => 'bg-emerald-50',
-                        'blue' => 'bg-blue-50',
-                        'amber' => 'bg-amber-50',
-                        'orange' => 'bg-orange-50',
-                        'red' => 'bg-red-50',
-                        default => 'bg-gray-50'
+                        'emerald' => 'bg-gradient-to-r from-emerald-50 to-emerald-100',
+                        'blue' => 'bg-gradient-to-r from-blue-50 to-blue-100',
+                        'amber' => 'bg-gradient-to-r from-amber-50 to-amber-100',
+                        'orange' => 'bg-gradient-to-r from-orange-50 to-orange-100',
+                        'red' => 'bg-gradient-to-r from-red-50 to-red-100',
+                        default => 'bg-gradient-to-r from-gray-50 to-gray-100'
                     };
                     $borderColor = match($area['level']['color']) {
-                        'emerald' => 'border-emerald-100',
-                        'blue' => 'border-blue-100',
-                        'amber' => 'border-amber-100',
-                        'orange' => 'border-orange-100',
-                        'red' => 'border-red-100',
-                        default => 'border-gray-100'
+                        'emerald' => 'border-emerald-200',
+                        'blue' => 'border-blue-200',
+                        'amber' => 'border-amber-200',
+                        'orange' => 'border-orange-200',
+                        'red' => 'border-red-200',
+                        default => 'border-gray-200'
                     };
                     $textColor = match($area['level']['color']) {
                         'emerald' => 'text-emerald-800',
@@ -141,23 +168,24 @@
                         default => 'bg-gray-600'
                     };
                 @endphp
-                <div class="{{ $bgColor }} p-5 rounded-lg border {{ $borderColor }} shadow-sm">
-                    <div class="flex justify-between items-start">
+                <div class="{{ $bgColor }} p-5 rounded-lg border {{ $borderColor }} shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
+                    <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h3 class="font-semibold text-gray-900">{{ $area['area'] }}</h3>
-                            <p class="text-sm text-gray-500 mt-1">{{ $area['totalScore'] }}/{{ $area['maxScore'] }} puntos</p>
+                            <h3 class="font-semibold {{ $textColor }} text-lg">{{ $area['area'] }}</h3>
+                            <p class="text-sm {{ $textColor }}/70 mt-1">{{ $area['totalScore'] }}/{{ $area['maxScore'] }} puntos</p>
                         </div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $badgeBgColor }} {{ $textColor }}">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $badgeBgColor }} {{ $textColor }} border {{ $borderColor }}">
                             {{ $area['level']['name'] }}
                         </span>
                     </div>
+
                     <div class="mt-4">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <div class="flex justify-between text-sm {{ $textColor }} mb-1">
                             <span>Progreso</span>
-                            <span>{{ $area['score'] }}%</span>
+                            <span class="font-medium">{{ $area['score'] }}%</span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="h-2.5 rounded-full {{ $progressColor }}" style="width: {{ $area['score'] }}%"></div>
+                        <div class="w-full bg-white/50 rounded-full h-3">
+                            <div class="h-3 rounded-full {{ $progressColor }}" style="width: {{ $area['score'] }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -167,17 +195,17 @@
     </div>
 
     {{-- Detailed Responses --}}
-    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+    <div class="bg-gradient-to-r from-cyan-50 to-cyan-100 rounded-xl shadow-lg overflow-hidden border border-cyan-200">
         <div class="p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <h2 class="text-lg font-semibold text-cyan-900 mb-6 flex items-center">
+                <svg class="w-5 h-5 text-cyan-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 Respuestas Detalladas
             </h2>
             <div class="space-y-4">
                 @foreach($responses as $response)
-                <div class="rounded-lg p-5 border-l-4 {{ $response->is_correct ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50' }}">
+                <div class="rounded-lg p-5 border-l-4 {{ $response->is_correct ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100' : 'border-red-500 bg-gradient-to-r from-red-50 to-red-100' }} shadow-sm hover:shadow-md transition-shadow duration-200">
                     <div class="flex items-start">
                         <div class="flex-shrink-0 pt-0.5">
                             @if($response->is_correct)
@@ -192,12 +220,12 @@
                         </div>
                         <div class="ml-4 flex-1">
                             <div class="flex items-center justify-between">
-                                <h3 class="text-lg font-medium text-gray-900">{{ $response->question->question }}</h3>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $response->is_correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <h3 class="text-lg font-medium {{ $response->is_correct ? 'text-green-900' : 'text-red-900' }}">{{ $response->question->question }}</h3>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $response->is_correct ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200' }}">
                                     {{ $response->is_correct ? 'Correcta' : 'Incorrecta' }}
                                 </span>
                             </div>
-                            <div class="mt-2 text-sm text-gray-700">
+                            <div class="mt-2 text-sm {{ $response->is_correct ? 'text-green-700' : 'text-red-700' }}">
                                 <p><span class="font-semibold">Tu respuesta:</span> {{ $response->option->option }}</p>
                                 @if(!$response->is_correct)
                                     @php
@@ -207,9 +235,9 @@
                                 @endif
                             </div>
                             @if($response->feedback)
-                            <div class="mt-3 p-3 bg-white rounded-md border border-gray-200">
-                                <p class="text-sm font-medium text-gray-700">Retroalimentación:</p>
-                                <p class="text-sm text-gray-600 mt-1">{{ $response->feedback }}</p>
+                            <div class="mt-3 p-3 bg-white/50 rounded-md border {{ $response->is_correct ? 'border-green-200' : 'border-red-200' }}">
+                                <p class="text-sm font-medium {{ $response->is_correct ? 'text-green-700' : 'text-red-700' }}">Retroalimentación:</p>
+                                <p class="text-sm {{ $response->is_correct ? 'text-green-600' : 'text-red-600' }} mt-1">{{ $response->feedback }}</p>
                             </div>
                             @endif
                         </div>
