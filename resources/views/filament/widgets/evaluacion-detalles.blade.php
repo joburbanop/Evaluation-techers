@@ -128,20 +128,20 @@
                 @foreach($areaScores as $area)
                 @php
                     $bgColor = match($area['level']['color']) {
-                        'emerald' => 'bg-gradient-to-r from-emerald-50 to-emerald-100',
-                        'blue' => 'bg-gradient-to-r from-blue-50 to-blue-100',
-                        'amber' => 'bg-gradient-to-r from-amber-50 to-amber-100',
-                        'orange' => 'bg-gradient-to-r from-orange-50 to-orange-100',
-                        'red' => 'bg-gradient-to-r from-red-50 to-red-100',
-                        default => 'bg-gradient-to-r from-gray-50 to-gray-100'
+                        'emerald' => 'bg-gradient-to-r from-emerald-100 to-emerald-200',
+                        'blue' => 'bg-gradient-to-r from-blue-100 to-blue-200',
+                        'amber' => 'bg-gradient-to-r from-amber-100 to-amber-200',
+                        'orange' => 'bg-gradient-to-r from-orange-100 to-orange-200',
+                        'red' => 'bg-gradient-to-r from-red-100 to-red-200',
+                        default => 'bg-gradient-to-r from-gray-100 to-gray-200'
                     };
                     $borderColor = match($area['level']['color']) {
-                        'emerald' => 'border-emerald-200',
-                        'blue' => 'border-blue-200',
-                        'amber' => 'border-amber-200',
-                        'orange' => 'border-orange-200',
-                        'red' => 'border-red-200',
-                        default => 'border-gray-200'
+                        'emerald' => 'border-emerald-300',
+                        'blue' => 'border-blue-300',
+                        'amber' => 'border-amber-300',
+                        'orange' => 'border-orange-300',
+                        'red' => 'border-red-300',
+                        default => 'border-gray-300'
                     };
                     $textColor = match($area['level']['color']) {
                         'emerald' => 'text-emerald-800',
@@ -152,42 +152,37 @@
                         default => 'text-gray-800'
                     };
                     $badgeBgColor = match($area['level']['color']) {
-                        'emerald' => 'bg-emerald-100',
-                        'blue' => 'bg-blue-100',
-                        'amber' => 'bg-amber-100',
-                        'orange' => 'bg-orange-100',
-                        'red' => 'bg-red-100',
-                        default => 'bg-gray-100'
+                        'emerald' => 'bg-emerald-200',
+                        'blue' => 'bg-blue-200',
+                        'amber' => 'bg-amber-200',
+                        'orange' => 'bg-orange-200',
+                        'red' => 'bg-red-200',
+                        default => 'bg-gray-200'
                     };
                     $progressColor = match($area['level']['color']) {
-                        'emerald' => 'bg-emerald-600',
-                        'blue' => 'bg-blue-600',
-                        'amber' => 'bg-amber-600',
-                        'orange' => 'bg-orange-600',
-                        'red' => 'bg-red-600',
-                        default => 'bg-gray-600'
+                        'emerald' => 'bg-emerald-500',
+                        'blue' => 'bg-blue-500',
+                        'amber' => 'bg-amber-500',
+                        'orange' => 'bg-orange-500',
+                        'red' => 'bg-red-500',
+                        default => 'bg-gray-500'
                     };
                 @endphp
-                <div class="{{ $bgColor }} p-5 rounded-lg border {{ $borderColor }} shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="font-semibold {{ $textColor }} text-lg">{{ $area['area'] }}</h3>
-                            <p class="text-sm {{ $textColor }}/70 mt-1">{{ $area['totalScore'] }}/{{ $area['maxScore'] }} puntos</p>
-                        </div>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $badgeBgColor }} {{ $textColor }} border {{ $borderColor }}">
+                <div class="{{ $bgColor }} p-6 rounded-xl border-2 {{ $borderColor }} shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold {{ $textColor }} text-lg">{{ $area['area'] }}</h3>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $badgeBgColor }} {{ $textColor }} border {{ $borderColor }}">
                             {{ $area['level']['name'] }}
                         </span>
                     </div>
-
-                    <div class="mt-4">
-                        <div class="flex justify-between text-sm {{ $textColor }} mb-1">
-                            <span>Progreso</span>
-                            <span class="font-medium">{{ $area['score'] }}%</span>
-                        </div>
-                        <div class="w-full bg-white/50 rounded-full h-3">
-                            <div class="h-3 rounded-full {{ $progressColor }}" style="width: {{ $area['score'] }}%"></div>
-                        </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-base font-medium {{ $textColor }}">{{ $area['totalScore'] }}/{{ $area['maxScore'] }} puntos</span>
+                        <span class="text-base font-semibold {{ $textColor }}">{{ $area['score'] }}%</span>
                     </div>
+                    <div class="w-full bg-white/70 rounded-full h-5 shadow-inner border border-white/60 mb-1">
+                        <div class="h-5 rounded-full {{ $progressColor }} transition-all duration-500" style="width: {{ $area['score'] }}%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 font-medium">Progreso</div>
                 </div>
                 @endforeach
             </div>
@@ -205,10 +200,16 @@
             </h2>
             <div class="space-y-4">
                 @foreach($responses as $response)
-                <div class="rounded-lg p-5 border-l-4 {{ $response->is_correct ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100' : 'border-red-500 bg-gradient-to-r from-red-50 to-red-100' }} shadow-sm hover:shadow-md transition-shadow duration-200">
+                @php
+                    $selectedOption = $response->option;
+                    $maxScoreOption = $response->question->options->sortByDesc('score')->first();
+                    $isMaxScore = $selectedOption && $maxScoreOption && $selectedOption->id === $maxScoreOption->id;
+                    $isReallyCorrect = $response->is_correct || $isMaxScore;
+                @endphp
+                <div class="rounded-lg p-5 border-l-4 {{ $isReallyCorrect ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100' : 'border-red-500 bg-gradient-to-r from-red-50 to-red-100' }} shadow-sm hover:shadow-md transition-shadow duration-200">
                     <div class="flex items-start">
                         <div class="flex-shrink-0 pt-0.5">
-                            @if($response->is_correct)
+                            @if($isReallyCorrect)
                             <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -220,24 +221,25 @@
                         </div>
                         <div class="ml-4 flex-1">
                             <div class="flex items-center justify-between">
-                                <h3 class="text-lg font-medium {{ $response->is_correct ? 'text-green-900' : 'text-red-900' }}">{{ $response->question->question }}</h3>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $response->is_correct ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200' }}">
-                                    {{ $response->is_correct ? 'Correcta' : 'Incorrecta' }}
-                                </span>
+                                <h3 class="text-lg font-medium {{ $isReallyCorrect ? 'text-green-900' : 'text-red-900' }}">{{ $response->question->question }}</h3>
+                                
                             </div>
-                            <div class="mt-2 text-sm {{ $response->is_correct ? 'text-green-700' : 'text-red-700' }}">
-                                <p><span class="font-semibold">Tu respuesta:</span> {{ $response->option->option }}</p>
-                                @if(!$response->is_correct)
+                            <div class="mt-2 text-sm {{ $isReallyCorrect ? 'text-green-700' : 'text-red-700' }}">
+                                <p><span class="font-semibold">Respuesta:</span> {{ $response->option->option }}</p>
+                                @if(!$isReallyCorrect)
                                     @php
                                         $correctOption = $response->question->options->firstWhere('is_correct', true);
+                                        if (!$correctOption) {
+                                            $correctOption = $response->question->options->sortByDesc('score')->first();
+                                        }
                                     @endphp
                                     <p class="mt-1"><span class="font-semibold">Respuesta correcta:</span> {{ $correctOption->option ?? 'No disponible' }}</p>
                                 @endif
                             </div>
                             @if($response->feedback)
-                            <div class="mt-3 p-3 bg-white/50 rounded-md border {{ $response->is_correct ? 'border-green-200' : 'border-red-200' }}">
-                                <p class="text-sm font-medium {{ $response->is_correct ? 'text-green-700' : 'text-red-700' }}">Retroalimentación:</p>
-                                <p class="text-sm {{ $response->is_correct ? 'text-green-600' : 'text-red-600' }} mt-1">{{ $response->feedback }}</p>
+                            <div class="mt-3 p-3 bg-white/50 rounded-md border {{ $isReallyCorrect ? 'border-green-200' : 'border-red-200' }}">
+                                <p class="text-sm font-medium {{ $isReallyCorrect ? 'text-green-700' : 'text-red-700' }}">Retroalimentación:</p>
+                                <p class="text-sm {{ $isReallyCorrect ? 'text-green-600' : 'text-red-600' }} mt-1">{{ $response->feedback }}</p>
                             </div>
                             @endif
                         </div>
