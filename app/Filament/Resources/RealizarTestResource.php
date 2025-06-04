@@ -178,10 +178,12 @@ class RealizarTestResource extends Resource
                                                     
                                                     $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
                                                     
+
+                                                    
                                                     $level = \App\Models\CompetencyLevel::getLevelByScore($percentage);
                                                     
                                                     return view('components.score-display', [
-                                                        'score' => $level ? $level->name : 'Sin nivel',
+                                                        'score' => $level ? "{$level->name} ({$level->code})" : 'Sin nivel',
                                                         'percentage' => round($percentage),
                                                         'icon' => 'heroicon-o-academic-cap'
                                                     ]);
@@ -229,7 +231,7 @@ class RealizarTestResource extends Resource
                                                         return view('components.area-score-display', [
                                                             'score' => "{$totalScore}/{$maxPossibleScore}",
                                                             'percentage' => round($percentage),
-                                                            'level' => $level ? $level->name : 'Sin nivel',
+                                                            'level' => $level ? "{$level->name} ({$level->code})" : 'Sin nivel',
                                                             'icon' => 'heroicon-o-academic-cap'
                                                         ]);
                                                     })

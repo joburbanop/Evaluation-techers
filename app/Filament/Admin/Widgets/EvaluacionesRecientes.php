@@ -116,7 +116,11 @@ class EvaluacionesRecientes extends BaseWidget
                             return [
                                 'area' => $area->name,
                                 'score' => $percentage,
-                                'level' => $level,
+                                'level' => [
+                                    'name' => $level ? $level->name : 'Sin nivel',
+                                    'code' => $level ? $level->code : '',
+                                    'color' => $level ? $level->color : 'gray'
+                                ],
                                 'totalScore' => $totalScore,
                                 'maxScore' => $maxPossibleScore
                             ];

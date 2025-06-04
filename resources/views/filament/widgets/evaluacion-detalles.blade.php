@@ -14,6 +14,7 @@
     if (!$globalLevel) {
         $globalLevel = [
             'name' => 'Sin nivel',
+            'code' => '',
             'color' => 'gray'
         ];
     }
@@ -57,7 +58,7 @@
             </div>
             <div class="{{ $globalBgColor }} rounded-lg px-6 py-4 border {{ $globalBorderColor }} shadow-md">
                 <p class="text-xs font-semibold {{ $globalTextColor }} uppercase tracking-wider">Nivel Global</p>
-                <p class="text-3xl font-bold {{ $globalTextColor }} mt-2">{{ $globalLevel['name'] }}</p>
+                <p class="text-3xl font-bold {{ $globalTextColor }} mt-2">{{ $globalLevel['name'] }} {{ $globalLevel['code'] ? "({$globalLevel['code']})" : '' }}</p>
                 <div class="w-full bg-white/50 rounded-full h-3 mt-3">
                     <div class="h-3 rounded-full" style="width: {{ $globalPercentage }}%; background-color: {{ match($globalLevel['color']) {
                         'emerald' => '#10b981',
@@ -172,7 +173,7 @@
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-bold {{ $textColor }} text-lg">{{ $area['area'] }}</h3>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $badgeBgColor }} {{ $textColor }} border {{ $borderColor }}">
-                            {{ $area['level']['name'] }}
+                            {{ $area['level']['name'] }} {{ $area['level']['code'] ? "({$area['level']['code']})" : '' }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between mb-2">
