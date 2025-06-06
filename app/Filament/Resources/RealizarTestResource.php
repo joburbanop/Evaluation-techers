@@ -20,7 +20,7 @@ class RealizarTestResource extends Resource
     protected static ?string $navigationLabel = 'Realizar Test';
     protected static ?string $navigationGroup = 'Evaluaciones';
     protected static ?string $modelLabel = 'Test Asignado';
-    
+
     // Deshabilitar la creación de registros
     public static function canCreate(): bool
     {
@@ -65,12 +65,12 @@ class RealizarTestResource extends Resource
                             .$porcentaje.'%</span>';
                     })
                     ->html(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Asignado')
                     ->dateTime('d M Y, H:i')
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
@@ -122,7 +122,7 @@ class RealizarTestResource extends Resource
                         ->extraAttributes(['class' => 'bg-red-50 p-4 rounded-lg border border-red-200']),
                 ];
             }
-            
+
             // Si el test está completado, mostramos los resultados
             if ($record->status === 'completed') {
                 $questions = $record->test->questions()
@@ -130,7 +130,7 @@ class RealizarTestResource extends Resource
                         $q->where('test_assignment_id', $record->id);
                     }])
                     ->get();
-                
+
                 $fields = [
                     Forms\Components\Section::make('Resumen General')
                         ->schema([
@@ -141,153 +141,175 @@ class RealizarTestResource extends Resource
                                             Forms\Components\Placeholder::make('total_score')
                                                 ->label('Puntuación Total')
                                                 ->content(function () use ($record) {
-                                                    // Suma de las puntuaciones de las respuestas seleccionadas
+                                                    //
+                                                    // 1) CALCULAR PUNTAJE GLOBAL
+                                                    //
                                                     $totalScore = $record->responses->sum(function ($response) {
                                                         return $response->option->score ?? 0;
                                                     });
-                                                    
-                                                    // Suma de las puntuaciones máximas posibles
+
                                                     $maxPossibleScore = $record->responses->sum(function ($response) {
                                                         return $response->question->options->max('score');
                                                     });
-                                                    
-                                                    $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
-                                                    
+
+                                                    $percentage = $maxPossibleScore > 0
+                                                        ? round(($totalScore / $maxPossibleScore) * 100)
+                                                        : 0;
+
+                                                    $nivelGlobal = \App\Models\CompetencyLevel::getLevelByScore($totalScore);
+
+                                                    //
+                                                    // 2) CALCULAR PERCENTIL GLOBAL ENTRE TODOS LOS DOCENTES
+                                                    //
+                                                    $allScores = \App\Models\TestAssignment::with(['responses.option'])
+                                                        ->where('test_id', $record->test_id)
+                                                        ->where('status', 'completed')
+                                                        ->get()
+                                                        ->map(function ($assignment) {
+                                                            return $assignment->responses->sum(function ($resp) {
+                                                                return $resp->option->score ?? 0;
+                                                            });
+                                                        })
+                                                        ->sort()
+                                                        ->values();
+
+                                                    $percentileRankGlobal = 0;
+                                                    $totalAssignments = $allScores->count();
+                                                    if ($totalAssignments > 0) {
+                                                        $below = $allScores->filter(fn($s) => $s < $totalScore)->count();
+                                                        $equal = $allScores->filter(fn($s) => $s === $totalScore)->count();
+                                                        $percentileRankGlobal = round((($below + 0.5 * $equal) / $totalAssignments) * 100);
+                                                    }
+
+                                                    //
+                                                    // 3) CALCULAR PERCENTIL POR INSTITUCIÓN
+                                                    //
+                                                    $userInstitutionId = auth()->user()->institution_id;
+                                                    $institutionScores = \App\Models\TestAssignment::with(['responses.option','user'])
+                                                        ->where('test_id', $record->test_id)
+                                                        ->where('status', 'completed')
+                                                        ->whereHas('user', function($q) use ($userInstitutionId) {
+                                                            $q->where('institution_id', $userInstitutionId);
+                                                        })
+                                                        ->get()
+                                                        ->map(function($assignment) {
+                                                            return $assignment->responses->sum(fn($r) => $r->option->score ?? 0);
+                                                        })
+                                                        ->sort()
+                                                        ->values();
+
+                                                    $percentileInstitution = 0;
+                                                    $totalInst = $institutionScores->count();
+                                                    if ($totalInst > 0) {
+                                                        $belowInst = $institutionScores->filter(fn($s) => $s < $totalScore)->count();
+                                                        $equalInst = $institutionScores->filter(fn($s) => $s === $totalScore)->count();
+                                                        $percentileInstitution = round((($belowInst + 0.5 * $equalInst) / $totalInst) * 100);
+                                                    }
+
+                                                    //
+                                                    // 4) CALCULAR PERCENTIL POR PROGRAMA
+                                                    //
+                                                    $userProgramId = auth()->user()->programa_id;
+                                                    $programScores = \App\Models\TestAssignment::with(['responses.option','user'])
+                                                        ->where('test_id', $record->test_id)
+                                                        ->where('status', 'completed')
+                                                        ->whereHas('user', function($q) use ($userProgramId) {
+                                                            $q->where('programa_id', $userProgramId);
+                                                        })
+                                                        ->get()
+                                                        ->map(function($assignment) {
+                                                            return $assignment->responses->sum(fn($r) => $r->option->score ?? 0);
+                                                        })
+                                                        ->sort()
+                                                        ->values();
+
+                                                    $percentileProgram = 0;
+                                                    $totalProg = $programScores->count();
+                                                    if ($totalProg > 0) {
+                                                        $belowProg = $programScores->filter(fn($s) => $s < $totalScore)->count();
+                                                        $equalProg = $programScores->filter(fn($s) => $s === $totalScore)->count();
+                                                        $percentileProgram = round((($belowProg + 0.5 * $equalProg) / $totalProg) * 100);
+                                                    }
+
+                                                    //
+                                                    // 5) CALCULAR RESULTADOS POR ÁREA
+                                                    //
+                                                    $questionsConArea = $record->test->questions()
+                                                        ->with([
+                                                            'options',
+                                                            'responses' => function($query) use ($record) {
+                                                                $query->where('test_assignment_id', $record->id);
+                                                            },
+                                                            'area',
+                                                        ])
+                                                        ->get();
+
+                                                    $areaResults = collect();
+                                                    $questionsConArea
+                                                        ->groupBy(fn($pregunta) => $pregunta->area->id)
+                                                        ->each(function($preguntasDeEstaArea) use (&$areaResults) {
+                                                            $areaName = $preguntasDeEstaArea->first()->area->name;
+
+                                                            $obtainedScore = $preguntasDeEstaArea->sum(function($pregunta) {
+                                                                return $pregunta->responses->sum(fn($r) => $r->option->score ?? 0);
+                                                            });
+
+                                                            $maxPossibleScoreArea = $preguntasDeEstaArea->sum(function($pregunta) {
+                                                                return $pregunta->options->max('score') ?? 0;
+                                                            });
+
+                                                            $nivelArea = \App\Models\CompetencyLevel::getLevelByScore($obtainedScore);
+
+                                                            $areaResults->push([
+                                                                'area_name' => $areaName,
+                                                                'obtained_score' => $obtainedScore,
+                                                                'max_possible' => $maxPossibleScoreArea,
+                                                                'level_code' => $nivelArea?->code ?? 'Sin código',
+                                                                'level_description' => $nivelArea?->description ?? 'Sin descripción',
+                                                            ]);
+                                                        });
+
+                                                    //
+                                                    // 6) RETORNAR LA VISTA
+                                                    //
                                                     return view('components.score-display', [
-                                                        'score' => "{$totalScore}/{$maxPossibleScore}",
+                                                        'maxScore' => $maxPossibleScore,
+                                                        'score' => (string) $totalScore,
                                                         'percentage' => $percentage,
-                                                        'icon' => 'heroicon-o-academic-cap'
+                                                        'levelName' => $nivelGlobal?->name ?? 'Sin nivel',
+                                                        'levelDescription' => $nivelGlobal?->description ?? 'Sin descripción',
+                                                        'levelCode' => $nivelGlobal?->code ?? 'Sin código',
+                                                        'publicationDate' => \Illuminate\Support\Carbon::parse($record->updated_at)
+                                                                              ->locale('es')
+                                                                              ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
+                                                        'applicationDate' => \Illuminate\Support\Carbon::parse($record->created_at)
+                                                                              ->locale('es')
+                                                                              ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
+                                                        'percentileInfo' => true,
+                                                        'averageScore' => $percentileRankGlobal,
+                                                        'percentileInstitution' => $percentileInstitution,
+                                                        'percentileProgram' => $percentileProgram,
+                                                        'evaluatedName' => auth()->user()->name,
+                                                        'identification' => auth()->user()->document_number ?? 'Sin identificación',
+                                                        'institution' => auth()->user()->institution?->name ?? 'Sin institución',
+                                                        'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
+                                                        'icon' => 'heroicon-o-academic-cap',
+                                                        'areaResults' => $areaResults,
                                                     ]);
                                                 })
                                         ]),
 
-                                    Forms\Components\Card::make()
-                                        ->schema([
-                                            Forms\Components\Placeholder::make('competency_level')
-                                                ->label('Nivel total de todas las Competencias')
-                                                ->content(function () use ($record) {
-                                                    // Suma de las puntuaciones de las respuestas seleccionadas
-                                                    $totalScore = $record->responses->sum(function ($response) {
-                                                        return $response->option->score ?? 0;
-                                                    });
-                                                    
-                                                    // Suma de las puntuaciones máximas posibles
-                                                    $maxPossibleScore = $record->responses->sum(function ($response) {
-                                                        return $response->question->options->max('score');
-                                                    });
-                                                    
-                                                    $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
-                                                    
 
-                                                    
-                                                    $level = \App\Models\CompetencyLevel::getLevelByScore($percentage);
-                                                    
-                                                    return view('components.score-display', [
-                                                        'score' => $level ? "{$level->name} ({$level->code})" : 'Sin nivel',
-                                                        'percentage' => round($percentage),
-                                                        'icon' => 'heroicon-o-academic-cap'
-                                                    ]);
-                                                })
-                                        ]),
                                 ]),
                         ]),
 
-                    Forms\Components\Section::make('Progreso por Área')
-                        ->schema([
-                            Forms\Components\Grid::make(2)
-                                ->schema(function () use ($record) {
-                                    $areas = $record->test->questions()
-                                        ->with('area')
-                                        ->get()
-                                        ->pluck('area')
-                                        ->unique('id')
-                                        ->filter();
 
-                                    return $areas->map(function ($area) use ($record) {
-                                        // Calcular puntuación para esta área
-                                        $areaResponses = $record->responses()
-                                            ->whereHas('question', function ($query) use ($area) {
-                                                $query->where('area_id', $area->id);
-                                            })->get();
 
-                                        $totalScore = $areaResponses->sum(function ($response) {
-                                            return $response->option->score ?? 0;
-                                        });
-
-                                        $maxPossibleScore = $areaResponses->sum(function ($response) {
-                                            return $response->question->options->max('score');
-                                        });
-
-                                        $percentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
-
-                                        // Determinar nivel de competencia para esta área
-                                        $level = \App\Models\CompetencyLevel::getLevelByScore($percentage);
-
-                                        return Forms\Components\Card::make()
-                                            ->schema([
-                                                Forms\Components\Placeholder::make("area_{$area->id}_name")
-                                                    ->label($area->name)
-                                                    ->content(function () use ($totalScore, $maxPossibleScore, $percentage, $level) {
-                                                        return view('components.area-score-display', [
-                                                            'score' => "{$totalScore}/{$maxPossibleScore}",
-                                                            'percentage' => round($percentage),
-                                                            'level' => $level ? "{$level->name} ({$level->code})" : 'Sin nivel',
-                                                            'icon' => 'heroicon-o-academic-cap'
-                                                        ]);
-                                                    })
-                                            ]);
-                                    })->toArray();
-                                }),
-                        ]),
                 ];
-                
-                foreach ($questions as $index => $question) {
-                    $selectedOptionId = $question->responses->first()->option_id ?? null;
-                    $selectedOption = $question->options->firstWhere('id', $selectedOptionId);
-                    
-                    // Encontrar la mejor respuesta (correcta o con mayor puntuación)
-                    $bestOption = $question->options->first(function ($option) {
-                        return $option->is_correct;
-                    }) ?? $question->options->sortByDesc('score')->first();
-                    
-                    $fields[] = Forms\Components\Section::make("Pregunta " . ($index + 1))
-                        ->description($question->question)
-                        ->schema([
-                            Forms\Components\Grid::make(2)
-                                ->schema([
-                                    Forms\Components\Placeholder::make("your_answer_{$question->id}")
-                                        ->label('Tu Respuesta')
-                                        ->content(function () use ($selectedOption) {
-                                            if (!$selectedOption) return 'No respondida';
-                                            
-                                            return view('components.answer-box', [
-                                                'text' => $selectedOption->option,
-                                                'score' => $selectedOption->score,
-                                                'isCorrect' => $selectedOption->is_correct
-                                            ]);
-                                        }),
 
-                                    Forms\Components\Placeholder::make("best_answer_{$question->id}")
-                                        ->label('Mejor Respuesta')
-                                        ->content(function () use ($bestOption, $selectedOption) {
-                                            if (!$bestOption) return 'No disponible';
-                                            
-                                            $isSelected = $selectedOption && $selectedOption->id === $bestOption->id;
-                                            return view('components.answer-box', [
-                                                'text' => $bestOption->option,
-                                                'score' => $bestOption->score,
-                                                'isCorrect' => $isSelected,
-                                                'isBestAnswer' => true
-                                            ]);
-                                        }),
-                                ]),
-                        ])
-                        ->collapsible();
-                }
-                
                 return $fields;
             }
-            
+
             // Código para tests pendientes o en progreso
             $questions = $record->test->questions()
                 ->with(['options', 'factor', 'area'])
@@ -307,7 +329,7 @@ class RealizarTestResource extends Resource
             $formFields = [
                 Forms\Components\Hidden::make('current_page')
                     ->default(0),
-                    
+
                 Forms\Components\Placeholder::make('progress')
                     ->label('Progreso del Test')
                     ->content(function ($get) use ($questions) {
@@ -317,7 +339,7 @@ class RealizarTestResource extends Resource
                         $currentQuestion = ($currentPage * $questionsPerPage) + 1;
                         $lastQuestion = min(($currentPage + 1) * $questionsPerPage, $totalQuestions);
                         $progress = ($lastQuestion / $totalQuestions) * 100;
-                        
+
                         return view('test-progress', [
                             'currentRange' => $currentQuestion . '-' . $lastQuestion,
                             'totalQuestions' => $totalQuestions,
@@ -334,7 +356,7 @@ class RealizarTestResource extends Resource
             for ($page = 0; $page < $totalPages; $page++) {
                 $pageQuestions = $allQuestions->slice($page * $questionsPerPage, $questionsPerPage);
                 $firstQuestionNumber = ($page * $questionsPerPage) + 1;
-                
+
                 $formFields[] = Forms\Components\Group::make()
                     ->id("page-{$page}")
                     ->hidden(fn ($get) => ($get('current_page') ?? 0) != $page)
@@ -342,10 +364,10 @@ class RealizarTestResource extends Resource
                         Forms\Components\Group::make()
                             ->schema(function () use ($pageQuestions, $allQuestions, $firstQuestionNumber) {
                                 $fields = [];
-                                
+
                                 foreach ($pageQuestions as $index => $question) {
                                     $globalIndex = $firstQuestionNumber + $index - 1;
-                                    
+
                                     $fields[] = Forms\Components\Card::make()
                                         ->schema([
                                             Forms\Components\ViewField::make("question_{$question->id}_header")
@@ -356,14 +378,14 @@ class RealizarTestResource extends Resource
                                                     'factor' => $question->factor->name,
                                                     'area' => $question->area->name
                                                 ]),
-                                            
+
                                             Forms\Components\Radio::make("answers.{$question->id}")
                                                 ->options(function() use ($question) {
                                                     $options = [];
                                                     foreach ($question->options as $option) {
                                                         $options[$option->id] = new \Illuminate\Support\HtmlString(
                                                             '<div class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">' .
-                                                            '<span class="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-gray-100 text-gray-800 border border-gray-300 text-xs">' 
+                                                            '<span class="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-gray-100 text-gray-800 border border-gray-300 text-xs">'
                                                             . chr(65 + $option->index) . '</span>' .
                                                             '<span>' . $option->option . '</span>' .
                                                             '</div>'
@@ -387,14 +409,14 @@ class RealizarTestResource extends Resource
                                         ->columnSpanFull()
                                         ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
                                 }
-                                
+
                                 return $fields;
                             })
                             ->columns(1)
                             ->columnSpanFull(),
-                        
+
                         Forms\Components\Actions::make([
-                          
+
 
                             // Botón Guardar
                             Forms\Components\Actions\Action::make('guardar')
@@ -486,7 +508,7 @@ class RealizarTestResource extends Resource
                                                 'error' => $e->getMessage(),
                                                 'record_id' => $record->id
                                             ]);
-                                            
+
                                             Notification::make()
                                                 ->title('Error al guardar')
                                                 ->danger()
@@ -501,7 +523,7 @@ class RealizarTestResource extends Resource
                                             ->send();
                                     }
                                 }),
-                                
+
 
                             // Botón Siguiente
                             Forms\Components\Actions\Action::make('siguiente')
@@ -588,7 +610,7 @@ class RealizarTestResource extends Resource
                                             'error' => $e->getMessage(),
                                             'data' => $data
                                         ]);
-                                        
+
                                         Notification::make()
                                             ->title('Error al guardar respuestas')
                                             ->danger()
@@ -603,7 +625,7 @@ class RealizarTestResource extends Resource
                     ])
                     ->columnSpanFull();
             }
-            
+
             return $formFields;
         })
 ])
@@ -622,7 +644,7 @@ class RealizarTestResource extends Resource
             // Eliminadas las páginas de create y edit
         ];
     }
- 
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('Realizar test') ?? false;
@@ -637,11 +659,11 @@ class RealizarTestResource extends Resource
         return parent::getEloquentQuery()
             ->where('user_id', auth()->id())
             ->with(['test.questions', 'responses'])
-            ->orderByRaw("CASE 
-                WHEN status = 'pending' THEN 1 
-                WHEN status = 'in_progress' THEN 2 
-                WHEN status = 'completed' THEN 3 
-                ELSE 4 
+            ->orderByRaw("CASE
+                WHEN status = 'pending' THEN 1
+                WHEN status = 'in_progress' THEN 2
+                WHEN status = 'completed' THEN 3
+                ELSE 4
             END")
             ->orderBy('created_at', 'asc');
     }

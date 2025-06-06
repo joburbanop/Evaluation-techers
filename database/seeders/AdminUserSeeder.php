@@ -16,16 +16,18 @@ class AdminUserSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'jonathanc.burbano221@umariana.edu.co'],
             [
-                'name' => 'Jonathan Burbano',
+                'name'              => 'Jonathan Burbano',
                 'email_verified_at' => Carbon::now(),
-                'password' => Hash::make('12345678'),
-                'document_type' => 'CC',
-                'document_number' => '100000001',
-                'is_active' => true,
-                'phone' => null,
-                'departamento_id' => null,
-                'ciudad_id' => null,
-                'institution' => null,
+                'password'          => Hash::make('12345678'),
+                'document_type'     => 'CC',
+                'document_number'   => '100000001',
+                'is_active'         => true,
+                'phone'             => null,
+                'departamento_id'   => null,
+                'ciudad_id'         => null,
+                'institution_id'    => 68,  // ← Cambiado a institution_id
+                'facultad_id'       => 5,
+                'programa_id'       => 39,
             ]
         );
         $admin->assignRole('Administrador');
@@ -33,15 +35,15 @@ class AdminUserSeeder extends Seeder
         // Crear dos usuarios docentes
         $docentes = [
             [
-                'name' => 'Juan Pérez',
-                'email' => 'juan.perez@example.com',
-                'document_type' => 'CC',
+                'name'            => 'Juan Pérez',
+                'email'           => 'juan.perez@example.com',
+                'document_type'   => 'CC',
                 'document_number' => '100000002',
             ],
             [
-                'name' => 'María López',
-                'email' => 'maria.lopez@example.com',
-                'document_type' => 'CC',
+                'name'            => 'María López',
+                'email'           => 'maria.lopez@example.com',
+                'document_type'   => 'CC',
                 'document_number' => '100000003',
             ],
         ];
@@ -50,16 +52,18 @@ class AdminUserSeeder extends Seeder
             $user = User::firstOrCreate(
                 ['email' => $docente['email']],
                 [
-                    'name' => $docente['name'],
+                    'name'              => $docente['name'],
                     'email_verified_at' => Carbon::now(),
-                    'password' => Hash::make('12345678'),
-                    'document_type' => $docente['document_type'],
-                    'document_number' => $docente['document_number'],
-                    'is_active' => true,
-                    'phone' => null,
-                    'departamento_id' => null,
-                    'ciudad_id' => null,
-                    'institution' => null,
+                    'password'          => Hash::make('12345678'),
+                    'document_type'     => $docente['document_type'],
+                    'document_number'   => $docente['document_number'],
+                    'is_active'         => true,
+                    'phone'             => null,
+                    'departamento_id'   => null,
+                    'ciudad_id'         => null,
+                    'institution_id'    => 68,  // ← Cambiado a institution_id
+                    'facultad_id'       => 5,
+                    'programa_id'       => 39,
                 ]
             );
             $user->assignRole('Docente');
@@ -68,15 +72,15 @@ class AdminUserSeeder extends Seeder
         // Crear usuarios coordinadores
         $coordinadores = [
             [
-                'name' => 'Carlos Rodríguez',
-                'email' => 'carlos.rodriguez@example.com',
-                'document_type' => 'CC',
+                'name'            => 'Carlos Rodríguez',
+                'email'           => 'carlos.rodriguez@example.com',
+                'document_type'   => 'CC',
                 'document_number' => '100000004',
             ],
             [
-                'name' => 'Ana Martínez',
-                'email' => 'ana.martinez@example.com',
-                'document_type' => 'CC',
+                'name'            => 'Ana Martínez',
+                'email'           => 'ana.martinez@example.com',
+                'document_type'   => 'CC',
                 'document_number' => '100000005',
             ],
         ];
@@ -85,19 +89,21 @@ class AdminUserSeeder extends Seeder
             $user = User::firstOrCreate(
                 ['email' => $coordinador['email']],
                 [
-                    'name' => $coordinador['name'],
+                    'name'              => $coordinador['name'],
                     'email_verified_at' => Carbon::now(),
-                    'password' => Hash::make('12345678'),
-                    'document_type' => $coordinador['document_type'],
-                    'document_number' => $coordinador['document_number'],
-                    'is_active' => true,
-                    'phone' => null,
-                    'departamento_id' => null,
-                    'ciudad_id' => null,
-                    'institution' => null,
+                    'password'          => Hash::make('12345678'),
+                    'document_type'     => $coordinador['document_type'],
+                    'document_number'   => $coordinador['document_number'],
+                    'is_active'         => true,
+                    'phone'             => null,
+                    'departamento_id'   => null,
+                    'ciudad_id'         => null,
+                    'institution_id'    => 68,  // ← Cambiado a institution_id
+                    'facultad_id'       => 5,
+                    'programa_id'       => 39,
                 ]
             );
             $user->assignRole('Coordinador');
         }
     }
-} 
+}

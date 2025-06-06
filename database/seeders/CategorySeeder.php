@@ -10,12 +10,12 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'PARTICIPACION PROFESIONAL',
-            'RECURSOS DIGITALES',
-            'ENSEÑANZA Y APRENDIZAJE',
-            'EVALUACIÓN',
-            'EMPODERAMIENTO DEL ESTUDIANTE',
-            'DESARROLLO DE LA COMPETENCIA DIGITAL DEL ESTUDIANTE',
+            'Partición profesional',
+            'Tecnologias digitales',
+            'Enseñanza y aprendizaje',
+            'Evaluación',
+            'Formacion de estudiantes',
+            'Promocion de competencias digitales del alumnado',
         ];
 
         foreach ($categories as $name) {

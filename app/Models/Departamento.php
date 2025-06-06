@@ -10,15 +10,26 @@ class Departamento extends Model
 {
     use HasFactory;
 
+    protected $table = 'departamentos';
+
     protected $fillable = [
         'name',
+        // otros campos propios de departamento si los tuvieras
     ];
 
     /**
-     * Obtiene las ciudades del departamento.
+     * Un Departamento tiene muchas Ciudades.
      */
     public function ciudades(): HasMany
     {
-        return $this->hasMany(Ciudad::class);
+        return $this->hasMany(Ciudad::class, 'departamento_id');
     }
-} 
+
+    /**
+     * Un Departamento tiene muchos Usuarios.
+     */
+    public function usuarios(): HasMany
+    {
+        return $this->hasMany(User::class, 'departamento_id');
+    }
+}

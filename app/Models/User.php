@@ -9,40 +9,43 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Filament\Models\Contracts\FilamentUser;   
-use Filament\Panel;                           
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-
-class User extends Authenticatable implements MustVerifyEmail,FilamentUser
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que se pueden asignar en masa.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'phone',         
-        'date_of_birth', 
+        'phone',
+        'date_of_birth',
         'document_type',
         'document_number',
         'position',
+
+        // Llaves foráneas en lugar de texto
         'institution_id',
-        'is_active',
         'departamento_id',
         'ciudad_id',
-        'institution',
+        'facultad_id',
+        'programa_id',
+
+        'is_active',
+        // no incluimos 'institution' de tipo string, pues ahora es 'institution_id'
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atributos que se ocultan al serializar (p. ej. en JSON).
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -50,18 +53,18 @@ class User extends Authenticatable implements MustVerifyEmail,FilamentUser
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Conversión de tipos de columnas.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'is_active' => 'boolean',
+        'password'          => 'hashed',
+        'is_active'         => 'boolean',
     ];
 
     /**
-     * Los tipos de documento disponibles
+     * Los tipos de documento disponibles.
      */
     public const DOCUMENT_TYPES = [
         'CC' => 'Cédula de Ciudadanía',
@@ -70,28 +73,57 @@ class User extends Authenticatable implements MustVerifyEmail,FilamentUser
         'PP' => 'Pasaporte'
     ];
 
+    /**
+     * Relación: Usuario pertenece a una Institution.
+     */
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class, 'institution_id');
+    }
+
+    /**
+     * Relación: Usuario pertenece a un Departamento.
+     */
+    public function departamento(): BelongsTo
+    {
+        return $this->belongsTo(Departamento::class, 'departamento_id');
+    }
+
+    /**
+     * Relación: Usuario pertenece a una Ciudad.
+     */
+    public function ciudad(): BelongsTo
+    {
+        return $this->belongsTo(Ciudad::class, 'ciudad_id');
+    }
+
+    /**
+     * Relación: Usuario pertenece a una Facultad.
+     */
+    public function facultad(): BelongsTo
+    {
+        return $this->belongsTo(Facultad::class, 'facultad_id');
+    }
+
+    /**
+     * Relación: Usuario pertenece a un Programa.
+     */
+    public function programa(): BelongsTo
+    {
+        return $this->belongsTo(Programa::class, 'programa_id');
+    }
+
+    /**
+     * Ejemplo de relación específica que ya tenías:
+     */
     public function testAssignments()
     {
         return $this->hasMany(TestAssignment::class);
     }
 
     /**
-     * Obtiene la institución a la que pertenece el usuario.
+     * Método que Filament usa para verificar si el usuario puede acceder al panel.
      */
-    public function institution(): BelongsTo
-    {
-        return $this->belongsTo(Institution::class);
-    }
-
-    public function departamento()
-    {
-        return $this->belongsTo(Departamento::class);
-    }
-
-    public function ciudad()
-    {
-        return $this->belongsTo(Ciudad::class);
-    }
     public function canAccessPanel(Panel $panel): bool
     {
         if (!$panel) {
@@ -112,11 +144,10 @@ class User extends Authenticatable implements MustVerifyEmail,FilamentUser
             };
         } catch (\Exception $e) {
             \Log::error('Error al verificar acceso al panel: ' . $e->getMessage(), [
-                'user_id' => $this->id,
+                'user_id'  => $this->id,
                 'panel_id' => $panel->getId() ?? 'unknown'
             ]);
             return false;
         }
     }
-
 }

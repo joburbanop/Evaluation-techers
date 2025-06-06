@@ -16,21 +16,30 @@ class Ciudad extends Model
     protected $fillable = [
         'name',
         'departamento_id',
+        // otros campos si los tuvieras
     ];
 
     /**
-     * Obtiene el departamento al que pertenece la ciudad.
+     * Relación: Ciudad pertenece a un Departamento.
      */
     public function departamento(): BelongsTo
     {
-        return $this->belongsTo(Departamento::class);
+        return $this->belongsTo(Departamento::class, 'departamento_id');
     }
 
     /**
-     * Obtiene las instituciones de la ciudad.
+     * Relación: Ciudad tiene muchas Instituciones.
      */
     public function instituciones(): HasMany
     {
         return $this->hasMany(Institution::class, 'ciudad_id');
     }
-} 
+
+    /**
+     * Relación: Ciudad tiene muchos Usuarios.
+     */
+    public function usuarios(): HasMany
+    {
+        return $this->hasMany(User::class, 'ciudad_id');
+    }
+}

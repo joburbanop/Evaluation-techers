@@ -85,4 +85,9 @@ class Test extends Model
     {
         return $this->is_active;
     }
+
+    public function competencyLevels()
+    {
+        return $this->hasMany(CompetencyLevel::class);
+    }
 }

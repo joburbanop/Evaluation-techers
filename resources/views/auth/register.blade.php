@@ -203,6 +203,42 @@
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            <!-- Facultad -->
+                            <div>
+                                <label for="facultad_id" class="block text-sm font-medium text-gray-700">Facultad</label>
+                                <div class="mt-1 relative rounded-md shadow-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-university text-gray-400"></i>
+                                    </div>
+                                    <select id="facultad_id" name="facultad_id" required disabled
+                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('facultad_id') border-red-500 @enderror">
+                                        <option value="">Seleccione una facultad...</option>
+                                    </select>
+                                </div>
+                                @error('facultad_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+
+                            <!-- Programa -->
+                            <div>
+                                <label for="programa_id" class="block text-sm font-medium text-gray-700">Programa Académico</label>
+                                <div class="mt-1 relative rounded-md shadow-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-graduation-cap text-gray-400"></i>
+                                    </div>
+                                    <select id="programa_id" name="programa_id" required disabled
+                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('programa_id') border-red-500 @enderror">
+                                        <option value="">Seleccione un programa...</option>
+                                    </select>
+                                </div>
+                                @error('programa_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                         </div>
 
                         <!-- Botones de navegación -->
@@ -269,57 +305,56 @@
     }
 </style>
 @endpush
-
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Variables para la navegación
+    // -----------------------------------
+    // 1) Lógica de navegación de pestañas
+    // -----------------------------------
     let currentTab = 0;
     const tabs = ['personal', 'location', 'institution'];
-    
-    // Función para mostrar la pestaña actual
+
     function showTab(n) {
         $('.tab-content').addClass('hidden');
         $(`#${tabs[n]}`).removeClass('hidden');
-        
-        // Actualizar estado de los botones
-        if (n == 0) {
+
+        if (n === 0) {
             $('#prevBtn').addClass('hidden');
         } else {
             $('#prevBtn').removeClass('hidden');
         }
-        
-        if (n == (tabs.length - 1)) {
+
+        if (n === (tabs.length - 1)) {
             $('#nextBtn').addClass('hidden');
             $('#submitBtn').removeClass('hidden').addClass('flex');
         } else {
             $('#nextBtn').removeClass('hidden');
             $('#submitBtn').addClass('hidden').removeClass('flex');
         }
-        
-        // Actualizar las pestañas activas
-        $('.tab-btn').removeClass('border-indigo-500 text-indigo-600').addClass('border-transparent text-gray-500');
-        $(`.tab-btn[data-tab="${tabs[n]}"]`).addClass('border-indigo-500 text-indigo-600').removeClass('border-transparent text-gray-500');
+
+        $('.tab-btn')
+            .removeClass('border-indigo-500 text-indigo-600')
+            .addClass('border-transparent text-gray-500');
+
+        $(`.tab-btn[data-tab="${tabs[n]}"]`)
+            .addClass('border-indigo-500 text-indigo-600')
+            .removeClass('border-transparent text-gray-500');
     }
-    
-    // Navegación entre pestañas
+
     $('#nextBtn').click(function() {
         if (currentTab < tabs.length - 1) {
             currentTab++;
             showTab(currentTab);
         }
     });
-    
     $('#prevBtn').click(function() {
         if (currentTab > 0) {
             currentTab--;
             showTab(currentTab);
         }
     });
-    
-    // Click en las pestañas
     $('.tab-btn').click(function() {
         const tabIndex = tabs.indexOf($(this).data('tab'));
         if (tabIndex !== -1) {
@@ -327,136 +362,292 @@ $(document).ready(function() {
             showTab(currentTab);
         }
     });
-    
-    // Mostrar la primera pestaña al cargar
+
+    // Al iniciar, muestro la primera pestaña
     showTab(currentTab);
 
-    // Cargar departamentos desde la base de datos
+
+    // -----------------------------------
+    // 2) Cargar Departamentos (al cargar la página)
+    // -----------------------------------
     $.ajax({
         url: '/api/departamentos',
         method: 'GET',
         dataType: 'json',
-        success: function(data) {
+        success: function(departamentos) {
             let departamentoSelect = $('#departamento_id');
             departamentoSelect.empty().append('<option value="">Seleccione un departamento...</option>');
-            
-            if (Array.isArray(data)) {
-                data.forEach(function(dep) {
+
+            if (Array.isArray(departamentos)) {
+                departamentos.forEach(function(dep) {
                     departamentoSelect.append(new Option(dep.nombre, dep.id));
                 });
             } else {
-                console.error('Formato de datos inesperado:', data);
+                console.error('Formato inesperado en departamentos:', departamentos);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Error en el formato de datos recibidos. Por favor, intente nuevamente.',
+                    text: 'El servidor devolvió un formato incorrecto para departamentos.',
                     confirmButtonColor: '#4f46e5'
                 });
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error:', {xhr: xhr, status: status, error: error});
-            let errorMessage = 'No se pudieron cargar los departamentos.';
-            if (xhr.responseJSON && xhr.responseJSON.error) {
-                errorMessage = xhr.responseJSON.error;
-            }
+            console.error('Error cargando departamentos:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: errorMessage + ' Por favor, intente nuevamente.',
+                text: 'No se pudieron cargar los departamentos. Intente nuevamente.',
                 confirmButtonColor: '#4f46e5'
             });
         }
     });
-    
-    // Cuando cambia el departamento
+
+
+    // -----------------------------------
+    // 3) Cuando cambia “Departamento” → cargo “Ciudad”
+    // -----------------------------------
     $('#departamento_id').on('change', function() {
         let departamentoId = $(this).val();
         let ciudadSelect = $('#ciudad_id');
-        ciudadSelect.empty().append('<option value="">Seleccione una ciudad...</option>');
-        
+
+        // Limpiar Ciudad, Institución, Facultad y Programa
+        ciudadSelect.empty().append('<option value="">Seleccione una ciudad...</option>').prop('disabled', true);
+        $('#institution_id').empty().append('<option value="">Seleccione una ciudad primero</option>').prop('disabled', true);
+        $('#facultad_id').empty().append('<option value="">Seleccione una institución primero</option>').prop('disabled', true);
+        $('#programa_id').empty().append('<option value="">Seleccione una facultad primero</option>').prop('disabled', true);
+
         if (departamentoId) {
             ciudadSelect.prop('disabled', false);
             $.ajax({
                 url: `/api/ciudades/${departamentoId}`,
                 method: 'GET',
                 dataType: 'json',
-                success: function(data) {
-                    if (Array.isArray(data)) {
-                        data.forEach(function(city) {
-                            ciudadSelect.append(new Option(city.nombre, city.nombre));
+                success: function(ciudades) {
+                    ciudadSelect.empty().append('<option value="">Seleccione una ciudad...</option>');
+                    if (Array.isArray(ciudades)) {
+                        ciudades.forEach(function(city) {
+                            // IMPORTANTE: valor = city.id (no city.nombre), porque tu endpoint espera ID
+                            ciudadSelect.append(new Option(city.nombre, city.id));
                         });
                         @if(old('ciudad_id'))
                             ciudadSelect.val('{{ old('ciudad_id') }}');
                         @endif
                     } else {
-                        console.error('Formato de datos inesperado:', data);
+                        console.error('Formato inesperado en ciudades:', ciudades);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Error en el formato de datos recibidos. Por favor, intente nuevamente.',
+                            text: 'El servidor devolvió un formato incorrecto para ciudades.',
                             confirmButtonColor: '#4f46e5'
                         });
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error:', {xhr: xhr, status: status, error: error});
-                    let errorMessage = 'No se pudieron cargar las ciudades.';
-                    if (xhr.responseJSON && xhr.responseJSON.error) {
-                        errorMessage = xhr.responseJSON.error;
-                    }
+                    console.error('Error cargando ciudades:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: errorMessage + ' Por favor, intente nuevamente.',
+                        text: 'No se pudieron cargar las ciudades. Intente nuevamente.',
                         confirmButtonColor: '#4f46e5'
                     });
                     ciudadSelect.prop('disabled', true);
                 }
             });
-        } else {
-            ciudadSelect.prop('disabled', true);
         }
     });
-    
-    // Cargar instituciones según ciudad seleccionada
+
+
+     // -----------------------------------
+    // 4) Cuando cambia “Ciudad” → cargo “Institución” usando el nombre del municipio
+    // -----------------------------------
     $('#ciudad_id').on('change', function() {
-        let ciudadId = $(this).val();
+        // En lugar del ID, tomamos el texto (nombre del municipio) del <option> seleccionado:
+        let municipioNombre = $('#ciudad_id option:selected').text().trim();
         let institucionSelect = $('#institution_id');
-        institucionSelect.prop('disabled', true);
-        institucionSelect.empty().append('<option value="">Cargando instituciones...</option>');
-        
-        if (ciudadId) {
+
+        // Limpiar Institución, Facultad y Programa
+        institucionSelect
+            .empty()
+            .append('<option value="">Cargando instituciones...</option>')
+            .prop('disabled', true);
+        $('#facultad_id')
+            .empty()
+            .append('<option value="">Seleccione una institución primero</option>')
+            .prop('disabled', true);
+        $('#programa_id')
+            .empty()
+            .append('<option value="">Seleccione una facultad primero</option>')
+            .prop('disabled', true);
+
+        if (municipioNombre) {
+            // Hacemos la petición a /api/instituciones con municipio_domicilio como parámetro
             $.ajax({
-                url: '/api/instituciones/ciudad/' + ciudadId,
-                method: 'GET',
+               url: `/api/instituciones/municipio/${encodeURIComponent(municipioNombre)}`,
+    method: 'GET',
+    dataType: 'json',
                 dataType: 'json',
-                success: function(data) {
-                    institucionSelect.empty().append('<option value="">Seleccione una institución...</option>');
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(function(inst) {
-                            institucionSelect.append(new Option(inst.name, inst.id));
+                success: function(instituciones) {
+                    institucionSelect
+                        .empty()
+                        .append('<option value="">Seleccione una institución...</option>');
+
+                    if (Array.isArray(instituciones) && instituciones.length > 0) {
+                        instituciones.forEach(function(inst) {
+                            institucionSelect.append(
+                              new Option(inst.name, inst.id)
+                            );
                         });
                         institucionSelect.prop('disabled', false);
                     } else {
-                        institucionSelect.append('<option value="">No hay instituciones en esta ciudad</option>');
+                        institucionSelect
+                          .empty()
+                          .append('<option value="">No hay instituciones en este municipio</option>')
+                          .prop('disabled', true);
                     }
                 },
                 error: function() {
-                    institucionSelect.empty().append('<option value="">Error al cargar instituciones</option>');
+                    institucionSelect
+                      .empty()
+                      .append('<option value="">Error al cargar instituciones</option>')
+                      .prop('disabled', true);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudieron cargar las instituciones. Intente nuevamente.',
+                        confirmButtonColor: '#4f46e5'
+                    });
                 }
             });
         } else {
-            institucionSelect.empty().append('<option value="">Seleccione una ciudad primero</option>');
+            institucionSelect
+              .empty()
+              .append('<option value="">Seleccione una ciudad primero</option>')
+              .prop('disabled', true);
         }
     });
-    
-    // Validación del formulario antes de enviar
+
+// -----------------------------------
+// 5) Cuando cambia “Institución” → cargo “Facultad”
+// -----------------------------------
+$('#institution_id').on('change', function() {
+    let institutionId = $(this).val();
+    let facultadSelect = $('#facultad_id');
+
+    // Limpiar Facultad y Programa
+    facultadSelect
+      .empty()
+      .append('<option value="">Cargando facultades...</option>')
+      .prop('disabled', true);
+    $('#programa_id')
+      .empty()
+      .append('<option value="">Seleccione una facultad primero</option>')
+      .prop('disabled', true);
+
+    if (institutionId) {
+        $.ajax({
+            url: `/api/facultades/institucion/${institutionId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(facultades) {
+                facultadSelect.empty().append('<option value="">Seleccione una facultad...</option>');
+
+                if (Array.isArray(facultades) && facultades.length > 0) {
+                    facultades.forEach(function(fac) {
+                        facultadSelect.append(new Option(fac.nombre, fac.id));
+                    });
+                    facultadSelect.prop('disabled', false);
+                } else {
+                    facultadSelect
+                      .empty()
+                      .append('<option value="">No hay facultades para esta institución</option>')
+                      .prop('disabled', true);
+                }
+            },
+            error: function() {
+                facultadSelect
+                  .empty()
+                  .append('<option value="">Error al cargar facultades</option>')
+                  .prop('disabled', true);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar las facultades. Intente nuevamente.',
+                    confirmButtonColor: '#4f46e5'
+                });
+            }
+        });
+    } else {
+        facultadSelect
+          .empty()
+          .append('<option value="">Seleccione una institución primero</option>')
+          .prop('disabled', true);
+    }
+});
+
+
+    // -----------------------------------
+    // 6) Cuando cambia “Facultad” → cargo “Programa”
+    // -----------------------------------
+  $('#facultad_id').on('change', function() {
+    let facultadId = $(this).val();
+    let programaSelect = $('#programa_id');
+
+    // Limpiar y mostrar “Cargando programas…”
+    programaSelect
+      .empty()
+      .append('<option value="">Cargando programas...</option>')
+      .prop('disabled', true);
+
+    if (facultadId) {
+        $.ajax({
+            url: `/api/programas/facultad/${facultadId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(programas) {
+                programaSelect.empty().append('<option value="">Seleccione un programa...</option>');
+                if (Array.isArray(programas) && programas.length > 0) {
+                    programas.forEach(function(prog) {
+                        programaSelect.append(
+                          new Option(prog.nombre, prog.id)
+                        );
+                    });
+                    programaSelect.prop('disabled', false);
+                } else {
+                    programaSelect
+                      .empty()
+                      .append('<option value="">No hay programas para esta facultad</option>')
+                      .prop('disabled', true);
+                }
+            },
+            error: function() {
+                programaSelect
+                  .empty()
+                  .append('<option value="">Error al cargar programas</option>')
+                  .prop('disabled', true);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los programas. Intente nuevamente.',
+                    confirmButtonColor: '#4f46e5'
+                });
+            }
+        });
+    } else {
+        programaSelect
+          .empty()
+          .append('<option value="">Seleccione una facultad primero</option>')
+          .prop('disabled', true);
+    }
+});
+    // -----------------------------------
+    // 7) Validación rápida antes de enviar
+    // -----------------------------------
     $('#registerForm').on('submit', function(e) {
         e.preventDefault();
-        
-        // Validar campos requeridos
         let isValid = true;
+
+        // Marcar en rojo campos required vacíos
         $(this).find('[required]').each(function() {
             if (!$(this).val()) {
                 isValid = false;
@@ -465,7 +656,7 @@ $(document).ready(function() {
                 $(this).removeClass('border-red-500');
             }
         });
-        
+
         if (!isValid) {
             Swal.fire({
                 icon: 'error',
@@ -475,12 +666,15 @@ $(document).ready(function() {
             });
             return;
         }
-        
-        // Si todo está bien, enviar el formulario
+
+        // Si todo OK, enviamos el formulario
         this.submit();
     });
 
-    // Configuración de CSRF token
+
+    // -----------------------------------
+    // 8) Configuración CSRF para AJAX
+    // -----------------------------------
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -489,4 +683,3 @@ $(document).ready(function() {
 });
 </script>
 @endpush
-@endsection

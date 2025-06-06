@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Institution extends Model
 {
@@ -28,18 +30,40 @@ class Institution extends Model
     ];
 
     /**
-     * Si más adelante normalizas y usas claves foráneas:
+     * Relación: Institution pertenece a un Departamento.
      */
-    public function departamento()
+    public function departamento(): BelongsTo
     {
         return $this->belongsTo(Departamento::class, 'departamento_id');
     }
 
-    public function ciudad()
+    /**
+     * Relación: Institution pertenece a una Ciudad.
+     */
+    public function ciudad(): BelongsTo
     {
         return $this->belongsTo(Ciudad::class, 'ciudad_id');
     }
 
+    /**
+     * Relación: Institution tiene muchas Facultades.
+     */
+    public function facultades(): HasMany
+    {
+        return $this->hasMany(Facultad::class, 'institution_id');
+    }
+
+    /**
+     * Relación: Institution tiene muchos Usuarios.
+     */
+    public function usuarios(): HasMany
+    {
+        return $this->hasMany(User::class, 'institution_id');
+    }
+
+    /**
+     * Si quieres mantener la relación de tests (muchos a muchos)
+     */
     public function tests()
     {
         return $this->belongsToMany(Test::class);

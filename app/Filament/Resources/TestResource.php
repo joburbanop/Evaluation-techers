@@ -55,6 +55,36 @@ class TestResource extends Resource
                                         ->columnSpanFull()
                                         ->extraAttributes(['class' => 'text-base font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4'])
                                         ->placeholder('Ingrese una descripción detallada del test...'),
+
+                                    Forms\Components\Section::make('Niveles de Competencia')
+                                        ->description('Define los niveles y sus rangos para este test')
+                                        ->schema([
+                                            Forms\Components\Repeater::make('competencyLevels')
+                                                ->relationship('competencyLevels') // importante: así lo vinculas al test
+                                                ->label('Niveles de Competencia')
+                                                ->createItemButtonLabel('Agregar nivel')
+                                                ->schema([
+                                            Forms\Components\TextInput::make('name')
+                                                ->label('Nombre del nivel')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('code')
+                                                ->label('Código')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('min_score')
+                                                ->label('Puntaje mínimo')
+                                                ->numeric()
+                                                ->required(),
+                                            Forms\Components\TextInput::make('max_score')
+                                                ->label('Puntaje máximo')
+                                                ->numeric()
+                                                ->required(),
+                                            Forms\Components\Textarea::make('description')
+                                                ->label('Descripción')
+                                        ])
+                                        ->columns(2)
+                                ])
+
+
                                 ])
                                 ->columns(1)
                                 ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
@@ -419,7 +449,7 @@ class TestResource extends Resource
                             ->size('lg')
                             ->color('primary')
                             ->description(fn (Test $record): string =>
-                                $record->description ? 
+                                $record->description ?
                                 (mb_strlen($record->description) > 120 ?
                                 mb_substr($record->description, 0, 120) . '...' :
                                 $record->description) : 'Sin descripción')

@@ -12,6 +12,7 @@ class CompetencyLevel extends Model
     use HasFactory;
 
     protected $fillable = [
+        'test_id',
         'name',
         'code',
         'min_score',
@@ -23,6 +24,12 @@ class CompetencyLevel extends Model
         'min_score' => 'integer',
         'max_score' => 'integer'
     ];
+
+
+    public function test ()
+    {
+        return $this->belongsTo(Test::class);
+    }
 
     protected static function boot()
     {
@@ -85,7 +92,7 @@ class CompetencyLevel extends Model
     public static function getLevelByScore(int $score): ?self
     {
         $cacheKey = "competency_level_score_{$score}";
-        
+
         return Cache::remember($cacheKey, 3600, function () use ($score) {
         return static::where('min_score', '<=', $score)
             ->where('max_score', '>=', $score)
@@ -99,7 +106,7 @@ class CompetencyLevel extends Model
     public static function clearCache()
     {
         Cache::forget('competency_levels');
-        
+
         // Limpiar caché de niveles por puntuación
         $levels = static::all();
         foreach ($levels as $level) {
@@ -111,48 +118,65 @@ class CompetencyLevel extends Model
 
     public static function initializeLevels(): void
     {
+        //inicializar la variable test dame el codigo
+        $test = Test::where('name', 'Evaluación de Competencias Digitales Docentes')->first();
+
+
         $levels = [
             [
+                'test_id'=> $test->id,
                 'name' => 'Novato',
                 'code' => 'A1',
                 'min_score' => 0,
                 'max_score' => 19,
-                'description' => 'Nivel inicial de competencia digital'
+                'description' => 'Muy poca experiencia y contacto con la tecnología educativa. Necesita orientación continua para mejorar su nivel competencial digital docente. '
+
+
+
+
+
+
             ],
             [
+                'test_id'=> $test->id,
                 'name' => 'Explorador',
                 'code' => 'A2',
                 'min_score' => 20,
                 'max_score' => 33,
-                'description' => 'Nivel básico de competencia digital'
+                'description' => 'Poco contacto con la tecnología educativa. No ha desarrollado estrategias específicas para incluir las TIC en el aula. Necesita orientación externa para mejorar su nivel competencial digital docente.'
             ],
             [
+                'test_id'=> $test->id,
                 'name' => 'Integrador',
                 'code' => 'B1',
                 'min_score' => 34,
                 'max_score' => 49,
-                'description' => 'Nivel intermedio de competencia digital'
+                'description' => 'Experimenta con la tecnología educativa y reflexiona sobre su idoneidad para los distintos contextos educativos.'
             ],
             [
+                'test_id'=> $test->id,
                 'name' => 'Experto',
                 'code' => 'B2',
                 'min_score' => 50,
                 'max_score' => 65,
-                'description' => 'Nivel avanzado de competencia digital'
+                'description' => 'Utiliza una amplia gama de tecnologías educativas con seguridad, confianza y creatividad. Busca la mejora continua de sus prácticas docentes.'
             ],
             [
+                'test_id'=> $test->id,
+
                 'name' => 'Líder',
                 'code' => 'C1',
                 'min_score' => 66,
                 'max_score' => 80,
-                'description' => 'Nivel experto de competencia digital'
+                'description' => 'Capaz de adaptar a sus necesidades los distintos recursos, estrategias y conocimientos a su alcance. Es una fuente de inspiración para otros docentes.'
             ],
             [
+                'test_id'=> $test->id,
                 'name' => 'Pionero',
                 'code' => 'C2',
                 'min_score' => 81,
                 'max_score' => 100,
-                'description' => 'Nivel maestro de competencia digital'
+                'description' => 'Cuestiona las prácticas digitales y pedagógicas contemporáneas, de las que ellos mismos son expertos. Lideran la innovación con TIC y son un modelo a seguir para otros docentes'
             ],
         ];
 
@@ -166,4 +190,4 @@ class CompetencyLevel extends Model
         // Limpiar caché después de inicializar
         static::clearCache();
     }
-} 
+}
