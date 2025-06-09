@@ -90,11 +90,10 @@ class AreaCompetencyLevelResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
-    public static function canAccess(): bool
+  public static function canAccess(): bool
 {
-    return auth()->check() && auth()->user()->hasRole('Administrador');
+    return auth()->check() && auth()->user()->hasRole('Administradorsd');
 }
-
     public static function getPages(): array
     {
         return [
@@ -103,4 +102,6 @@ class AreaCompetencyLevelResource extends Resource
             'edit' => Pages\EditAreaCompetencyLevel::route('/{record}/edit'),
         ];
     }
+
+    
 }

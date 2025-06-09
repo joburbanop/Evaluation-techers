@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\ViewField;
 use Filament\Tables\Filters\SelectFilter;
-use App\Models\AreaCompetencyLevel;
+use App\Models\TestAreaCompetencyLevel;
 class RealizarTestResource extends Resource
 {
     protected static ?string $model = TestAssignment::class;
@@ -269,8 +269,7 @@ class RealizarTestResource extends Resource
                                                         $pregunta->options->max('score') ?? 0
                                                     );
 
-                                                   $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido) ?? \App\Models\AreaCompetencyLevel::getLevelByAreaAndScore($area->id, $puntajeObtenido);
-
+                                                    $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->id, $area->id, $puntajeObtenido);
                                                     $areaResults->push([
                                                         'area_name' => $area->name,
                                                         'obtained_score' => $puntajeObtenido,
