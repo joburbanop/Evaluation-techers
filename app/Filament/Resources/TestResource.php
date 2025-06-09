@@ -80,6 +80,7 @@ class TestResource extends Resource
                                                 ->required(),
                                             Forms\Components\Textarea::make('description')
                                                 ->label('Descripción')
+                                                ->default('Sin descripción')
                                         ])
                                         ->columns(2)
                                 ])
@@ -103,153 +104,162 @@ class TestResource extends Resource
 
                                     Forms\Components\Repeater::make('questions')
                                         ->relationship('questions')
+                                        
                                         ->label('')
                                         ->schema([
                                             Forms\Components\Section::make()
                                                 ->extraAttributes(['class' => 'bg-white rounded-xl shadow-sm border-2 border-gray-200 hover:border-primary-300 transition-colors duration-200'])
                                                 ->schema([
-                                                    Forms\Components\Select::make('factor_id')
-                                                        ->label('Factor')
-                                                        ->required()
-                                                        ->options(fn () => \App\Models\Factor::pluck('name', 'id'))
-                                                        ->searchable()
-                                                        ->preload()
-                                                        ->createOptionForm([
-                                                            Forms\Components\TextInput::make('name')
-                                                                ->label('Nombre del Factor')
-                                                                ->required()
-                                                                ->maxLength(255)
-                                                                ->unique('factors', 'name'),
-                                                            Forms\Components\Select::make('area_id')
-                                                                ->label('Área')
-                                                                ->required()
-                                                                ->options(fn () => \App\Models\Area::pluck('name', 'id'))
-                                                                ->searchable()
-                                                                ->preload()
-                                                        ])
-                                                        ->createOptionUsing(function (array $data) {
-                                                            $factor = \App\Models\Factor::create($data);
-                                                            return $factor->id;
-                                                        })
-                                                        ->createOptionAction(
-                                                            fn (Forms\Components\Actions\Action $action) => $action
-                                                                ->modalHeading('Crear Nuevo Factor')
-                                                                ->modalSubmitActionLabel('Crear Factor')
-                                                                ->modalWidth('md')
-                                                        )
-                                                        ->columnSpanFull()
-                                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
-                                                        ->prefixIcon('heroicon-o-academic-cap')
-                                                        ->prefixIconColor('primary'),
+                                                Forms\Components\Select::make('factor_id')
+                                                    ->label('Factor')
+                                                    ->required()
+                                                    ->options(fn () => \App\Models\Factor::pluck('name', 'id'))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label('Nombre del Factor')
+                                                            ->required()
+                                                            ->maxLength(255)
+                                                            ->unique('factors', 'name'),
+                                                        Forms\Components\Select::make('area_id')
+                                                            ->label('Área')
+                                                            ->required()
+                                                            ->options(fn () => \App\Models\Area::pluck('name', 'id'))
+                                                            ->searchable()
+                                                            ->preload()
+                                                            ->reactive(),
+                                                    ])
+                                                    ->createOptionUsing(fn (array $data) => \App\Models\Factor::create($data)->id)
+                                                    ->createOptionAction(
+                                                        fn (Forms\Components\Actions\Action $action) => $action
+                                                            ->modalHeading('Crear Nuevo Factor')
+                                                            ->modalSubmitActionLabel('Crear Factor')
+                                                            ->modalWidth('md')
+                                                    )
+                                                    ->columnSpanFull(),
 
-                                                    Forms\Components\Select::make('area_id')
-                                                        ->label('Área')
-                                                        ->required()
-                                                        ->options(fn () => \App\Models\Area::pluck('name', 'id'))
-                                                        ->searchable()
-                                                        ->preload()
-                                                        ->createOptionForm([
-                                                            Forms\Components\TextInput::make('name')
-                                                                ->label('Nombre del Área')
-                                                                ->required()
-                                                                ->maxLength(255)
-                                                                ->unique('areas', 'name'),
-                                                            Forms\Components\Textarea::make('description')
-                                                                ->label('Descripción')
-                                                                ->maxLength(500)
-                                                        ])
-                                                        ->createOptionUsing(function (array $data) {
-                                                            $area = \App\Models\Area::create($data);
-                                                            return $area->id;
-                                                        })
-                                                        ->createOptionAction(
-                                                            fn (Forms\Components\Actions\Action $action) => $action
-                                                                ->modalHeading('Crear Nueva Área')
-                                                                ->modalSubmitActionLabel('Crear Área')
-                                                                ->modalWidth('md')
-                                                        )
-                                                        ->columnSpanFull()
-                                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
-                                                        ->prefixIcon('heroicon-o-bookmark')
-                                                        ->prefixIconColor('primary'),
+                                                Forms\Components\Select::make('area_id')
+                                                    ->label('Área')
+                                                    ->required()
+                                                    ->options(fn () => \App\Models\Area::pluck('name', 'id'))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->reactive()
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label('Nombre del Área')
+                                                            ->required()
+                                                            ->maxLength(255)
+                                                            ->unique('areas', 'name'),
+                                                        Forms\Components\Textarea::make('description')
+                                                            ->label('Descripción')
+                                                            ->maxLength(500),
+                                                    ])
+                                                    ->createOptionUsing(fn (array $data) => \App\Models\Area::create($data)->id)
+                                                    ->createOptionAction(
+                                                        fn (Forms\Components\Actions\Action $action) => $action
+                                                            ->modalHeading('Crear Nueva Área')
+                                                            ->modalSubmitActionLabel('Crear Área')
+                                                            ->modalWidth('md')
+                                                    )
+                                                    ->columnSpanFull(),
+Forms\Components\Repeater::make('editable_test_area_levels')
+    ->label('Niveles de competencia de esta área en este test')
+    ->visible(fn ($get) => filled($get('area_id')))
+    ->dehydrated(false) // ✅ evita el error
+    ->reactive()
+    ->afterStateHydrated(function (callable $set, $get) {
+        $areaId = $get('area_id');
+        $testId = request()->route('record');
 
-                                                    Forms\Components\Textarea::make('question')
-                                                        ->label('Pregunta')
-                                                        ->helperText('Escriba la pregunta de manera clara y concisa')
-                                                        ->required()
-                                                        ->maxLength(500)
-                                                        ->rows(4)
-                                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4 bg-white'])
-                                                        ->columnSpanFull()
-                                                        ->placeholder('Escriba aquí su pregunta...'),
+        if (!$areaId || !$testId) return;
 
-                                                    Forms\Components\Section::make('Opciones de Respuesta')
-                                                        ->description('Agregue las opciones y seleccione la respuesta correcta')
-                                                        ->collapsible(false)
-                                                        ->extraAttributes(['class' => 'bg-gray-50 rounded-lg mt-4 p-6 border-2 border-primary-100 shadow-sm'])
-                                                        ->schema([
-                                                            Forms\Components\Repeater::make('options')
-                                                                ->relationship('options')
-                                                                ->label('')
-                                                                ->addActionLabel('Agregar Opción')
-                                                                ->defaultItems(4)
-                                                                ->minItems(1)
-                                                                ->schema([
-                                                                    Forms\Components\Grid::make(3)
-                                                                        ->schema([
-                                                                            Forms\Components\TextInput::make('option')
-                                                                                ->label('Opción de Respuesta')
-                                                                                ->required()
-                                                                                ->maxLength(255)
-                                                                                ->columnSpan(2)
-                                                                                ->extraAttributes(['class' => 'text-base font-medium border-2 border-gray-200 focus:border-primary-500 rounded-lg shadow-sm'])
-                                                                                ->prefixIcon('heroicon-o-chat-bubble-left-right'),
+        $niveles = \App\Models\TestAreaCompetencyLevel::where('test_id', $testId)
+            ->where('area_id', $areaId)
+            ->get()
+            ->map(fn ($level) => [
+                'id' => $level->id,
+                'name' => $level->name,
+                'code' => $level->code,
+                'min_score' => $level->min_score,
+                'max_score' => $level->max_score,
+                'description' => $level->description,
+            ])
+            ->toArray();
 
-                                                                            Forms\Components\Toggle::make('is_correct')
-                                                                                ->label('Correcta')
-                                                                                ->onIcon('heroicon-o-check-circle')
-                                                                                ->offIcon('heroicon-o-x-circle')
-                                                                                ->onColor('success')
-                                                                                ->offColor('danger')
-                                                                                ->columnSpan(1)
-                                                                                ->inline(true)
-                                                                                ->extraAttributes(['class' => 'text-base']),
-                                                                        ]),
+        $set('editable_test_area_levels', $niveles);
+    })
+    ->schema([
+        Forms\Components\Grid::make(2)->schema([
+            Forms\Components\TextInput::make('name')->label('Nombre')->required(),
+            Forms\Components\TextInput::make('code')->label('Código')->required(),
+        ]),
+        Forms\Components\Grid::make(2)->schema([
+            Forms\Components\TextInput::make('min_score')->label('Puntaje mínimo')->numeric()->required(),
+            Forms\Components\TextInput::make('max_score')->label('Puntaje máximo')->numeric()->required(),
+        ]),
+        Forms\Components\Textarea::make('description')->label('Descripción')->rows(3)->required(),
+    ])
+    ->columns(1)
+    ->columnSpanFull()
+    ->itemLabel(fn (array $state): ?string =>
+        !empty($state['name']) ? "{$state['code']} - {$state['name']}" : 'Nivel'),         
 
-                                                                        Forms\Components\TextInput::make('score')
-                                                                            ->label('Puntuación')
-                                                                            ->numeric()
-                                                                            ->minValue(0)
-                                                                            ->maxValue(4)
-                                                                            ->default(0)
-                                                                            ->required()
-                                                                            ->columnSpanFull()
-                                                                            ->extraAttributes(['class' => 'text-base font-medium border-2 border-gray-200 focus:border-primary-500 rounded-lg shadow-sm mt-3'])
-                                                                            ->prefixIcon('heroicon-o-star')
-                                                                            ->prefixIconColor('primary')
-                                                                            ->suffix('puntos')
-                                                                            ->helperText('Puntuación de 0 a 4 puntos por respuesta')
-                                                                            ->rules([
-                                                                                'required',
-                                                                                'numeric',
-                                                                                'min:0',
-                                                                                'max:4'
-                                                                            ])
-                                                                            ->validationMessages([
-                                                                                'min' => 'La puntuación mínima debe ser 0 puntos',
-                                                                                'max' => 'La puntuación máxima debe ser 4 puntos',
-                                                                                'numeric' => 'La puntuación debe ser un número',
-                                                                                'required' => 'Este campo es obligatorio'
-                                                                            ])
-                                                                ])
-                                                                ->itemLabel(fn (array $state): ?string =>
-                                                                    (!empty($state['option']) ?
+                                                Forms\Components\Textarea::make('question')
+                                                    ->label('Pregunta')
+                                                    ->helperText('Escriba la pregunta de manera clara y concisa')
+                                                    ->required()
+                                                    ->maxLength(500)
+                                                    ->rows(4)
+                                                    ->columnSpanFull(),
+
+                                                Forms\Components\Section::make('Opciones de Respuesta')
+                                                    ->description('Agregue las opciones y seleccione la respuesta correcta')
+                                                    ->collapsible(false)
+                                                    ->extraAttributes(['class' => 'bg-gray-50 rounded-lg mt-4 p-6 border-2 border-primary-100 shadow-sm'])
+                                                    ->schema([
+                                                        Forms\Components\Repeater::make('options')
+                                                            ->relationship('options')
+                                                            ->label('')
+                                                            ->addActionLabel('Agregar Opción')
+                                                            ->defaultItems(4)
+                                                            ->minItems(1)
+                                                            ->schema([
+                                                                Forms\Components\Grid::make(3)->schema([
+                                                                    Forms\Components\TextInput::make('option')
+                                                                        ->label('Opción de Respuesta')
+                                                                        ->required()
+                                                                        ->maxLength(255)
+                                                                        ->columnSpan(2),
+                                                                    Forms\Components\Toggle::make('is_correct')
+                                                                        ->label('Correcta')
+                                                                        ->onIcon('heroicon-o-check-circle')
+                                                                        ->offIcon('heroicon-o-x-circle')
+                                                                        ->onColor('success')
+                                                                        ->offColor('danger')
+                                                                        ->inline(true),
+                                                                ]),
+                                                                Forms\Components\TextInput::make('score')
+                                                                    ->label('Puntuación')
+                                                                    ->numeric()
+                                                                    ->minValue(0)
+                                                                    ->maxValue(4)
+                                                                    ->default(0)
+                                                                    ->required()
+                                                                    ->suffix('puntos')
+                                                                    ->helperText('Puntuación de 0 a 4 puntos por respuesta')
+                                                                    ->rules(['required', 'numeric', 'min:0', 'max:4']),
+                                                            ])
+                                                            ->itemLabel(fn (array $state): ?string =>
+                                                                (!empty($state['option']) ?
                                                                     ($state['is_correct'] ? '✓ ' : '') . mb_substr((string)$state['option'], 0, 40) . (mb_strlen((string)$state['option']) > 40 ? '...' : '')
-                                                                    : 'Nueva opción'))
-                                                                ->extraAttributes(['class' => 'space-y-4']),
-                                                        ])
-                                                        ->columnSpanFull(),
-                                                ]),
+                                                                    : 'Nueva opción')),
+                                                    ])
+                                                    ->columnSpanFull(),
+                                            ])
+                                                ->extraAttributes(['class' => 'bg-white rounded-lg shadow-sm border-2 border-gray-200 hover:border-primary-300 transition-colors duration-200'])
+                                                ->columnSpanFull(),
                                         ])
                                         ->defaultItems(1)
                                         ->minItems(1)

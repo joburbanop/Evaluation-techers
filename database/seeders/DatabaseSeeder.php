@@ -3,21 +3,21 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-// (Asegúrate de importar todas estas clases)
 use Database\Seeders\DepartamentoSeeder;
 use Database\Seeders\CiudadSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\InstitutionSeeder;  // <-- debe ejecutarse antes que FacultadSeeder
-use Database\Seeders\FacultadSeeder;      // <-- después de InstitutionSeeder
-use Database\Seeders\ProgramaSeeder;      // <-- después de FacultadSeeder
+use Database\Seeders\TestsSeeder;                 // ✅ Primero los tests
+use Database\Seeders\InstitutionSeeder;           // Luego las instituciones que dependen de tests
+use Database\Seeders\FacultadSeeder;              // Luego facultades
+use Database\Seeders\ProgramaSeeder;              // Luego programas
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\AreaFactorSeeder;
-use Database\Seeders\TestsSeeder;
-use App\Models\TestCompetencyLevel;
-use App\Models\AreaCompetencyLevel;
-
 use Database\Seeders\AdminUserSeeder;
+use Database\Seeders\TestCompetencyLevelSeeder;
+use Database\Seeders\TestAreaCompetencyLevelsSeeder;
+use Database\Seeders\UsuariosFromExcelSeeder;
+use Database\Seeders\TestInteligenciaArtificialSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -26,35 +26,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1) Primero los seeders de ubicación
         $this->call([
+            // 1. Geografía y permisos
             DepartamentoSeeder::class,
             CiudadSeeder::class,
-             
-        ]);
+            PermissionSeeder::class,
+            RoleSeeder::class,
 
-        // 2) Luego permisos y roles (si aplican)
-        $this->call(PermissionSeeder::class);
-        $this->call(RoleSeeder::class);
+            // 2. Tests deben ir antes que cualquier entidad que los use
+            TestsSeeder::class,
 
-        // 3) Ahora sí las instituciones (tabla padre de facultades)
-        $this->call(InstitutionSeeder::class);
+            // 3. Entidades que referencian tests
+            InstitutionSeeder::class,
+            FacultadSeeder::class,
+            ProgramaSeeder::class,
 
-        // 4) Después las facultades (que necesitan que institutions ya tenga datos)
-        $this->call(FacultadSeeder::class);
-
-        // 5) Luego los programas (que dependen de facultades)
-        $this->call(ProgramaSeeder::class);
-
-        // 6) Y finalmente el resto de seeders “independientes” o que no rompan orden:
-        $this->call([
+            // 4. Resto de datos
             CategorySeeder::class,
             AreaFactorSeeder::class,
-            TestsSeeder::class,
-            
             AdminUserSeeder::class,
             TestCompetencyLevelSeeder::class,
-            AreaCompetencyLevelsSeeder::class,
+            TestAreaCompetencyLevelsSeeder::class,
             UsuariosFromExcelSeeder::class,
             TestInteligenciaArtificialSeeder::class,
         ]);

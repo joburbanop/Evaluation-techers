@@ -23,11 +23,5 @@ class AreaCompetencyLevel extends Model
         return $this->belongsTo(Area::class);
     }
 
-    public static function getLevelByAreaAndScore(int $areaId, int $score): ?self
-    {
-        return static::where('area_id', $areaId)
-            ->where('min_score', '<=', $score)
-            ->where('max_score', '>=', $score)
-            ->first();
-    }
+    
 }

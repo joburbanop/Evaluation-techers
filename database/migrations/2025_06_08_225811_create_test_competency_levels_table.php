@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('code');
             $table->integer('min_score');
             $table->integer('max_score');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

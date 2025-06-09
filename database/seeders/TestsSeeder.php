@@ -888,7 +888,7 @@ class TestsSeeder extends Seeder
             'question' => '¿Cual es tu sexo/género?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 23
         ]);
 
         Option::create([
@@ -914,7 +914,7 @@ class TestsSeeder extends Seeder
             'question' => '¿Cuántos años tiene?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 24
         ]);
 
         Option::create([
@@ -964,7 +964,7 @@ class TestsSeeder extends Seeder
             'question' => 'Incluyendo este año escolar, ¿cuántos años lleva usted trabajando como docente?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 25
         ]);
 
         Option::create([
@@ -1002,7 +1002,7 @@ class TestsSeeder extends Seeder
             'question' => '¿Cual es tu titulo?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 26
         ]);
 
         Option::create([
@@ -1041,7 +1041,7 @@ class TestsSeeder extends Seeder
             'question' => '¿En qué tipo de contrataciòn tiene?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 27
         ]);
 
         Option::create([
@@ -1075,7 +1075,7 @@ class TestsSeeder extends Seeder
             'question' => '¿En qué áreas del conocimiento docente trabaja usted predominantemente como docente?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 28
         ]);
 
         Option::create([
@@ -1158,7 +1158,7 @@ class TestsSeeder extends Seeder
             'question' => '¿Cuánto tiempo llevas utilizando tecnologías digitales en tus clases?',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 22
+            'order' => 29
         ]);
 
         Option::create([
@@ -1216,6 +1216,166 @@ class TestsSeeder extends Seeder
         ]);
 
         
+
+
+        $question30= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿Qué recursos y/o herramientas digitales han sido utilizados por usted y/o sus estudiantes para enseñar y aprender? Son varias respuestas',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 30
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Presentaciones de diapositivas",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Videos",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Audios ",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Entornos virtuales de aprendizaje (EVA)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Plataformas de conferencias web (Ej.: Google Meet, Skype, Zoom...)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Cuestionarios o evaluaciones digitales (por ejemplo: formularios de Google, Socrative...)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Aplicaciones y juegos interactivos (Ej.: Mentimeter, Kahoot...)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Pósters o paneles digitales (Ej.: Padlet, JamBoard...)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Mapas mentales",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Blogs o páginas wiki",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Otros",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Nunca he utilizado ningún recurso digital en el aula.",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question30->id,
+            'option' => "Prefiero no declarar",
+            'score' => 0,
+        ]);
+
+
+        $question31= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿En que tipo de estudios se encuentran sus estudiantes?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 31
+        ]);
+
+        Option::create([
+            'question_id' => $question31->id,
+            'option' => "Grado profesional",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question31->id,
+            'option' => "Posgrado (Especializacion)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question31->id,
+            'option' => "Estudios de posgrado (maestria y doctorado) ",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question31->id,
+            'option' => "Educacion continua (por ejemplo, cursos de extencion de corta o larga duracion)",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question31->id,
+            'option' => "Otro",
+            'score' => 0,
+        ]);
+
+
+
+        $question32= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿Cómo te describirías a ti mismo y tu uso personal de las tecnologías digitales?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 32
+        ]);
+
+        Option::create([
+            'question_id' => $question32->id,
+            'option' => "Me resulta fácil trabajar con computadoras y otros dispositivos.",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question32->id,
+            'option' => "Utilizo Internet de forma extensa y competente.",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question32->id,
+            'option' => "Estoy abierto y curioso sobre nuevas aplicaciones, programas y recursos. ",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question32->id,
+            'option' => "Tengo un perfil en varias redes sociales.",
+            'score' => 0,
+        ]);
 
     }
 }

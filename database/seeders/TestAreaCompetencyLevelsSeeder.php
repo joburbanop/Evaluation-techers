@@ -4,12 +4,20 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Area;
-use App\Models\AreaCompetencyLevel;
+use App\Models\TestAreaCompetencyLevel;
+use App\Models\Test;
 
-class AreaCompetencyLevelsSeeder extends Seeder
+class TestAreaCompetencyLevelsSeeder extends Seeder
 {
     public function run()
     {
+        $test = Test::first(); // ahora sí es un objeto, no un int
+
+        if (!$test) {
+            $this->command->error("No hay tests creados. Crea al menos uno antes de ejecutar este seeder.");
+            return;
+        }
+
         $niveles = [
             'Participación profesional' => [
                 ['A1', 'Novato', 0, 4, 'muy poca experiencia y contacto con la tecnología
@@ -165,7 +173,8 @@ innovación con TIC y son un modelo a seguir para otros docentes.'],
             }
 
             foreach ($rangos as [$code, $name, $min, $max, $desc]) {
-                AreaCompetencyLevel::updateOrCreate([
+                TestAreaCompetencyLevel::updateOrCreate([
+                    'test_id' => $test->id,
                     'area_id' => $area->id,
                     'code' => $code,
                 ], [
@@ -177,6 +186,6 @@ innovación con TIC y son un modelo a seguir para otros docentes.'],
             }
         }
 
-        $this->command->info("Niveles de competencia por área cargados correctamente.");
+        $this->command->info("Niveles de competencia por área y test cargados correctamente.");
     }
 }
