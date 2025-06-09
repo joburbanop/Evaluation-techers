@@ -883,6 +883,339 @@ class TestsSeeder extends Seeder
         ]);
 
 
+        $question23 = Question::create([
+            'test_id' => $test->id,
+            'question' => '¿Cual es tu sexo/género?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' => $question23 ->id,
+            'option' => "Masculino.",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question23 ->id,
+            'option' => "Femenino",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question23 ->id,
+            'option' => "Prefiero no declarar ",
+            'score' => 0,
+        ]);
+
+        $question24= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿Cuántos años tiene?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "Menores de 25 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "FemeninoEntre 25 y 29 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "Entre 30 y 39 años ",
+            'score' => 0,
+        ]);
+        
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "Entre 40 y 49 años",
+            'score' => 0,
+        ]);
+        
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "Entre 50 y 59 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "60 años o más",
+            'score' => 0,
+        ]);
+        
+        Option::create([
+            'question_id' => $question24 ->id,
+            'option' => "Prefiero no declarar",
+            'score' => 0,
+        ]);
+
+        $question25= Question::create([
+            'test_id' => $test->id,
+            'question' => 'Incluyendo este año escolar, ¿cuántos años lleva usted trabajando como docente?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' => $question25 ->id,
+            'option' => "De 1 a 5 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question25 ->id,
+            'option' => "De 6 a 10 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question25 ->id,
+            'option' => "Edades 11-15",
+            'score' => 0,
+        ]);
+        
+        Option::create([
+            'question_id' => $question25 ->id,
+            'option' => "16-20 años",
+            'score' => 0,
+        ]);
+        
+        Option::create([
+            'question_id' => $question25 ->id,
+            'option' => "Mas de 20 años",
+            'score' => 0,
+        ]);
+
+        $question26= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿Cual es tu titulo?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' => $question26 ->id,
+            'option' => "Grado profesional",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question26 ->id,
+            'option' => "Especializacion",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question26 ->id,
+            'option' => "Maestria",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question26 ->id,
+            'option' => "Doctor en filosofia",
+            'score' => 0,
+        ]);
+        
+        Option::create([
+            'question_id' => $question26 ->id,
+            'option' => "Otro",
+            'score' => 0,
+        ]);
+        
+
+        $question27= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿En qué tipo de contrataciòn tiene?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' => $question27 ->id,
+            'option' => "Profesor a tiempo completo",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question27 ->id,
+            'option' => "Profesor a tiempo parcial",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question27 ->id,
+            'option' => "Profesor por horas",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' => $question27 ->id,
+            'option' => "No estoy actuando en este momento",
+            'score' => 0,
+        ]);
+        
+       
+        
+        $question28= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿En qué áreas del conocimiento docente trabaja usted predominantemente como docente?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Educacion",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Artes y humanidades",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Ciencias sociales, comunicacion e informacion ",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Negocios, administracion y derecho",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Ciecnias naturales, matematicas y estadistica",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Tecnologias de la computacion y la informacion y la comunicacion",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Agricultura, silvicultura, pesca y medicina veterinaria",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Salud y bienestar",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Serviciosa",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "No estoy actuando en este momenton",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "AOtros",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question28->id,
+            'option' => "Prefiero no declarar",
+            'score' => 0,
+        ]);
+        
+        
+
+
+        $question29= Question::create([
+            'test_id' => $test->id,
+            'question' => '¿Cuánto tiempo llevas utilizando tecnologías digitales en tus clases?',
+            'area_id' => 8,
+            'factor_id' => 8,
+            'order' => 22
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "Menos de 1 año",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "1-3 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "4-5 años ",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "6-9 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "10-14 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "15-19 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "Mayor de 19 años",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "20 años o más",
+            'score' => 0,
+        ]);
+
+        Option::create([
+            'question_id' =>  $question29->id,
+            'option' => "Prefiero no declarar",
+            'score' => 0,
+        ]);
+
+        
 
     }
 }
