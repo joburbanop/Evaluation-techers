@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
-use PDF; // Asegúrate de tener instalado barryvdh/laravel-dompdf
+use PDF;
 use App\Models\TestAssignment;
+use App\Models\TestCompetencyLevel;
+use App\Models\TestAreaCompetencyLevel;
+use App\Models\AreaCompetencyLevel; // ✅ esta línea soluciona el error
+
 
 class RealizarTestPdfController extends Controller
 {
@@ -17,7 +23,7 @@ class RealizarTestPdfController extends Controller
         $totalScore = $record->responses->sum(fn($r) => $r->option->score ?? 0);
         $maxPossibleScore = $record->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
         $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
-        $nivelGlobal = \App\Models\CompetencyLevel::getLevelByScore($totalScore);
+        $nivelGlobal = TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
         //    - Percentil global
         $allScores = \App\Models\TestAssignment::with(['responses.option'])
@@ -73,24 +79,37 @@ class RealizarTestPdfController extends Controller
             ->with([
                 'area',
                 'options',
-                'responses' => fn($q) => $q->where('test_assignment_id', $record->id)
+                'responses' => function ($query) use ($record) {
+                    $query->where('test_assignment_id', $record->id);
+                }
             ])
             ->get()
-            ->filter(fn($q) => $q->area !== null)
-            ->groupBy(fn($q) => $q->area->id);
+            ->filter(fn ($q) => $q->area !== null)
+            ->groupBy(fn ($q) => $q->area->id);
+
         $areaResults = collect();
+
         foreach ($preguntasAgrupadas as $areaId => $preguntas) {
             $area = $preguntas->first()->area;
-            $puntajeAreaObtenido = $preguntas->sum(fn($preg) => $preg->responses->sum(fn($r) => $r->option->score ?? 0));
-            $puntajeAreaMax = $preguntas->sum(fn($preg) => $preg->options->max('score') ?? 0);
-            $nivelArea = \App\Models\CompetencyLevel::getLevelByScore($puntajeAreaObtenido);
+
+            $puntajeObtenido = $preguntas->sum(fn ($pregunta) =>
+                $pregunta->responses->sum(fn ($r) => $r->option->score ?? 0)
+            );
+
+            $puntajeMaximo = $preguntas->sum(fn ($pregunta) =>
+                $pregunta->options->max('score') ?? 0
+            );
+
+            $nivel = TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido)
+                    ?? AreaCompetencyLevel::getLevelByAreaAndScore($area->id, $puntajeObtenido);
+
             $areaResults->push([
                 'area_name' => $area->name,
-                'obtained_score' => $puntajeAreaObtenido,
-                'max_possible' => $puntajeAreaMax,
-                'percentage' => $puntajeAreaMax > 0 ? round(($puntajeAreaObtenido / $puntajeAreaMax) * 100) : 0,
-                'level_code' => $nivelArea?->code ?? 'Sin código',
-                'level_description' => $nivelArea?->description ?? 'Sin descripción',
+                'obtained_score' => $puntajeObtenido,
+                'max_possible' => $puntajeMaximo,
+                'percentage' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100) : 0,
+                'level_code' => $nivel?->code ?? 'Sin código',
+                'level_description' => $nivel?->description ?? 'Sin descripción',
             ]);
         }
 

@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             TestCompetencyLevelSeeder::class,
             AreaCompetencyLevelsSeeder::class,
+            UsuariosFromExcelSeeder::class,
         ]);
     }
 }

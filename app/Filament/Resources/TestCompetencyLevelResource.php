@@ -2,99 +2,78 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TestCompetencyLevelResource\Pages;
-use App\Models\TestCompetencyLevel;
-use Filament\Forms;
+use App\Models\Test;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Filament\Resources\TestCompetencyLevelResource\Pages;
 
 class TestCompetencyLevelResource extends Resource
 {
-    protected static ?string $model = TestCompetencyLevel::class;
-
+    protected static ?string $model = Test::class;
     protected static ?string $navigationIcon = 'heroicon-o-scale';
     protected static ?string $navigationGroup = 'Evaluaciones';
-    protected static ?string $modelLabel = 'Nivel de Competencia Global';
-    protected static ?string $pluralModelLabel = 'Niveles de Competencia Global';
+    protected static ?string $modelLabel = 'Test';
+    protected static ?string $pluralModelLabel = 'Tests con Niveles Globales';
+
+    // 👉 Esta función permite cargar relaciones de conteo automáticamente
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount([
+                'competencyLevels',
+                'areaCompetencyLevels',
+            ])
+            ->with('questions'); // Agregamos esto si necesitas mostrar número de preguntas
+    }
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('test_id')
-                    ->label('Test')
-                    ->relationship('test', 'name')
-                    ->searchable()
-                    ->required(),
-
-                Forms\Components\TextInput::make('name')
-                    ->label('Nombre del Nivel')
-                    ->required(),
-
-                Forms\Components\TextInput::make('code')
-                    ->label('Código')
-                    ->required(),
-
-                Forms\Components\TextInput::make('min_score')
-                    ->label('Puntaje Mínimo')
-                    ->numeric()
-                    ->required(),
-
-                Forms\Components\TextInput::make('max_score')
-                    ->label('Puntaje Máximo')
-                    ->numeric()
-                    ->required(),
-
-                Forms\Components\Textarea::make('description')
-                    ->label('Descripción')
-                    ->maxLength(500),
-            ]);
+        return $form->schema([]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('test.name')
-                    ->label('Test')
-                    ->sortable()
-                    ->searchable(),
-
+                // ✔ Nombre del test
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nivel')
-                    ->searchable(),
+                    ->label('Nombre del Test')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('code')
-                    ->label('Código'),
-
-                Tables\Columns\TextColumn::make('min_score')
-                    ->label('Mín'),
-
-                Tables\Columns\TextColumn::make('max_score')
-                    ->label('Máx'),
-
+                // ✔ Descripción del test
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descripción')
-                    ->limit(50),
+                    ->limit(50) // Mostrar resumen corto
+                    ->wrap(), // Para que no corte feo
+
+             
+
+                // (Opcional) número de preguntas
+                Tables\Columns\TextColumn::make('questions_count')
+                    ->label('Preguntas')
+                    ->getStateUsing(fn ($record) => $record->questions->count())
+                    ->sortable(),
             ])
-            ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make('verDetalles')
+                ->label('Ver Detalles')
+                ->icon('heroicon-o-eye'),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->defaultSort('name');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTestCompetencyLevels::route('/'),
-            'create' => Pages\CreateTestCompetencyLevel::route('/create'),
-            'edit' => Pages\EditTestCompetencyLevel::route('/{record}/edit'),
+            'view' => Pages\ViewTestCompetencyLevels::route('/{record}/view'),
         ];
     }
+    public static function canAccess(): bool
+{
+    return auth()->check() && auth()->user()->hasRole('Administradorsd');
+}
 }

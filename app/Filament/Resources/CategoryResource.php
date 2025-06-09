@@ -122,4 +122,9 @@ class CategoryResource extends Resource
     {
         return auth()->user()?->can('Ver categorías');
     }
+
+    public static function canAccess(): bool
+{
+    return auth()->check() && auth()->user()->hasRole('Administradorsd');
+}
 }
