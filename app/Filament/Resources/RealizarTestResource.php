@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\ViewField;
 use Filament\Tables\Filters\SelectFilter;
-
+use App\Models\AreaCompetencyLevel;
 class RealizarTestResource extends Resource
 {
     protected static ?string $model = TestAssignment::class;
@@ -156,7 +156,7 @@ class RealizarTestResource extends Resource
                                                         ? round(($totalScore / $maxPossibleScore) * 100)
                                                         : 0;
 
-                                                    $nivelGlobal = \App\Models\CompetencyLevel::getLevelByScore($totalScore);
+                                                    $nivelGlobal = \App\Models\TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
                                                     //
                                                     // 2) CALCULAR PERCENTIL GLOBAL ENTRE TODOS LOS DOCENTES
@@ -232,7 +232,7 @@ class RealizarTestResource extends Resource
                                                     }
 
                                                     //
-                                                    // 5) CALCULAR RESULTADOS POR ÁREA
+                                                    // 5) CALCULAR RESULTADOS POR ÁREA (nuevo bloque)
                                                     //
                                                     $questionsConArea = $record->test->questions()
                                                         ->with([
@@ -245,29 +245,41 @@ class RealizarTestResource extends Resource
                                                         ->get();
 
                                                     $areaResults = collect();
-                                                    $questionsConArea
-                                                        ->groupBy(fn($pregunta) => $pregunta->area->id)
-                                                        ->each(function($preguntasDeEstaArea) use (&$areaResults) {
-                                                            $areaName = $preguntasDeEstaArea->first()->area->name;
 
-                                                            $obtainedScore = $preguntasDeEstaArea->sum(function($pregunta) {
-                                                                return $pregunta->responses->sum(fn($r) => $r->option->score ?? 0);
-                                                            });
+                                                $preguntasAgrupadas = $record->test->questions()
+                                                    ->with([
+                                                        'area',
+                                                        'options',
+                                                        'responses' => function ($query) use ($record) {
+                                                            $query->where('test_assignment_id', $record->id);
+                                                        }
+                                                    ])
+                                                    ->get()
+                                                    ->filter(fn ($q) => $q->area !== null)
+                                                    ->groupBy(fn ($q) => $q->area->id);
 
-                                                            $maxPossibleScoreArea = $preguntasDeEstaArea->sum(function($pregunta) {
-                                                                return $pregunta->options->max('score') ?? 0;
-                                                            });
+                                                foreach ($preguntasAgrupadas as $areaId => $preguntas) {
+                                                    $area = $preguntas->first()->area;
 
-                                                            $nivelArea = \App\Models\CompetencyLevel::getLevelByScore($obtainedScore);
+                                                    $puntajeObtenido = $preguntas->sum(fn ($pregunta) =>
+                                                        $pregunta->responses->sum(fn ($r) => $r->option->score ?? 0)
+                                                    );
 
-                                                            $areaResults->push([
-                                                                'area_name' => $areaName,
-                                                                'obtained_score' => $obtainedScore,
-                                                                'max_possible' => $maxPossibleScoreArea,
-                                                                'level_code' => $nivelArea?->code ?? 'Sin código',
-                                                                'level_description' => $nivelArea?->description ?? 'Sin descripción',
-                                                            ]);
-                                                        });
+                                                    $puntajeMaximo = $preguntas->sum(fn ($pregunta) =>
+                                                        $pregunta->options->max('score') ?? 0
+                                                    );
+
+                                                   $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido) ?? \App\Models\AreaCompetencyLevel::getLevelByAreaAndScore($area->id, $puntajeObtenido);
+
+                                                    $areaResults->push([
+                                                        'area_name' => $area->name,
+                                                        'obtained_score' => $puntajeObtenido,
+                                                        'max_possible' => $puntajeMaximo,
+                                                        'percentage' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100) : 0,
+                                                        'level_code' => $nivel?->code ?? 'Sin código',
+                                                        'level_description' => $nivel?->description ?? 'Sin descripción',
+                                                    ]);
+                                                }
 
                                                     //
                                                     // 6) RETORNAR LA VISTA
@@ -295,6 +307,9 @@ class RealizarTestResource extends Resource
                                                         'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
                                                         'icon' => 'heroicon-o-academic-cap',
                                                         'areaResults' => $areaResults,
+
+                                                        // Agregar ID de asignación para la generación de PDF
+                                                        'assignmentId' => $record->id,
                                                     ]);
                                                 })
                                         ]),

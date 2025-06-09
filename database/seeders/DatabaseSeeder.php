@@ -14,7 +14,9 @@ use Database\Seeders\ProgramaSeeder;      // <-- después de FacultadSeeder
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\AreaFactorSeeder;
 use Database\Seeders\TestsSeeder;
-use Database\Seeders\CompetencyLevelSeeder;
+use App\Models\TestCompetencyLevel;
+use App\Models\AreaCompetencyLevel;
+
 use Database\Seeders\AdminUserSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -28,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartamentoSeeder::class,
             CiudadSeeder::class,
+             
         ]);
 
         // 2) Luego permisos y roles (si aplican)
@@ -48,8 +51,10 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             AreaFactorSeeder::class,
             TestsSeeder::class,
-            CompetencyLevelSeeder::class,
+            
             AdminUserSeeder::class,
+            TestCompetencyLevelSeeder::class,
+            AreaCompetencyLevelsSeeder::class,
         ]);
     }
 }

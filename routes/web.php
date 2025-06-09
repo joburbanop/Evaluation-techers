@@ -12,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\RiasController;
 use App\Http\Controllers\TestResultController;
+use App\Http\Controllers\RealizarTestPdfController;
 
 // Ruta de inicio que redirige al dashboard según el rol
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -106,3 +107,6 @@ Route::get('/test-results/{assignment}', [TestResultController::class, 'show'])-
 // Por tanto, no es necesario definir rutas manuales aquí.
 
 
+
+Route::get('/realizar-test/{id}/pdf', [RealizarTestPdfController::class, 'generate'])
+    ->name('realizar-test.pdf');

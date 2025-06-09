@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\TestCompetencyLevel;
 
 class Test extends Model
 {
@@ -34,6 +35,11 @@ class Test extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function competencyLevels(): HasMany
+    {
+        return $this->hasMany(TestCompetencyLevel::class);
+    }   
 
     public function questions(): HasMany
     {
@@ -86,8 +92,14 @@ class Test extends Model
         return $this->is_active;
     }
 
-    public function competencyLevels()
+    public function globalCompetencyLevels(): HasMany
     {
-        return $this->hasMany(CompetencyLevel::class);
+        return $this->hasMany(TestCompetencyLevel::class);
+    }
+
+
+    public function areaCompetencyLevels(): HasMany
+    {
+        return $this->hasMany(TestAreaCompetencyLevel::class);
     }
 }

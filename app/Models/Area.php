@@ -21,6 +21,10 @@ class Area extends Model
     {
         return $this->hasMany(Question::class);
     }
+    public function competencyLevels(): HasMany
+    {
+        return $this->hasMany(AreaCompetencyLevel::class);
+    }
 
     public static function initializeAreas(): void
     {

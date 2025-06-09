@@ -81,11 +81,7 @@ class TestResponse extends Model
         return $this->score ?? 0;
     }
 
-    public function getCompetencyLevel(): ?CompetencyLevel
-    {
-        $totalScore = $this->calculateTotalScore();
-        return CompetencyLevel::getLevelByScore($totalScore);
-    }
+
 
 
     public function markAsCorrect(): void
