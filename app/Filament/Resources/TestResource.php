@@ -38,58 +38,146 @@ class TestResource extends Resource
                         ->icon('heroicon-o-document-text')
                         ->schema([
                             Forms\Components\Section::make('Información del Test')
-                                ->description('Ingrese la información básica del test')
+                            ->description('Completa los datos principales y define los niveles de competencia globales y por área.')
+                            ->schema([
+                                // --- Nombre y descripción ---
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nombre del Test')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->columnSpanFull()
+                                    ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
+                                    ->prefixIcon('heroicon-o-document-text')
+                                    ->prefixIconColor('primary'),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descripción')
+                                    ->maxLength(500)
+                                    ->columnSpanFull()
+                                    ->extraAttributes(['class' => 'text-base font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4'])
+                                    ->placeholder('Ingrese una descripción detallada del test...'),
+
+                        // ---- NIVELES DE COMPETENCIA GLOBALES ----
+                        Forms\Components\Section::make('🌐 Niveles de Competencia Globales')
+                            ->description('Define los niveles y sus rangos generales para este test.')
+                            ->schema([
+                                Forms\Components\Repeater::make('competencyLevels')
+                                    ->relationship('competencyLevels')
+                                    ->label('Niveles Globales')
+                                    ->createItemButtonLabel('➕ Agregar nivel global')
+                                    ->columns(2)
+                                    ->columnSpanFull()
+                                    ->itemLabel(fn ($state) =>
+                                        (!empty($state['code']) && !empty($state['name']))
+                                            ? "({$state['code']}) {$state['name']}" : 'Nivel global'
+                                    )
+                                    ->schema([
+                                        Forms\Components\TextInput::make('name')
+                                            ->label('Nombre del nivel')
+                                            ->required()
+                                            ->helperText('Ejemplo: Inicial, Avanzado, Experto'),
+                                        Forms\Components\TextInput::make('code')
+                                            ->label('Código')
+                                            ->required()
+                                            ->helperText('Ejemplo: A1, B2, C3...'),
+                                        Forms\Components\TextInput::make('min_score')
+                                            ->label('Puntaje mínimo')
+                                            ->numeric()
+                                            ->required(),
+                                        Forms\Components\TextInput::make('max_score')
+                                            ->label('Puntaje máximo')
+                                            ->numeric()
+                                            ->required(),
+                                        Forms\Components\Textarea::make('description')
+                                            ->label('Descripción')
+                                            ->default('Sin descripción')
+                                            ->rows(2)
+                                            ->maxLength(200),
+                                    ])
+                                    ->collapsible()
+                                    ->collapsed()
+                                    ->extraAttributes(['class' => 'bg-blue-50 border border-blue-100 rounded-xl shadow-sm p-4 my-2']),
+                            ])
+                            ->collapsible()
+                            ->collapsed(false)
+                            ->extraAttributes(['class' => 'bg-white border-l-4 border-blue-200 shadow p-5 rounded-2xl']),
+                                        
+                            ]),
+
+                            // ---- NIVELES DE COMPETENCIA POR ÁREA ----
+                            Forms\Components\Section::make('🏷️ Niveles de Competencia por Área')
+                               
+                                ->description('Define los niveles específicos para cada área evaluada.')
+                                
                                 ->schema([
-                                    Forms\Components\TextInput::make('name')
-                                        ->label('Nombre del Test')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->columnSpanFull()
-                                        ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
-                                        ->prefixIcon('heroicon-o-document-text')
-                                        ->prefixIconColor('primary'),
+                                    Forms\Components\Repeater::make('testAreaCompetencyLevels')
+                                    ->relationship('testAreaCompetencyLevels')
+                                    ->label('Niveles por Área')
+                                    ->createItemButtonLabel('➕ Agregar nivel por área')
+                                    ->columns(3)
+                                    ->columnSpanFull()
+                                    ->itemLabel(function ($state) {
+                                        $areaName = '';
+                                        if (!empty($state['area_id'])) {
+                                            $area = \App\Models\Area::find($state['area_id']);
+                                            if ($area) $areaName = $area->name;
+                                        }
+                                        return !empty($areaName) && !empty($state['code']) && !empty($state['name'])
+                                            ? "[$areaName] ({$state['code']}) {$state['name']}" : 'Nivel por área';
+                                    })
+                                    ->schema([
+                                         Forms\Components\Select::make('area_id')
+                                            ->label('Área')
+                                            ->required()
+                                            ->options(fn () => \App\Models\Area::pluck('name', 'id'))
+                                            ->helperText('Seleccione el área de este nivel')
+                                            ->searchable()
+                                            ->preload(),
+                                         
 
-                                    Forms\Components\Textarea::make('description')
-                                        ->label('Descripción')
-                                        ->maxLength(500)
-                                        ->columnSpanFull()
-                                        ->extraAttributes(['class' => 'text-base font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4'])
-                                        ->placeholder('Ingrese una descripción detallada del test...'),
+                                        Forms\Components\TextInput::make('name')
+                                            ->label('Nombre del nivel')
+                                            ->required()
+                                            ->maxLength(50)
+                                            ->helperText('Ejemplo: Inicial, Experto, Avanzado'),
 
-                                    Forms\Components\Section::make('Niveles de Competencia')
-                                        ->description('Define los niveles y sus rangos para este test')
-                                        ->schema([
-                                            Forms\Components\Repeater::make('competencyLevels')
-                                                ->relationship('competencyLevels') // importante: así lo vinculas al test
-                                                ->label('Niveles de Competencia')
-                                                ->createItemButtonLabel('Agregar nivel')
-                                                ->schema([
-                                            Forms\Components\TextInput::make('name')
-                                                ->label('Nombre del nivel')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('code')
-                                                ->label('Código')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('min_score')
-                                                ->label('Puntaje mínimo')
-                                                ->numeric()
-                                                ->required(),
-                                            Forms\Components\TextInput::make('max_score')
-                                                ->label('Puntaje máximo')
-                                                ->numeric()
-                                                ->required(),
-                                            Forms\Components\Textarea::make('description')
-                                                ->label('Descripción')
-                                                ->default('Sin descripción')
-                                        ])
-                                        ->columns(2)
-                                ])
+                                        Forms\Components\TextInput::make('code')
+                                            ->label('Código')
+                                            ->required()
+                                            ->maxLength(10)
+                                            ->helperText('Ejemplo: A1, B2, C3...'),
 
+                                        Forms\Components\TextInput::make('min_score')
+                                            ->label('Puntaje mínimo')
+                                            ->numeric()
+                                            ->required(),
 
-                                ])
-                                ->columns(1)
-                                ->extraAttributes(['class' => 'border-2 border-primary-100 rounded-xl p-6 bg-white shadow-sm']),
-                        ]),
+                                        Forms\Components\TextInput::make('max_score')
+                                            ->label('Puntaje máximo')
+                                            ->numeric()
+                                            ->required(),
+
+                                        Forms\Components\Textarea::make('description')
+                                            ->label('Descripción')
+                                            ->rows(2)
+                                            ->helperText('Breve explicación de este nivel.')
+                                            ->maxLength(200)
+                                            ->required(),
+                                    ])
+                                   
+                                    ->collapsible()
+                                    ->collapsed()
+                                    ->defaultItems(1)
+                                    ->extraAttributes([
+                                        'class' => 'bg-primary-50 border border-primary-100 rounded-xl shadow-sm p-4 my-2',
+                                    ])
+                                    
+                                            ])
+                                            
+                                    ])
+                                    ->columns(1)
+                                    ->extraAttributes(['class' => 'bg-white border-2 border-primary-100 rounded-2xl shadow-md p-8 space-y-6']),
+                            
 
                     Wizard\Step::make('Preguntas')
                         ->icon('heroicon-o-question-mark-circle')
@@ -164,47 +252,7 @@ class TestResource extends Resource
                                                             ->modalWidth('md')
                                                     )
                                                     ->columnSpanFull(),
-Forms\Components\Repeater::make('editable_test_area_levels')
-    ->label('Niveles de competencia de esta área en este test')
-    ->visible(fn ($get) => filled($get('area_id')))
-    ->dehydrated(false) // ✅ evita el error
-    ->reactive()
-    ->afterStateHydrated(function (callable $set, $get) {
-        $areaId = $get('area_id');
-        $testId = request()->route('record');
 
-        if (!$areaId || !$testId) return;
-
-        $niveles = \App\Models\TestAreaCompetencyLevel::where('test_id', $testId)
-            ->where('area_id', $areaId)
-            ->get()
-            ->map(fn ($level) => [
-                'id' => $level->id,
-                'name' => $level->name,
-                'code' => $level->code,
-                'min_score' => $level->min_score,
-                'max_score' => $level->max_score,
-                'description' => $level->description,
-            ])
-            ->toArray();
-
-        $set('editable_test_area_levels', $niveles);
-    })
-    ->schema([
-        Forms\Components\Grid::make(2)->schema([
-            Forms\Components\TextInput::make('name')->label('Nombre')->required(),
-            Forms\Components\TextInput::make('code')->label('Código')->required(),
-        ]),
-        Forms\Components\Grid::make(2)->schema([
-            Forms\Components\TextInput::make('min_score')->label('Puntaje mínimo')->numeric()->required(),
-            Forms\Components\TextInput::make('max_score')->label('Puntaje máximo')->numeric()->required(),
-        ]),
-        Forms\Components\Textarea::make('description')->label('Descripción')->rows(3)->required(),
-    ])
-    ->columns(1)
-    ->columnSpanFull()
-    ->itemLabel(fn (array $state): ?string =>
-        !empty($state['name']) ? "{$state['code']} - {$state['name']}" : 'Nivel'),         
 
                                                 Forms\Components\Textarea::make('question')
                                                     ->label('Pregunta')

@@ -102,8 +102,10 @@ class Test extends Model
     {
         return $this->hasMany(TestAreaCompetencyLevel::class);
     }
-    public function testAreaCompetencyLevels()
-    {
-        return $this->hasMany(TestAreaCompetencyLevel::class);
-    }
+// App\Models\Test.php
+
+public function testAreaCompetencyLevels()
+{
+    return $this->hasMany(\App\Models\TestAreaCompetencyLevel::class, 'test_id');
+}
 }
