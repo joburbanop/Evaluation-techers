@@ -15,6 +15,8 @@ class FacultadSeeder extends Seeder
             ['nombre' => 'Facultad de Educación', 'institution_id' => 68, 'created_at' => now(), 'updated_at' => now()],
             ['nombre' => 'Facultad de Ciencias de la Salud', 'institution_id' => 68, 'created_at' => now(), 'updated_at' => now()],
             ['nombre' => 'Facultad de Ingeniería', 'institution_id' => 68, 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Direccion general', 'institution_id' => 68, 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Vicerrectoria academica', 'institution_id' => 68, 'created_at' => now(), 'updated_at' => now()],
         ];
 
         foreach ($facultades as $fac) {
