@@ -572,30 +572,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question15->id,
+            'question_id' =>$question15->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question15->id,
+            'question_id' => $question15->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question15->id,
+            'question_id' => $question15->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question15->id,
+            'question_id' => $question15->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question15->id,
+            'question_id' => $question15->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -611,30 +611,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question16->id,
+            'question_id' => $question16->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question16->id,
+            'question_id' => $question16->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question16->id,
+            'question_id' => $question16->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question16>id,
+            'question_id' => $question16->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question16->id,
+            'question_id' => $question16->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -650,30 +650,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question17->id,
+            'question_id' => $question17->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question17->id,
+            'question_id' => $question17->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question17->id,
+            'question_id' => $question17->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question17->id,
+            'question_id' => $question17->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question17->id,
+            'question_id' => $question17->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -689,30 +689,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question18->id,
+            'question_id' => $question18->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question18->id,
+            'question_id' => $question18->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question18->id,
+            'question_id' => $question18->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question18->id,
+            'question_id' => $question18->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question18->id,
+            'question_id' => $question18->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -728,30 +728,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question19->id,
+            'question_id' => $question19->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question19->id,
+            'question_id' => $question19->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question19->id,
+            'question_id' => $question19->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question19->id,
+            'question_id' => $question19->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question19->id,
+            'question_id' => $question19->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -768,30 +768,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question20->id,
+            'question_id' => $question20->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question20->id,
+            'question_id' => $question20->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question20->id,
+            'question_id' => $question20->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question20->id,
+            'question_id' => $question20->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question20->id,
+            'question_id' => $question20->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -807,30 +807,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question21->id,
+            'question_id' => $question21->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question21->id,
+            'question_id' => $question21->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question21->id,
+            'question_id' => $question21->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question21->id,
+            'question_id' => $question21->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question21->id,
+            'question_id' => $question21->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -846,30 +846,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question22->id,
+            'question_id' => $question22->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question22->id,
+            'question_id' => $question22->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question22->id,
+            'question_id' => $question22->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question22->id,
+            'question_id' => $question22->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question22->id,
+            'question_id' => $question22->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -885,30 +885,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question23->id,
+            'question_id' => $question23->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question23->id,
+            'question_id' => $question23->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question23->id,
+            'question_id' => $question23->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question23->id,
+            'question_id' => $question23->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question23->id,
+            'question_id' => $question23->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -925,30 +925,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question24->id,
+            'question_id' => $question24->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question24->id,
+            'question_id' => $question24->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question24->id,
+            'question_id' => $question24->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question24->id,
+            'question_id' => $question24->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question24->id,
+            'question_id' => $question24->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -965,30 +965,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question25->id,
+            'question_id' => $question25->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question25->id,
+            'question_id' => $question25->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question25->id,
+            'question_id' => $question25->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question25->id,
+            'question_id' => $question25->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question25->id,
+            'question_id' => $question25->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1007,30 +1007,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question26->id,
+            'question_id' => $question26->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question26->id,
+            'question_id' => $question26->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question26->id,
+            'question_id' => $question26->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question26->id,
+            'question_id' => $question26->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question26->id,
+            'question_id' => $question26->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1046,30 +1046,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question27->id,
+            'question_id' => $question27->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question27->id,
+            'question_id' => $question27->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question27->id,
+            'question_id' => $question27->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question27->id,
+            'question_id' => $question27->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question27->id,
+            'question_id' => $question27->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1085,30 +1085,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question28->id,
+            'question_id' => $question28->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question28->id,
+            'question_id' => $question28->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question28->id,
+            'question_id' => $question28->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question28->id,
+            'question_id' => $question28->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question28->id,
+            'question_id' => $question28->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1124,30 +1124,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question29->id,
+            'question_id' => $question29->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question29->id,
+            'question_id' => $question29->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question29->id,
+            'question_id' => $question29->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question29->id,
+            'question_id' => $question29->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question29->id,
+            'question_id' => $question29->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1163,30 +1163,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question30->id,
+            'question_id' => $question30->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question30->id,
+            'question_id' => $question30->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question30->id,
+            'question_id' => $question30->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question30->id,
+            'question_id' => $question30->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question30->id,
+            'question_id' => $question30->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1202,30 +1202,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question31->id,
+            'question_id' => $question31->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question31->id,
+            'question_id' => $question31->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question31->id,
+            'question_id' => $question31->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question31->id,
+            'question_id' => $question31->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question31->id,
+            'question_id' => $question31->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1241,30 +1241,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question32->id,
+            'question_id' => $question32->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question32->id,
+            'question_id' => $question32->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question32->id,
+            'question_id' => $question32->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question32->id,
+            'question_id' => $question32->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question32->id,
+            'question_id' => $question32->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1280,30 +1280,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question33->id,
+            'question_id' => $question33->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question33->id,
+            'question_id' => $question33->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question33->id,
+            'question_id' => $question33->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question33->id,
+            'question_id' => $question33->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question33->id,
+            'question_id' => $question33->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1319,30 +1319,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question34->id,
+            'question_id' => $question34->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question34->id,
+            'question_id' => $question34->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question34->id,
+            'question_id' => $question34->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question34->id,
+            'question_id' => $question34->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question34->id,
+            'question_id' => $question34->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1357,30 +1357,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question35->id,
+            'question_id' => $question35->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question35->id,
+            'question_id' => $question35->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question35->id,
+            'question_id' => $question35->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question35->id,
+            'question_id' => $question35->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question35->id,
+            'question_id' => $question35->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
@@ -1396,30 +1396,30 @@ class TestInteligenciaArtificialSeeder extends Seeder
         ]);
 
         Option::create([
-            'question_id' =>$ $question36->id,
+            'question_id' => $question36->id,
             'option' => "Nunca",
             'score' => 0,
         ]);
 
         Option::create([
-            'question_id' =>$ $question36->id,
+            'question_id' => $question36->id,
             'option' => "Rara vez",
             'score' => 1,
         ]);
 
         Option::create([
-            'question_id' =>$ $question36->id,
+            'question_id' => $question36->id,
             'option' => "Algunas veces",
             'score' => 2,
         ]);
          Option::create([
-            'question_id' =>$ $question36->id,
+            'question_id' => $question36->id,
             'option' => "A Menudo",
             'score' => 3,
         ]);
 
         Option::create([
-            'question_id' =>$ $question36->id,
+            'question_id' => $question36->id,
             'option' => "Siempre",
             'score' => 4,
         ]);
