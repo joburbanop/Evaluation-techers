@@ -17,9 +17,11 @@ class ProgramaSeeder extends Seeder
             ['nombre' => 'Psicología',         'tipo' => 'Pregrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['nombre' => 'Especialización en Familia',                     'tipo' => 'Posgrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['nombre' => 'Maestría en Derecho Público y Privado',          'tipo' => 'Posgrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Maestría en Gobernanza y Políticas Públicas',    'tipo' => 'Posgrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Maestría en Salud Mental (en convenio con CES)', 'tipo' => 'Posgrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-
+            ['nombre' => 'Consultorio juridico y centro de conciliacion',    'tipo' => 'Posgrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Decanatura de Humanidades y ciencias sociales ', 'tipo' => 'Posgrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Departamento de humanidades',            'tipo' => 'Pregrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Centro de idiomas',            'tipo' => 'Pregrado', 'facultad_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            
             // === Facultad de Ciencias Contables, Económicas y Administrativas ===
             ['nombre' => 'Mercadeo',               'tipo' => 'Pregrado', 'facultad_id' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['nombre' => 'Contaduría Pública',      'tipo' => 'Pregrado', 'facultad_id' => 2, 'created_at' => now(), 'updated_at' => now()],
