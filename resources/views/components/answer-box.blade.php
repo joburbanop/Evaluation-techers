@@ -14,6 +14,7 @@
 @endphp
 
 <div class="p-4 rounded-lg bg-{{ $color }}-50 border border-{{ $color }}-200">
+    
     <div class="flex items-start space-x-3">
         @if($isCorrect)
             <x-heroicon-s-check-circle class="w-5 h-5 text-{{ $color }}-500 flex-shrink-0 mt-0.5" />

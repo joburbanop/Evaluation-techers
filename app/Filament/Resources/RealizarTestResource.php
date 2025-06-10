@@ -269,7 +269,7 @@ class RealizarTestResource extends Resource
                                                         $pregunta->options->max('score') ?? 0
                                                     );
 
-                                                    $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->id, $area->id, $puntajeObtenido);
+                                                    $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido);
                                                     $areaResults->push([
                                                         'area_name' => $area->name,
                                                         'obtained_score' => $puntajeObtenido,
@@ -393,32 +393,36 @@ class RealizarTestResource extends Resource
                                                     'area' => $question->area->name
                                                 ]),
 
-                                            Forms\Components\Radio::make("answers.{$question->id}")
-                                                ->options(function() use ($question) {
-                                                    $options = [];
-                                                    foreach ($question->options as $option) {
-                                                        $options[$option->id] = new \Illuminate\Support\HtmlString(
-                                                            '<div class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">' .
-                                                            '<span class="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-gray-100 text-gray-800 border border-gray-300 text-xs">'
-                                                            . chr(65 + $option->index) . '</span>' .
-                                                            '<span>' . $option->option . '</span>' .
-                                                            '</div>'
-                                                        );
-                                                    }
-                                                    return $options;
-                                                })
-                                                ->label('Selecciona una respuesta:')
-                                                ->inline()
-                                                ->inlineLabel(false)
-                                                ->columnSpanFull()
-                                                ->extraAttributes(['class' => 'space-y-3'])
-                                                ->live()
-                                                ->dehydrated(true)
-                                                ->default(function (TestAssignment $record) use ($question) {
-                                                    return $record->responses()
-                                                        ->where('question_id', $question->id)
-                                                        ->value('option_id');
-                                                }),
+                                        Forms\Components\Radio::make("answers.{$question->id}")
+                                            ->options(function() use ($question) {
+                                                $options = [];
+                                                foreach ($question->options as $option) {
+                                                    $options[$option->id] = new \Illuminate\Support\HtmlString(
+                                                        // Card animada solo con el texto, sin letra
+                                                        '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                            <span class="text-base font-semibold text-gray-800 group-hover:text-indigo-700 transition">' . e($option->option) . '</span>
+                                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 hidden group-[.filament-radio-option-checked]:block">
+                                                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                                                </svg>
+                                                            </span>
+                                                        </div>'
+                                                    );
+                                                }
+                                                return $options;
+                                            })
+                                            ->label('Selecciona una respuesta:')
+
+                                        
+                                            ->columnSpanFull()
+                                            ->extraAttributes(['class' => 'space-y-3'])
+                                            ->live()
+                                            ->dehydrated(true)
+                                            ->default(function (TestAssignment $record) use ($question) {
+                                                return $record->responses()
+                                                    ->where('question_id', $question->id)
+                                                    ->value('option_id');
+                                            }),
                                         ])
                                         ->columnSpanFull()
                                         ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
@@ -598,11 +602,39 @@ class RealizarTestResource extends Resource
                                         }
                                     }
 
-                                    if (count($faltantes) > 0) {
+                                    $faltantes = [];
+                                    foreach ($allQuestions as $idx => $question) {
+                                        $answer = $answers[$question->id] ?? null;
+                                        if (!empty($answer)) {
+                                            \App\Models\TestResponse::updateOrCreate(
+                                                [
+                                                    'test_assignment_id' => $record->id,
+                                                    'question_id' => $question->id
+                                                ],
+                                                [
+                                                    'option_id' => $answer,
+                                                    'user_id' => auth()->id()
+                                                ]
+                                            );
+                                        } else {
+                                            // Puedes guardar el texto y el número
+                                            $faltantes[] = [
+                                                'numero' => $idx + 1,
+                                                'texto' => $question->question,
+                                            ];
+                                        }
+                                    }
+                                   if (count($faltantes) > 0) {
+                                        $lista = '<ul class="pl-4 mt-2 space-y-1">';
+                                        foreach ($faltantes as $faltante) {
+                                            $lista .= '<li class="list-disc text-sm text-gray-700"><b>Pregunta '.$faltante['numero'].':</b> '. '</li>';
+                                        }
+                                        $lista .= '</ul>';
+
                                         Notification::make()
                                             ->title('Faltan preguntas por responder')
                                             ->warning()
-                                            ->body('Debes responder todas las preguntas antes de enviar el test.')
+                                            ->body('Debes responder todas las preguntas antes de enviar el test.<br><b>Preguntas pendientes:</b>' . $lista)
                                             ->send();
                                         return;
                                     }

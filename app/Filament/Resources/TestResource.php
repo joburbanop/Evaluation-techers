@@ -99,7 +99,7 @@ class TestResource extends Resource
                                     ->extraAttributes(['class' => 'bg-blue-50 border border-blue-100 rounded-xl shadow-sm p-4 my-2']),
                             ])
                             ->collapsible()
-                            ->collapsed(false)
+                            ->collapsed(true)
                             ->extraAttributes(['class' => 'bg-white border-l-4 border-blue-200 shadow p-5 rounded-2xl']),
                                         
                             ]),
@@ -161,21 +161,26 @@ class TestResource extends Resource
                                             ->label('Descripción')
                                             ->rows(2)
                                             ->helperText('Breve explicación de este nivel.')
-                                            ->maxLength(200)
+                                            ->maxLength(500)
                                             ->required(),
                                     ])
                                    
                                     ->collapsible()
                                     ->collapsed()
-                                    ->defaultItems(1)
+                                   
                                     ->extraAttributes([
                                         'class' => 'bg-primary-50 border border-primary-100 rounded-xl shadow-sm p-4 my-2',
                                     ])
+                                    ->collapsible()
+                                    ->collapsed(true)
                                     
                                             ])
+                                            ->collapsible()
+                                    ->collapsed(true)
+                                    ->columns(1)
                                             
                                     ])
-                                    ->columns(1)
+                                    
                                     ->extraAttributes(['class' => 'bg-white border-2 border-primary-100 rounded-2xl shadow-md p-8 space-y-6']),
                             
 

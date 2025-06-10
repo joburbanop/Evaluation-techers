@@ -1,4 +1,5 @@
 <div class="mb-8 text-center">
+    <h1>pruebas desc</h1>
     <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ $testName }}</h1>
     <p class="text-gray-600">{{ $testDescription }}</p>
     @if($isCompleted)

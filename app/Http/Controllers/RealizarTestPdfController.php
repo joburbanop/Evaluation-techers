@@ -99,9 +99,7 @@ class RealizarTestPdfController extends Controller
             $puntajeMaximo = $preguntas->sum(fn ($pregunta) =>
                 $pregunta->options->max('score') ?? 0
             );
-
-            $nivel = TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido)
-                    ?? AreaCompetencyLevel::getLevelByAreaAndScore($area->id, $puntajeObtenido);
+           $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido);
 
             $areaResults->push([
                 'area_name' => $area->name,

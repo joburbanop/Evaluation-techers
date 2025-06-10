@@ -9,6 +9,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Actions\Action;
+use App\Models\TestAreaCompetencyLevel;
 
 class EvaluacionesRecientes extends BaseWidget
 {
@@ -111,8 +112,7 @@ class EvaluacionesRecientes extends BaseWidget
                             });
 
                             $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
-                            $level = \App\Models\CompetencyLevel::getLevelByScore($percentage);
-
+                            $level = TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $totalScore);
                             return [
                                 'area' => $area->name,
                                 'score' => $percentage,
