@@ -152,9 +152,19 @@ class RealizarTestResource extends Resource
                                                         return $response->question->options->max('score');
                                                     });
 
-                                                    $percentage = $maxPossibleScore > 0
-                                                        ? round(($totalScore / $maxPossibleScore) * 100)
-                                                        : 0;
+                                                    // Cálculo del porcentaje obtenido
+                                                    $percentage = 0;
+                                                    if ($maxPossibleScore > 0) {
+                                                        $percentage = round(($totalScore / $maxPossibleScore) * 100);
+                                                    }
+
+                                                    // Log para depuración
+                                                    \Log::info('Cálculo de porcentaje en Resource:', [
+                                                        'totalScore' => $totalScore,
+                                                        'maxPossibleScore' => $maxPossibleScore,
+                                                        'percentage' => $percentage,
+                                                        'responses_count' => $record->responses->count()
+                                                    ]);
 
                                                     $nivelGlobal = \App\Models\TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
@@ -313,7 +323,7 @@ class RealizarTestResource extends Resource
                                                     return view('components.score-display', [
                                                         'maxScore' => $maxPossibleScore,
                                                         'score' => (string) $totalScore,
-                                                        'percentage' => $percentage,
+                                                        'percentage' => (int) $percentage,
                                                         'levelName' => $nivelGlobal?->name ?? 'Sin nivel',
                                                         'levelDescription' => $nivelGlobal?->description ?? 'Sin descripción',
                                                         'levelCode' => $nivelGlobal?->code ?? 'Sin código',

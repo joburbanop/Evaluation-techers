@@ -24,6 +24,13 @@
     'assignmentId',
 ])
 
+@php
+    \Log::info('Valores recibidos en score-display:', [
+        'percentage' => $percentage,
+        'score' => $score,
+        'maxScore' => $maxScore
+    ]);
+@endphp
 
 @if(!app()->runningInConsole() && Route::currentRouteName() !== 'realizar-test.pdf')
 <div style="text-align: center; margin-bottom: 1rem;">
@@ -126,7 +133,7 @@
                                 <div style="width: {{ $percentileRankGlobal }}%; background-color: #4F46E5; height: 100%;"></div>
                             </div>
                         </div>
-                        <!-- Percentil Institucional -->
+                        <!-- 
                         <div style="margin-bottom: 0.75rem;">
                             <p style="font-size: 0.875rem; color: #4B5563; font-weight: bold; margin: 0 0 0.25rem 0;">
                                 Respecto a los docentes de <span style="font-style: italic;">{{ $institution }}</span>, usted está en el percentil {{ $percentileInstitution }}%
@@ -135,7 +142,7 @@
                                 <div style="width: {{ $percentileInstitution }}%; background-color: #059669; height: 100%;"></div>
                             </div>
                         </div>
-                        <!-- Percentil de Programa -->
+                       
                         <div>
                             <p style="font-size: 0.875rem; color: #4B5563; font-weight: bold; margin: 0 0 0.25rem 0;">
                                 Respecto a los docentes del programa <span style="font-style: italic;">{{ $program }}</span>, usted está en el percentil {{ $percentileProgram }}%
@@ -145,6 +152,7 @@
                             </div>
                         </div>
                     </div>
+                    -->
                     @endif
                     <!-- Barra de progreso final -->
                     <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #D1D5DB; margin-bottom: 1rem;">
