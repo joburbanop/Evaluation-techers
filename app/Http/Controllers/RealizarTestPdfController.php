@@ -9,7 +9,7 @@ use PDF;
 use App\Models\TestAssignment;
 use App\Models\TestCompetencyLevel;
 use App\Models\TestAreaCompetencyLevel;
-use App\Models\AreaCompetencyLevel; // ✅ esta línea soluciona el error
+use App\Models\AreaCompetencyLevel; 
 
 
 class RealizarTestPdfController extends Controller
@@ -29,20 +29,7 @@ class RealizarTestPdfController extends Controller
             $percentage = round(($totalScore / $maxPossibleScore) * 100);
         }
 
-        // Log para depuración
-        \Log::info('Cálculo de porcentaje en PDF:', [
-            'totalScore' => $totalScore,
-            'maxPossibleScore' => $maxPossibleScore,
-            'percentage' => $percentage,
-            'responses_count' => $record->responses->count(),
-            'responses' => $record->responses->map(function($r) {
-                return [
-                    'question_id' => $r->question_id,
-                    'option_score' => $r->option->score ?? 0,
-                    'max_score' => $r->question->options->max('score')
-                ];
-            })->toArray()
-        ]);
+       
         
         $nivelGlobal = TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
@@ -162,10 +149,19 @@ class RealizarTestPdfController extends Controller
                 'obtained_score' => $puntajeObtenido,
                 'max_possible' => $puntajeMaximo,
                 'percentage' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100) : 0,
-                'level_code' => $nivel?->code ?? 'Sin código',
-                'level_description' => $nivel?->description ?? 'Sin descripción',
+                'level_code' => $nivel?->code ?? 'NA',
+                'level_description' => $nivel?->description ?? 'NA',
             ]);
         }
+
+         //calculo de porcentaje obtenido global
+         $puntajeTotal = $record->responses->sum(function ($response) {
+            return $response->option->score ?? 0;
+        });
+        $puntajePosible = $record->test->questions->sum(function ($question) {
+            return $question->options->max('score') ?? 0;
+        });
+        $porcentajeObtenidoGlobal = round(($puntajeTotal / $puntajePosible) * 100);
 
         // 2) Generar el PDF usando la misma vista 'components.score-display'
         $pdf = PDF::loadView('components.score-display', [
@@ -192,6 +188,7 @@ class RealizarTestPdfController extends Controller
             'icon' => 'heroicon-o-academic-cap',
             'areaResults' => $areaResults,
             'assignmentId' => $record->id,
+            'percentage' => $porcentajeObtenidoGlobal,
         ]);
 
         // 3) Forzar la descarga del PDF

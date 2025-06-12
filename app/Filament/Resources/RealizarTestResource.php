@@ -313,8 +313,8 @@ class RealizarTestResource extends Resource
                                                         'obtained_score' => $puntajeObtenido,
                                                         'max_possible' => $puntajeMaximo,
                                                         'percentage' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100) : 0,
-                                                        'level_code' => $nivel?->code ?? 'Sin código',
-                                                        'level_description' => $nivel?->description ?? 'Sin descripción',
+                                                        'level_code' => $nivel?->code ?? 'NA',
+                                                        'level_description' => $nivel?->description ?? 'NA',
                                                     ]);
                                                 }
 
