@@ -221,7 +221,8 @@ class RealizarTestResource extends Resource
                                                     //
                                                     // 2) CALCULAR PERCENTIL POR INSTITUCIÓN
                                                     //
-                                                    $userInstitutionId = auth()->user()->institution_id;
+                                                   
+                                                   /* $userInstitutionId = auth()->user()->institution_id;
                                                     $institutionScores = \App\Models\TestAssignment::with(['responses.option','user'])
                                                         ->where('test_id', $record->test_id)
                                                         ->where('status', 'completed')
@@ -267,7 +268,7 @@ class RealizarTestResource extends Resource
                                                         $equalProg = $programScores->filter(fn($s) => $s === $totalScore)->count();
                                                         $percentileProgram = round((($belowProg + 0.5 * $equalProg) / $totalProg) * 100);
                                                     }
-
+*/
                                                     //
                                                     // 5) CALCULAR RESULTADOS POR ÁREA (nuevo bloque)
                                                     //
@@ -317,6 +318,15 @@ class RealizarTestResource extends Resource
                                                     ]);
                                                 }
 
+                                                //calculo de porcentaje obtenido global
+                                                $puntajeTotal = $record->responses->sum(function ($response) {
+                                                    return $response->option->score ?? 0;
+                                                });
+                                                $puntajePosible = $record->test->questions->sum(function ($question) {
+                                                    return $question->options->max('score') ?? 0;
+                                                });
+                                                $porcentajeObtenidoGlobal = round(($puntajeTotal / $puntajePosible) * 100);
+
                                                     //
                                                     // 6) RETORNAR LA VISTA
                                                     //
@@ -335,8 +345,8 @@ class RealizarTestResource extends Resource
                                                             ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
                                                         'percentileInfo' => true,
                                                         'percentileRankGlobal' => $percentileRankGlobal,
-                                                        'percentileInstitution' => $percentileInstitution,
-                                                        'percentileProgram' => $percentileProgram,
+                                                        //'percentileInstitution' => $percentileInstitution,
+                                                        //'percentileProgram' => $percentileProgram,
                                                         'evaluatedName' => auth()->user()->name,
                                                         'identification' => auth()->user()->document_number ?? 'Sin identificación',
                                                         'institution' => auth()->user()->institution?->name ?? 'Sin institución',
@@ -344,6 +354,7 @@ class RealizarTestResource extends Resource
                                                         'icon' => 'heroicon-o-academic-cap',
                                                         'areaResults' => $areaResults,
                                                         'assignmentId' => $record->id,
+                                                        'percentage' => $porcentajeObtenidoGlobal,
                                                     ]);
                                                 })
                                         ]),
