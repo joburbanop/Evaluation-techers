@@ -100,6 +100,10 @@
                             </div>
                             <div style="display: table-cell; vertical-align: middle; width: 20%; text-align: right;">
                                 <span style="font-size: 2rem; font-weight: 900;">{{ $score }}</span>
+                                <div style="margin-top: 0.25rem; text-align: right;">
+                                    <span style="font-size: 0.9rem; color: #374151; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">{{ $levelName }}</span><br>
+                                    <span style="font-size: 1.2rem; font-weight: 800; color: #1F2937;">{{ $levelCode }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

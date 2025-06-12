@@ -25,20 +25,55 @@ class RealizarTestPdfController extends Controller
         $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
         $nivelGlobal = TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
-        //    - Percentil global
-        $allScores = \App\Models\TestAssignment::with(['responses.option'])
+        
+        $completedAssignments = \App\Models\TestAssignment::with(['responses.option'])
             ->where('test_id', $record->test_id)
             ->where('status', 'completed')
-            ->get()
-            ->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0))
-            ->sort()
-            ->values();
-        $percentileRankGlobal = 0;
-        if ($allScores->count()) {
-            $below = $allScores->filter(fn($s) => $s < $totalScore)->count();
-            $equal = $allScores->filter(fn($s) => $s === $totalScore)->count();
-            $percentileRankGlobal = round((($below + 0.5 * $equal) / $allScores->count()) * 100);
+            ->get();
+
+        $levels = \App\Models\TestCompetencyLevel::where('test_id', $record->test_id)
+            ->orderBy('min_score')
+            ->get();
+
+        $getLevel = function($score, $levels) {
+            foreach ($levels as $level) {
+                if ($score >= $level->min_score && $score <= $level->max_score) {
+                    return $level->code;
+                }
+            }
+            return null;
+        };
+
+        $userLevels = [];
+        foreach ($completedAssignments as $assignment) {
+            $score = $assignment->responses->sum(fn($r) => $r->option->score ?? 0);
+            $maxScore = $assignment->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
+            $percentage = $maxScore > 0 ? ($score / $maxScore) * 100 : 0;
+            $level = $getLevel($score, $levels);
+            if ($level) {
+                $userLevels[] = $level;
+            }
         }
+
+        $totalUsers = count($userLevels);
+        $levelCounts = array_count_values($userLevels);
+        $orderedLevels = $levels->pluck('code')->toArray();
+        $levelPercentages = [];
+        foreach ($orderedLevels as $code) {
+            $levelPercentages[$code] = isset($levelCounts[$code]) ? ($levelCounts[$code] / $totalUsers) * 100 : 0;
+        }
+
+        $userPercentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
+        $userLevel = $getLevel($totalScore, $levels);
+        $userLevelIndex = array_search($userLevel, $orderedLevels);
+        $usersBelow = 0;
+        if ($userLevelIndex !== false) {
+            for ($i = 0; $i < $userLevelIndex; $i++) {
+                $levelCode = $orderedLevels[$i];
+                $usersBelow += $levelCounts[$levelCode] ?? 0;
+            }
+        }
+        $percentileRankGlobal = $totalUsers > 0 ? round(($usersBelow / $totalUsers) * 100) : 0;
 
         //    - Percentil por institución
         $userInstitutionId = auth()->user()->institution_id;
