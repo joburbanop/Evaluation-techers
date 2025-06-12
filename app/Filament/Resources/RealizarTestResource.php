@@ -158,31 +158,58 @@ class RealizarTestResource extends Resource
 
                                                     $nivelGlobal = \App\Models\TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
-                                                    //
-                                                    // 2) CALCULAR PERCENTIL GLOBAL ENTRE TODOS LOS DOCENTES
-                                                    //
-                                                    $allScores = \App\Models\TestAssignment::with(['responses.option'])
+                                                    // Calcular percentil global basado en niveles
+                                                    $completedAssignments = \App\Models\TestAssignment::with(['responses.option'])
                                                         ->where('test_id', $record->test_id)
                                                         ->where('status', 'completed')
-                                                        ->get()
-                                                        ->map(function ($assignment) {
-                                                            return $assignment->responses->sum(function ($resp) {
-                                                                return $resp->option->score ?? 0;
-                                                            });
-                                                        })
-                                                        ->sort()
-                                                        ->values();
+                                                        ->get();
 
-                                                    $percentileRankGlobal = 0;
-                                                    $totalAssignments = $allScores->count();
-                                                    if ($totalAssignments > 0) {
-                                                        $below = $allScores->filter(fn($s) => $s < $totalScore)->count();
-                                                        $equal = $allScores->filter(fn($s) => $s === $totalScore)->count();
-                                                        $percentileRankGlobal = round((($below + 0.5 * $equal) / $totalAssignments) * 100);
+                                                    $levels = \App\Models\TestCompetencyLevel::where('test_id', $record->test_id)
+                                                        ->orderBy('min_score')
+                                                        ->get();
+
+                                                    $getLevel = function($score, $levels) {
+                                                        foreach ($levels as $level) {
+                                                            if ($score >= $level->min_score && $score <= $level->max_score) {
+                                                                return $level->code;
+                                                            }
+                                                        }
+                                                        return null;
+                                                    };
+
+                                                    $userLevels = [];
+                                                    foreach ($completedAssignments as $assignment) {
+                                                        $score = $assignment->responses->sum(fn($r) => $r->option->score ?? 0);
+                                                        $maxScore = $assignment->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
+                                                        $percentage = $maxScore > 0 ? ($score / $maxScore) * 100 : 0;
+                                                        $level = $getLevel($score, $levels);
+                                                        if ($level) {
+                                                            $userLevels[] = $level;
+                                                        }
                                                     }
 
+                                                    $totalUsers = count($userLevels);
+                                                    $levelCounts = array_count_values($userLevels);
+                                                    $orderedLevels = $levels->pluck('code')->toArray();
+                                                    $levelPercentages = [];
+                                                    foreach ($orderedLevels as $code) {
+                                                        $levelPercentages[$code] = isset($levelCounts[$code]) ? ($levelCounts[$code] / $totalUsers) * 100 : 0;
+                                                    }
+
+                                                    $userPercentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
+                                                    $userLevel = $getLevel($totalScore, $levels);
+                                                    $userLevelIndex = array_search($userLevel, $orderedLevels);
+                                                    $usersBelow = 0;
+                                                    if ($userLevelIndex !== false) {
+                                                        for ($i = 0; $i < $userLevelIndex; $i++) {
+                                                            $levelCode = $orderedLevels[$i];
+                                                            $usersBelow += $levelCounts[$levelCode] ?? 0;
+                                                        }
+                                                    }
+                                                    $percentileRankGlobal = $totalUsers > 0 ? round(($usersBelow / $totalUsers) * 100) : 0;
+
                                                     //
-                                                    // 3) CALCULAR PERCENTIL POR INSTITUCIÓN
+                                                    // 2) CALCULAR PERCENTIL POR INSTITUCIÓN
                                                     //
                                                     $userInstitutionId = auth()->user()->institution_id;
                                                     $institutionScores = \App\Models\TestAssignment::with(['responses.option','user'])
@@ -291,13 +318,13 @@ class RealizarTestResource extends Resource
                                                         'levelDescription' => $nivelGlobal?->description ?? 'Sin descripción',
                                                         'levelCode' => $nivelGlobal?->code ?? 'Sin código',
                                                         'publicationDate' => \Illuminate\Support\Carbon::parse($record->updated_at)
-                                                                              ->locale('es')
-                                                                              ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
+                                                            ->locale('es')
+                                                            ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
                                                         'applicationDate' => \Illuminate\Support\Carbon::parse($record->created_at)
-                                                                              ->locale('es')
-                                                                              ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
+                                                            ->locale('es')
+                                                            ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
                                                         'percentileInfo' => true,
-                                                        'averageScore' => $percentileRankGlobal,
+                                                        'percentileRankGlobal' => $percentileRankGlobal,
                                                         'percentileInstitution' => $percentileInstitution,
                                                         'percentileProgram' => $percentileProgram,
                                                         'evaluatedName' => auth()->user()->name,
@@ -306,8 +333,6 @@ class RealizarTestResource extends Resource
                                                         'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
                                                         'icon' => 'heroicon-o-academic-cap',
                                                         'areaResults' => $areaResults,
-
-                                                        // Agregar ID de asignación para la generación de PDF
                                                         'assignmentId' => $record->id,
                                                     ]);
                                                 })

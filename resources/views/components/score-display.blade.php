@@ -6,7 +6,7 @@
     'levelDescription' => 'No ha alcanzado este nivel aún.',
     'maxScore' => 300,
     'percentileInfo' => null,
-    'averageScore',
+    'percentileRankGlobal',
     'levelCode',
     'areaResults',
     'percentileProgram',
@@ -120,10 +120,10 @@
                         <!-- Percentil Global -->
                         <div style="margin-bottom: 0.75rem;">
                             <p style="font-size: 0.875rem; color: #4B5563; font-weight: bold; margin: 0 0 0.25rem 0;">
-                                Respecto a todos los demás docentes, usted está en el percentil {{ $averageScore }}%
+                                Respecto a todos los demás docentes, usted está en el percentil {{ $percentileRankGlobal }}%
                             </p>
                             <div style="width: 100%; background-color: #E5E7EB; height: 0.75rem; border-radius: 0.125rem; overflow: hidden;">
-                                <div style="width: {{ $averageScore }}%; background-color: #4F46E5; height: 100%;"></div>
+                                <div style="width: {{ $percentileRankGlobal }}%; background-color: #4F46E5; height: 100%;"></div>
                             </div>
                         </div>
                         <!-- Percentil Institucional -->

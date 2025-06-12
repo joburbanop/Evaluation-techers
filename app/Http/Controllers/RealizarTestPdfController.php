@@ -161,7 +161,7 @@ class RealizarTestPdfController extends Controller
                                   ->locale('es')
                                   ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
             'percentileInfo' => true,
-            'averageScore' => $percentileRankGlobal,
+            'percentileRankGlobal' => $percentileRankGlobal,
             'percentileInstitution' => $percentileInstitution,
             'percentileProgram' => $percentileProgram,
             'evaluatedName' => auth()->user()->name,
