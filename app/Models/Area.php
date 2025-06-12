@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Area extends Model
 {
@@ -28,6 +29,11 @@ class Area extends Model
 
     public static function initializeAreas(): void
     {
+        // Desactiva claves foráneas
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        static::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $areas = [
             [
                 'name' => 'Participación profesional',
@@ -36,6 +42,10 @@ class Area extends Model
             [
                 'name' => 'Tecnologias digitales',
                 'description' => 'Área enfocada en la implementación de prácticas pedagógicas digitales y evaluación'
+            ],
+            [
+                'name' => 'Promocion de la competencia digital del alumnado',
+                'description' => 'Área enfocada en promover la competencia digital de los estudiantes'
             ],
             [
                 'name' => 'Eseñanza y aprendizaje',
@@ -50,11 +60,6 @@ class Area extends Model
                 'description' => 'Área enfocada en empoderar a los estudiantes en su proceso de aprendizaje'
             ],
             [
-                'name' => 'Promocion de la competencia digital del alumnado',
-                'description' => 'Área enfocada en promover la competencia digital de los estudiantes'
-
-            ],
-            [
                 'name' => 'Educación Abierta',
                 'description' => 'Área enfocada en la promoción de la educación abierta y el acceso a recursos educativos abiertos'
             ],
@@ -62,14 +67,10 @@ class Area extends Model
                 'name'=> 'Información Socio-demográfica',
                 'description' => 'Área enfocada en la recopilación y análisis de información socio-demográfica relevante para la educación'
             ]
-
         ];
 
         foreach ($areas as $area) {
-            static::firstOrCreate(
-                ['name' => $area['name']],
-                $area
-            );
+            static::create($area);
         }
     }
 }

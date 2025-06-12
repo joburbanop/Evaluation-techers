@@ -485,7 +485,7 @@ class UsuariosFromExcelSeeder extends Seeder
                 'ciudad_id'         => null,
                 'institution_id'    => 68,
                 'facultad_id'       => 5,
-                'programa_id'       => 39,
+                'programa_id'       => 41,
                 'apellido1'         => 'PARRA',
                 'apellido2'         => 'PAY',
                 'created_at'        => $now,

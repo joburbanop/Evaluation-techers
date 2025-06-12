@@ -272,68 +272,71 @@ class RealizarTestResource extends Resource
                                                     //
                                                     // 5) CALCULAR RESULTADOS POR ÁREA (nuevo bloque)
                                                     //
-                                                    $questionsConArea = $record->test->questions()
-                                                        ->with([
-                                                            'options',
-                                                            'responses' => function($query) use ($record) {
-                                                                $query->where('test_assignment_id', $record->id);
-                                                            },
-                                                            'area',
-                                                        ])
-                                                        ->get();
+                                                    $preguntasAgrupadas = $record->test->questions()
+                                                        ->get()
+                                                        ->filter(fn ($q) => $q->area !== null)
+                                                        ->groupBy(fn ($q) => $q->area->id);
 
                                                     $areaResults = collect();
 
-                                                $preguntasAgrupadas = $record->test->questions()
-                                                    ->with([
-                                                        'area',
-                                                        'options',
-                                                        'responses' => function ($query) use ($record) {
-                                                            $query->where('test_assignment_id', $record->id);
+                                                    foreach ($preguntasAgrupadas as $areaId => $preguntas) {
+                                                        $area = $preguntas->first()->area;
+
+                                                        // Calcular el puntaje máximo posible para esta área (todas las preguntas de esa área)
+                                                        $puntajeMaximo = $preguntas->sum(function ($pregunta) {
+                                                            return $pregunta->options->max('score') ?? 0;
+                                                        });
+
+                                                        // Calcular el puntaje obtenido sumando las respuestas del usuario para las preguntas de esta área
+                                                        $puntajeObtenido = 0;
+                                                        foreach ($preguntas as $pregunta) {
+                                                            $respuesta = $pregunta->responses()
+                                                                ->where('test_assignment_id', $record->id)
+                                                                ->first();
+                                                            if ($respuesta) {
+                                                                $puntajeObtenido += $respuesta->option->score ?? 0;
+                                                            }
                                                         }
-                                                    ])
-                                                    ->get()
-                                                    ->filter(fn ($q) => $q->area !== null)
-                                                    ->groupBy(fn ($q) => $q->area->id);
 
-                                                foreach ($preguntasAgrupadas as $areaId => $preguntas) {
-                                                    $area = $preguntas->first()->area;
+                                                        // Obtener el nivel basado en el puntaje obtenido
+                                                        $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido);
 
-                                                    $puntajeObtenido = $preguntas->sum(fn ($pregunta) =>
-                                                        $pregunta->responses->sum(fn ($r) => $r->option->score ?? 0)
-                                                    );
+                                                        // Agregar los resultados al array
+                                                        $areaResults->push([
+                                                            'area_name' => $area->name,
+                                                            'obtained_score' => $puntajeObtenido,
+                                                            'max_possible' => $puntajeMaximo,
+                                                            'percentage' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100) : 0,
+                                                            'level_code' => $nivel?->code ?? 'NA',
+                                                            'level_description' => $nivel?->description ?? 'NA',
+                                                        ]);
 
-                                                    $puntajeMaximo = $preguntas->sum(fn ($pregunta) =>
-                                                        $pregunta->options->max('score') ?? 0
-                                                    );
+                                                        \Log::info('Área: ' . $area->name, [
+                                                            'preguntas' => $preguntas->count(),
+                                                            'puntaje_maximo' => $puntajeMaximo
+                                                        ]);
+                                                    }
 
-                                                    $nivel = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $puntajeObtenido);
-                                                    $areaResults->push([
-                                                        'area_name' => $area->name,
-                                                        'obtained_score' => $puntajeObtenido,
-                                                        'max_possible' => $puntajeMaximo,
-                                                        'percentage' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100) : 0,
-                                                        'level_code' => $nivel?->code ?? 'NA',
-                                                        'level_description' => $nivel?->description ?? 'NA',
-                                                    ]);
-                                                }
+                                                    // Calcular el puntaje total global
+                                                    $puntajeTotal = $record->responses->sum(function ($response) {
+                                                        return $response->option->score ?? 0;
+                                                    });
 
-                                                //calculo de porcentaje obtenido global
-                                                $puntajeTotal = $record->responses->sum(function ($response) {
-                                                    return $response->option->score ?? 0;
-                                                });
-                                                $puntajePosible = $record->test->questions->sum(function ($question) {
-                                                    return $question->options->max('score') ?? 0;
-                                                });
-                                                $porcentajeObtenidoGlobal = round(($puntajeTotal / $puntajePosible) * 100);
+                                                    // Calcular el puntaje máximo posible global
+                                                    $puntajePosible = $record->test->questions->sum(function ($question) {
+                                                        return $question->options->max('score') ?? 0;
+                                                    });
 
-                                                    //
-                                                    // 6) RETORNAR LA VISTA
-                                                    //
+                                                    // Calcular el porcentaje global
+                                                    $porcentajeObtenidoGlobal = $puntajePosible > 0 ? round(($puntajeTotal / $puntajePosible) * 100) : 0;
+
+                                                    // Obtener el nivel global
+                                                    $nivelGlobal = \App\Models\TestCompetencyLevel::getLevelForScore($record->test_id, $puntajeTotal);
+
                                                     return view('components.score-display', [
-                                                        'maxScore' => $maxPossibleScore,
-                                                        'score' => (string) $totalScore,
-                                                        'percentage' => (int) $percentage,
+                                                        'maxScore' => $puntajePosible,
+                                                        'score' => (string) $puntajeTotal,
+                                                        'percentage' => $porcentajeObtenidoGlobal,
                                                         'levelName' => $nivelGlobal?->name ?? 'Sin nivel',
                                                         'levelDescription' => $nivelGlobal?->description ?? 'Sin descripción',
                                                         'levelCode' => $nivelGlobal?->code ?? 'Sin código',
@@ -345,8 +348,6 @@ class RealizarTestResource extends Resource
                                                             ->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
                                                         'percentileInfo' => true,
                                                         'percentileRankGlobal' => $percentileRankGlobal,
-                                                        //'percentileInstitution' => $percentileInstitution,
-                                                        //'percentileProgram' => $percentileProgram,
                                                         'evaluatedName' => auth()->user()->name,
                                                         'identification' => auth()->user()->document_number ?? 'Sin identificación',
                                                         'institution' => auth()->user()->institution?->name ?? 'Sin institución',
@@ -354,7 +355,6 @@ class RealizarTestResource extends Resource
                                                         'icon' => 'heroicon-o-academic-cap',
                                                         'areaResults' => $areaResults,
                                                         'assignmentId' => $record->id,
-                                                        'percentage' => $porcentajeObtenidoGlobal,
                                                     ]);
                                                 })
                                         ]),
