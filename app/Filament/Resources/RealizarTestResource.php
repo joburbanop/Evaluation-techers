@@ -439,36 +439,57 @@ class RealizarTestResource extends Resource
                                                     'area' => $question->area->name
                                                 ]),
 
-                                        Forms\Components\Radio::make("answers.{$question->id}")
-                                            ->options(function() use ($question) {
-                                                $options = [];
-                                                foreach ($question->options as $option) {
-                                                    $options[$option->id] = new \Illuminate\Support\HtmlString(
-                                                        // Card animada solo con el texto, sin letra
-                                                        '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
-                                                            <span class="text-base font-semibold text-gray-800 group-hover:text-indigo-700 transition">' . e($option->option) . '</span>
-                                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 hidden group-[.filament-radio-option-checked]:block">
-                                                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                                                                </svg>
-                                                            </span>
-                                                        </div>'
-                                                    );
-                                                }
-                                                return $options;
-                                            })
-                                            ->label('Selecciona una respuesta:')
-
-                                        
-                                            ->columnSpanFull()
-                                            ->extraAttributes(['class' => 'space-y-3'])
-                                            ->live()
-                                            ->dehydrated(true)
-                                            ->default(function (TestAssignment $record) use ($question) {
-                                                return $record->responses()
-                                                    ->where('question_id', $question->id)
-                                                    ->value('option_id');
-                                            }),
+                                            $question->is_multiple 
+                                                ? Forms\Components\CheckboxList::make("answers.{$question->id}")
+                                                    ->options(function() use ($question) {
+                                                        $options = [];
+                                                        foreach ($question->options as $option) {
+                                                            $options[$option->id] = new \Illuminate\Support\HtmlString(
+                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                                    <span class="text-base font-semibold text-gray-800 group-hover:text-indigo-700 transition">' . e($option->option) . '</span>
+                                                                </div>'
+                                                            );
+                                                        }
+                                                        return $options;
+                                                    })
+                                                    ->label('Selecciona todas las opciones que apliquen:')
+                                                    ->columnSpanFull()
+                                                    ->extraAttributes(['class' => 'space-y-3'])
+                                                    ->live()
+                                                    ->dehydrated(true)
+                                                    ->default(function (TestAssignment $record) use ($question) {
+                                                        return $record->responses()
+                                                            ->where('question_id', $question->id)
+                                                            ->pluck('option_id')
+                                                            ->toArray();
+                                                    })
+                                                : Forms\Components\Radio::make("answers.{$question->id}")
+                                                    ->options(function() use ($question) {
+                                                        $options = [];
+                                                        foreach ($question->options as $option) {
+                                                            $options[$option->id] = new \Illuminate\Support\HtmlString(
+                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                                    <span class="text-base font-semibold text-gray-800 group-hover:text-indigo-700 transition">' . e($option->option) . '</span>
+                                                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 hidden group-[.filament-radio-option-checked]:block">
+                                                                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                                                        </svg>
+                                                                    </span>
+                                                                </div>'
+                                                            );
+                                                        }
+                                                        return $options;
+                                                    })
+                                                    ->label('Selecciona una respuesta:')
+                                                    ->columnSpanFull()
+                                                    ->extraAttributes(['class' => 'space-y-3'])
+                                                    ->live()
+                                                    ->dehydrated(true)
+                                                    ->default(function (TestAssignment $record) use ($question) {
+                                                        return $record->responses()
+                                                            ->where('question_id', $question->id)
+                                                            ->value('option_id');
+                                                    }),
                                         ])
                                         ->columnSpanFull()
                                         ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
@@ -506,27 +527,51 @@ class RealizarTestResource extends Resource
                                             $hasAnswers = true;
                                             $guardadas[$question->id] = $answer;
                                             try {
-                                                $response = \App\Models\TestResponse::updateOrCreate(
-                                                    [
+                                                if ($question->is_multiple) {
+                                                    // Eliminar respuestas anteriores de este usuario para esta pregunta y asignación
+                                                    \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                        ->where('question_id', $question->id)
+                                                        ->where('user_id', auth()->id())
+                                                        ->delete();
+
+                                                    // Guardar nuevas respuestas (una por cada opción seleccionada)
+                                                    foreach ($answer as $optionId) {
+                                                        \App\Models\TestResponse::create([
+                                                            'test_assignment_id' => $record->id,
+                                                            'question_id' => $question->id,
+                                                            'option_id' => $optionId,
+                                                            'user_id' => auth()->id()
+                                                        ]);
+                                                    }
+                                                    \Log::info('Respuestas múltiples guardadas:', [
+                                                        'response_ids' => $guardadas,
                                                         'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id
-                                                    ],
-                                                    [
-                                                        'option_id' => $answer,
-                                                        'user_id' => auth()->id()
-                                                    ]
-                                                );
-                                                \Log::info('Respuesta guardada:', [
-                                                    'response_id' => $response->id,
-                                                    'test_assignment_id' => $record->id,
-                                                    'question_id' => $question->id,
-                                                    'option_id' => $answer
-                                                ]);
+                                                        'question_ids' => $guardadas
+                                                    ]);
+                                                } else {
+                                                    // Selección única
+                                                    \App\Models\TestResponse::updateOrCreate(
+                                                        [
+                                                            'test_assignment_id' => $record->id,
+                                                            'question_id' => $question->id
+                                                        ],
+                                                        [
+                                                            'option_id' => $answer,
+                                                            'user_id' => auth()->id()
+                                                        ]
+                                                    );
+                                                    \Log::info('Respuesta única guardada:', [
+                                                        'response_id' => $guardadas[$question->id],
+                                                        'test_assignment_id' => $record->id,
+                                                        'question_id' => $question->id,
+                                                        'option_id' => $answer
+                                                    ]);
+                                                }
                                             } catch (\Exception $e) {
                                                 \Log::error('Error al guardar respuesta:', [
                                                     'error' => $e->getMessage(),
                                                     'question_id' => $question->id,
-                                                    'option_id' => $answer
+                                                    'answer' => $answer
                                                 ]);
                                             }
                                         }
@@ -633,16 +678,35 @@ class RealizarTestResource extends Resource
                                     foreach ($allQuestions as $question) {
                                         $answer = $answers[$question->id] ?? null;
                                         if (!empty($answer)) {
-                                            \App\Models\TestResponse::updateOrCreate(
-                                                [
-                                                    'test_assignment_id' => $record->id,
-                                                    'question_id' => $question->id
-                                                ],
-                                                [
-                                                    'option_id' => $answer,
-                                                    'user_id' => auth()->id()
-                                                ]
-                                            );
+                                            if ($question->is_multiple) {
+                                                // Eliminar respuestas anteriores de este usuario para esta pregunta y asignación
+                                                \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                    ->where('question_id', $question->id)
+                                                    ->where('user_id', auth()->id())
+                                                    ->delete();
+
+                                                // Guardar nuevas respuestas (una por cada opción seleccionada)
+                                                foreach ($answer as $optionId) {
+                                                    \App\Models\TestResponse::create([
+                                                        'test_assignment_id' => $record->id,
+                                                        'question_id' => $question->id,
+                                                        'option_id' => $optionId,
+                                                        'user_id' => auth()->id()
+                                                    ]);
+                                                }
+                                            } else {
+                                                // Selección única
+                                                \App\Models\TestResponse::updateOrCreate(
+                                                    [
+                                                        'test_assignment_id' => $record->id,
+                                                        'question_id' => $question->id
+                                                    ],
+                                                    [
+                                                        'option_id' => $answer,
+                                                        'user_id' => auth()->id()
+                                                    ]
+                                                );
+                                            }
                                         } else {
                                             $faltantes[] = $question->id;
                                         }
@@ -652,16 +716,35 @@ class RealizarTestResource extends Resource
                                     foreach ($allQuestions as $idx => $question) {
                                         $answer = $answers[$question->id] ?? null;
                                         if (!empty($answer)) {
-                                            \App\Models\TestResponse::updateOrCreate(
-                                                [
-                                                    'test_assignment_id' => $record->id,
-                                                    'question_id' => $question->id
-                                                ],
-                                                [
-                                                    'option_id' => $answer,
-                                                    'user_id' => auth()->id()
-                                                ]
-                                            );
+                                            if ($question->is_multiple) {
+                                                // Eliminar respuestas anteriores de este usuario para esta pregunta y asignación
+                                                \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                    ->where('question_id', $question->id)
+                                                    ->where('user_id', auth()->id())
+                                                    ->delete();
+
+                                                // Guardar nuevas respuestas (una por cada opción seleccionada)
+                                                foreach ($answer as $optionId) {
+                                                    \App\Models\TestResponse::create([
+                                                        'test_assignment_id' => $record->id,
+                                                        'question_id' => $question->id,
+                                                        'option_id' => $optionId,
+                                                        'user_id' => auth()->id()
+                                                    ]);
+                                                }
+                                            } else {
+                                                // Selección única
+                                                \App\Models\TestResponse::updateOrCreate(
+                                                    [
+                                                        'test_assignment_id' => $record->id,
+                                                        'question_id' => $question->id
+                                                    ],
+                                                    [
+                                                        'option_id' => $answer,
+                                                        'user_id' => auth()->id()
+                                                    ]
+                                                );
+                                            }
                                         } else {
                                             // Puedes guardar el texto y el número
                                             $faltantes[] = [

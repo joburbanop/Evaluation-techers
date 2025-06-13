@@ -13,11 +13,13 @@ class Question extends Model
         'factor_id',
         'area_id',
         'question',
+        'is_multiple',
     ];
 
     protected $casts = [
         'factor_id' => 'integer',
         'area_id' => 'integer',
+        'is_multiple' => 'boolean',
     ];
 
     public function setAreaIdAttribute($value)

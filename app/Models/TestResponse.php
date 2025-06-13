@@ -15,10 +15,8 @@ class TestResponse extends Model
         'question_id',
         'option_id',
         'user_id',
-        'score',
         'is_correct',
-        'feedback',
-        'justification'
+        'score'
     ];
 
     protected $casts = [
@@ -81,9 +79,6 @@ class TestResponse extends Model
         return $this->score ?? 0;
     }
 
-
-
-
     public function markAsCorrect(): void
     {
         $this->update([
@@ -108,7 +103,7 @@ class TestResponse extends Model
             $option = Option::find($response->option_id);
             if ($option) {
                 $response->is_correct = $option->is_correct;
-                $response->score = $option->is_correct ? ($response->question->score ?? 1) : 0;
+                $response->score = $option->score ?? 0;
             }
         });
     }

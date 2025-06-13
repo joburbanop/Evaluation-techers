@@ -1223,7 +1223,8 @@ class TestsSeeder extends Seeder
             'question' => '¿Qué recursos y/o herramientas digitales han sido utilizados por usted y/o sus estudiantes para enseñar y aprender? Son varias respuestas',
             'area_id' => 8,
             'factor_id' => 8,
-            'order' => 30
+            'order' => 30,
+            'is_multiple' => true
         ]);
 
         Option::create([
