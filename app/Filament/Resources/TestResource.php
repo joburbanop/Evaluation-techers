@@ -112,7 +112,7 @@ class TestResource extends Resource
                                             ->itemLabel(function ($state) {
                                                 $areaName = '';
                                                 if (!empty($state['area_id'])) {
-                                                    $area = \App\Models\Area::find($state['area_id']);
+                                                    $area = \App\Models\Area::getCachedAreas()->firstWhere('id', $state['area_id']);
                                                     if ($area) $areaName = $area->name;
                                                 }
                                                 return !empty($areaName) && !empty($state['code']) && !empty($state['name'])
@@ -122,7 +122,7 @@ class TestResource extends Resource
                                                 Forms\Components\Select::make('area_id')
                                                     ->label('Área')
                                                     ->required()
-                                                    ->options(fn () => \App\Models\Area::pluck('name', 'id'))
+                                                    ->options(fn () => \App\Models\Area::getCachedAreas()->pluck('name', 'id'))
                                                     ->helperText('Seleccione el área de este nivel')
                                                     ->searchable()
                                                     ->preload(),
@@ -489,10 +489,15 @@ class TestResource extends Resource
                 ->with([
                     'questions' => fn ($q) => $q->select('id', 'test_id', 'question')->withCount('options'),
                     'competencyLevels' => fn ($q) => $q->select('id', 'test_id', 'name', 'code'),
-                    'testAreaCompetencyLevels' => fn ($q) => $q->select('id', 'test_id', 'name', 'code'),
+                    'testAreaCompetencyLevels' => fn ($q) => $q->select('id', 'test_id', 'name', 'code')
+                        ->with(['area' => fn ($q) => $q->select('id', 'name')]),
                 ])
                 ->withCount(['questions', 'competencyLevels', 'testAreaCompetencyLevels'])
             )
+            ->defaultSort('created_at', 'desc')
+            ->persistSortInSession()
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
             ->columns([
                 Stack::make([
                     Split::make([

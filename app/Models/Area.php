@@ -73,4 +73,26 @@ class Area extends Model
             static::create($area);
         }
     }
+
+    // Método para obtener áreas con caché
+    public static function getCachedAreas()
+    {
+        return cache()->remember('all_areas', 3600, function () {
+            return static::select('id', 'name')->get();
+        });
+    }
+
+    // Limpiar caché cuando se modifica un área
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function () {
+            cache()->forget('all_areas');
+        });
+
+        static::deleted(function () {
+            cache()->forget('all_areas');
+        });
+    }
 }
