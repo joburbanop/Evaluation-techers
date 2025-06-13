@@ -20,6 +20,11 @@ return new class extends Migration
             $table->integer('max_score');
             $table->text('description')->nullable();
             $table->timestamps();
+
+            // Agregar índices
+            $table->index(['test_id', 'code']);
+            $table->index(['min_score', 'max_score']);
+            $table->index('name');
         });
     }
 

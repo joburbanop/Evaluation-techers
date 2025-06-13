@@ -102,10 +102,43 @@ class Test extends Model
     {
         return $this->hasMany(TestAreaCompetencyLevel::class);
     }
-// App\Models\Test.php
 
-public function testAreaCompetencyLevels()
-{
-    return $this->hasMany(\App\Models\TestAreaCompetencyLevel::class, 'test_id');
-}
+    public function testAreaCompetencyLevels()
+    {
+        return $this->hasMany(\App\Models\TestAreaCompetencyLevel::class, 'test_id');
+    }
+
+    // Métodos de caché
+    public function getCachedCompetencyLevels()
+    {
+        return cache()->remember("test_{$this->id}_competency_levels", 3600, function () {
+            return $this->competencyLevels()->get();
+        });
+    }
+
+    public function getCachedAreaCompetencyLevels()
+    {
+        return cache()->remember("test_{$this->id}_area_competency_levels", 3600, function () {
+            return $this->testAreaCompetencyLevels()->get();
+        });
+    }
+
+    public function clearCompetencyLevelsCache()
+    {
+        cache()->forget("test_{$this->id}_competency_levels");
+        cache()->forget("test_{$this->id}_area_competency_levels");
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($test) {
+            $test->clearCompetencyLevelsCache();
+        });
+
+        static::deleted(function ($test) {
+            $test->clearCompetencyLevelsCache();
+        });
+    }
 }

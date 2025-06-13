@@ -1025,7 +1025,7 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question26 ->id,
-            'option' => "Doctor en filosofia",
+            'option' => "Doctorado",
             'score' => 0,
         ]);
         
@@ -1140,7 +1140,7 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' =>  $question28->id,
-            'option' => "AOtros",
+            'option' => "Otros",
             'score' => 0,
         ]);
 
