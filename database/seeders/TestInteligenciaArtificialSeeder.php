@@ -133,7 +133,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
 
         $question4 = Question::create([
             'test_id' => $test->id,
-            'question' => "Aplica herramientas de inteligencia artificial (IA) de forma independiente e innovadora para fortalecer su crecimiento profesional,",
+            'question' => "Aplica herramientas de inteligencia artificial (IA) de forma independiente e innovadora para fortalecer su crecimiento profesional, liderar instancias de formación y contribuir al desarrollo de su comunidad educativa.",
             'area_id' => 1,
             'factor_id' => 1,
             'order' => 4,
@@ -485,7 +485,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question13 = Question::create([
             'test_id' => $test->id,
             'question' => "Exploro y aplico la inteligencia artificial (IA) en contextos educativos.",
-            'area_id' => 3,
+            'area_id' => 4,
             'factor_id' => 3,
             'order' => 13,
         ]);
@@ -525,7 +525,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question14 = Question::create([
             'test_id' => $test->id,
             'question' => "Inicia activamente su proceso de exploración y aplicación de la inteligencia artificial (IA) en contextos educativos.",
-            'area_id' => 3,
+            'area_id' => 4,
             'factor_id' => 3,
             'order' => 14,
         ]);
@@ -566,7 +566,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question15 = Question::create([
             'test_id' => $test->id,
             'question' => "Personalizo la enseñanza con apoyo de inteligencia artificial (IA).",
-            'area_id' => 3,
+            'area_id' => 4,
             'factor_id' => 3,
             'order' => 15,
         ]);
@@ -605,7 +605,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question16 = Question::create([
             'test_id' => $test->id,
             'question' => "Reconozco la importancia del uso de la inteligencia artificial (IA) en mi práctica pedagógica para personalizar el aprendizaje, innovar en metodologías y contribuir a la formación de otros docentes. ",
-            'area_id' => 3,
+            'area_id' => 4,
             'factor_id' => 3,
             'order' => 16,
         ]);
@@ -644,7 +644,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question17 = Question::create([
             'test_id' => $test->id,
             'question' => "Integro la inteligencia artificial (IA) en los programas educativos, actuando como referente para otros docentes y liderando procesos de transformación pedagógica institucional.",
-            'area_id' => 3,
+            'area_id' => 4,
             'factor_id' => 3,
             'order' => 17,
         ]);
@@ -683,7 +683,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question18 = Question::create([
             'test_id' => $test->id,
             'question' => "Utilizo de manera innovadora la inteligencia artificial (IA) en la educación, contribuyendo con investigaciones, promoviendo cambios en políticas educativas y participando activamente en espacios de influencia nacional o internacional.",
-            'area_id' => 3,
+            'area_id' => 4,
             'factor_id' => 3,
             'order' => 18,
         ]);
@@ -722,8 +722,8 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question19 = Question::create([
             'test_id' => $test->id,
             'question' => "Exploro de forma inicial el uso de la inteligencia artificial en la evaluación, utilizando herramientas simples como la calificación automática o la retroalimentación básica, y comienzo a comprender los datos que generan.",
-            'area_id' => 3,
-            'factor_id' => 3,
+            'area_id' => 5,
+            'factor_id' => 5,
             'order' => 19,
         ]);
 
@@ -762,7 +762,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question20 = Question::create([
             'test_id' => $test->id,
             'question' => "Integro algunas herramientas de inteligencia artificial en mis evaluaciones, empiezo a interpretar los datos que generan para comprender el rendimiento de los estudiantes y utilizo esa información para ofrecer retroalimentación básica.",
-            'area_id' => 3,
+            'area_id' => 5,
             'factor_id' => 3,
             'order' => 20,
         ]);
@@ -801,7 +801,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question21 = Question::create([
             'test_id' => $test->id,
             'question' => "Utilizo regularmente herramientas de inteligencia artificial para mejorar la evaluación, ajusto mi enseñanza con base en los datos generados y comparto mis experiencias con otros docentes.",
-            'area_id' => 3,
+            'area_id' => 5,
             'factor_id' => 3,
             'order' => 21,
         ]);
@@ -840,7 +840,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question22 = Question::create([
             'test_id' => $test->id,
             'question' => "Diseño y aplico estrategias innovadoras de evaluación apoyadas en inteligencia artificial, adaptándolas a las necesidades individuales del estudiantado, y participo activamente en espacios de formación o colaboración para mejorar estas prácticas.",
-            'area_id' => 3,
+            'area_id' => 5,
             'factor_id' => 3,
             'order' => 22,
         ]);
@@ -879,7 +879,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question23 = Question::create([
             'test_id' => $test->id,
             'question' => "Lidero la integración estratégica de la inteligencia artificial en los procesos de evaluación de mi institución, facilito la formación de colegas y realizo análisis para ajustar políticas internas que mejoren la equidad educativa.",
-            'area_id' => 3,
+            'area_id' => 5,
             'factor_id' => 3,
             'order' => 23,
         ]);
@@ -919,7 +919,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question24 = Question::create([
             'test_id' => $test->id,
             'question' => "Diseño e implemento políticas y proyectos innovadores de evaluación con inteligencia artificial a nivel nacional o internacional, liderando investigaciones y representando a mi país en foros especializados.",
-            'area_id' => 3,
+            'area_id' => 5,
             'factor_id' => 3,
             'order' => 24,
         ]);
@@ -959,7 +959,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question25 = Question::create([
             'test_id' => $test->id,
             'question' => "Me informo y exploro sobre la inteligencia artificial en educación, aunque aún no la aplico ni participo activamente en procesos relacionados.",
-            'area_id' => 3,
+            'area_id' => 6,
             'factor_id' => 3,
             'order' => 25,
         ]);
@@ -1001,7 +1001,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question26 = Question::create([
             'test_id' => $test->id,
             'question' => "Pruebo y utilizo algunas herramientas básicas de inteligencia artificial en mi enseñanza, haciendo ajustes según la retroalimentación de mis estudiantes.",
-            'area_id' => 3,
+            'area_id' => 6,
             'factor_id' => 3,
             'order' => 26,
         ]);
@@ -1040,7 +1040,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question27 = Question::create([
             'test_id' => $test->id,
             'question' => "Exploro y aprendo sobre la inteligencia artificial en educación, para aplicarla en personalizar el aprendizaje, usar datos, recibir retroalimentación, colaborar con colegas o atender la diversidad.",
-            'area_id' => 3,
+            'area_id' => 6,
             'factor_id' => 3,
             'order' => 27,
         ]);
@@ -1079,7 +1079,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question28 = Question::create([
             'test_id' => $test->id,
             'question' => "Integro herramientas avanzadas de inteligencia artificial para innovar en mis prácticas pedagógicas, liderar talleres y rediseñar estrategias educativas centradas en las necesidades de mis estudiantes.",
-            'area_id' => 3,
+            'area_id' => 6,
             'factor_id' => 3,
             'order' => 28,
         ]);
@@ -1118,7 +1118,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question29 = Question::create([
             'test_id' => $test->id,
             'question' => "Integro y lidero estratégicamente la implementación de la inteligencia artificial en el currículo y la política institucional para empoderar a los estudiantes y promover su uso efectivo entre colegas.",
-            'area_id' => 3,
+            'area_id' => 6,
             'factor_id' => 3,
             'order' => 29,
         ]);
@@ -1157,7 +1157,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question30 = Question::create([
             'test_id' => $test->id,
             'question' => "Contribuyo regularmente con investigaciones, liderazgo en proyectos de alto impacto y en la formulación de políticas nacionales e internacionales para transformar la educación mediante la inteligencia artificial y empoderar a los estudiantes.",
-            'area_id' => 3,
+            'area_id' => 6,
             'factor_id' => 3,
             'order' => 30,
         ]);
@@ -1235,7 +1235,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question32 = Question::create([
             'test_id' => $test->id,
             'question' => "Integro herramientas básicas y conceptos fundamentales de IA para apoyar la alfabetización digital de mis estudiantes, ajustando mi enseñanza según su experiencia y explicando la relevancia de las habilidades digitales en el mundo actual.",
-            'area_id' => 4,
+            'area_id' => 3,
             'factor_id' => 4,
             'order' => 32,
         ]);
@@ -1274,7 +1274,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question33 = Question::create([
             'test_id' => $test->id,
             'question' => "Uso datos de IA para adaptar la enseñanza, desarrollo proyectos colaborativos con IA, promuevo habilidades digitales y evalúo su impacto, integrando la IA regularmente en mis clases.",
-            'area_id' => 4,
+            'area_id' => 3,
             'factor_id' => 4,
             'order' => 33,
         ]);
@@ -1313,7 +1313,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question34 = Question::create([
             'test_id' => $test->id,
             'question' => "Aplico herramientas avanzadas de IA, diseño currículos innovadores, formo a colegas, promuevo el pensamiento crítico sobre IA y la incluyo en mis clases.",
-            'area_id' => 4,
+            'area_id' => 3,
             'factor_id' => 4,
             'order' => 34,
         ]);
@@ -1351,7 +1351,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question35 = Question::create([
             'test_id' => $test->id,
             'question' => "Defino estrategias y políticas educativas que integran IA, mentoreo y lidero procesos de formación docente, lidero programas estratégicos de integración de IA, desarrollo indicadores institucionales para evaluar su impacto y impulso una cultura institucional basada en el uso efectivo de la IA.",
-            'area_id' => 4,
+            'area_id' => 3,
             'factor_id' => 4,
             'order' => 35,
         ]);
@@ -1390,7 +1390,7 @@ class TestInteligenciaArtificialSeeder extends Seeder
         $question36 = Question::create([
             'test_id' => $test->id,
             'question' => "Desarrollo investigaciones originales y prácticas transformadoras con IA, impulso cambios significativos en políticas educativas, soy referente nacional e internacional en IA educativa, diseño estrategias pedagógicas innovadoras y lidero la transformación educativa con IA a gran escala.",
-            'area_id' => 4,
+            'area_id' => 3,
             'factor_id' => 4,
             'order' => 36,
         ]);
