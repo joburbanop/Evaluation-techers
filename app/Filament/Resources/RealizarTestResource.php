@@ -528,44 +528,45 @@ class RealizarTestResource extends Resource
                                             $guardadas[$question->id] = $answer;
                                             try {
                                                 if ($question->is_multiple) {
-                                                    // Eliminar respuestas anteriores de este usuario para esta pregunta y asignación
-                                                    \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                    // Para preguntas de selección múltiple
+                                                    // Primero eliminamos todas las respuestas existentes para esta pregunta
+                                                    $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
                                                         ->where('question_id', $question->id)
                                                         ->where('user_id', auth()->id())
-                                                        ->delete();
+                                                        ->first();
 
-                                                    // Guardar nuevas respuestas (una por cada opción seleccionada)
+                                                    if ($existingResponse) {
+                                                        $existingResponse->options()->delete();
+                                                        $existingResponse->delete();
+                                                    }
+
+                                                    // Creamos una nueva respuesta
+                                                    $response = \App\Models\TestResponse::create([
+                                                        'test_assignment_id' => $record->id,
+                                                        'question_id' => $question->id,
+                                                        'option_id' => $answer[0], // Guardamos la primera opción como principal
+                                                        'user_id' => auth()->id()
+                                                    ]);
+
+                                                    // Guardamos todas las opciones seleccionadas
                                                     foreach ($answer as $optionId) {
-                                                        \App\Models\TestResponse::create([
-                                                            'test_assignment_id' => $record->id,
-                                                            'question_id' => $question->id,
-                                                            'option_id' => $optionId,
-                                                            'user_id' => auth()->id()
+                                                        \App\Models\TestResponseOption::create([
+                                                            'test_response_id' => $response->id,
+                                                            'option_id' => $optionId
                                                         ]);
                                                     }
-                                                    \Log::info('Respuestas múltiples guardadas:', [
-                                                        'response_ids' => $guardadas,
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_ids' => $guardadas
-                                                    ]);
                                                 } else {
-                                                    // Selección única
+                                                    // Para preguntas de selección única, actualizar o crear una sola respuesta
                                                     \App\Models\TestResponse::updateOrCreate(
                                                         [
                                                             'test_assignment_id' => $record->id,
-                                                            'question_id' => $question->id
+                                                            'question_id' => $question->id,
+                                                            'user_id' => auth()->id()
                                                         ],
                                                         [
-                                                            'option_id' => $answer,
-                                                            'user_id' => auth()->id()
+                                                            'option_id' => $answer
                                                         ]
                                                     );
-                                                    \Log::info('Respuesta única guardada:', [
-                                                        'response_id' => $guardadas[$question->id],
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id,
-                                                        'option_id' => $answer
-                                                    ]);
                                                 }
                                             } catch (\Exception $e) {
                                                 \Log::error('Error al guardar respuesta:', [
@@ -679,31 +680,43 @@ class RealizarTestResource extends Resource
                                         $answer = $answers[$question->id] ?? null;
                                         if (!empty($answer)) {
                                             if ($question->is_multiple) {
-                                                // Eliminar respuestas anteriores de este usuario para esta pregunta y asignación
-                                                \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                // Para preguntas de selección múltiple
+                                                // Primero eliminamos todas las respuestas existentes para esta pregunta
+                                                $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
                                                     ->where('question_id', $question->id)
                                                     ->where('user_id', auth()->id())
-                                                    ->delete();
+                                                    ->first();
 
-                                                // Guardar nuevas respuestas (una por cada opción seleccionada)
+                                                if ($existingResponse) {
+                                                    $existingResponse->options()->delete();
+                                                    $existingResponse->delete();
+                                                }
+
+                                                // Creamos una nueva respuesta
+                                                $response = \App\Models\TestResponse::create([
+                                                    'test_assignment_id' => $record->id,
+                                                    'question_id' => $question->id,
+                                                    'option_id' => $answer[0], // Guardamos la primera opción como principal
+                                                    'user_id' => auth()->id()
+                                                ]);
+
+                                                // Guardamos todas las opciones seleccionadas
                                                 foreach ($answer as $optionId) {
-                                                    \App\Models\TestResponse::create([
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id,
-                                                        'option_id' => $optionId,
-                                                        'user_id' => auth()->id()
+                                                    \App\Models\TestResponseOption::create([
+                                                        'test_response_id' => $response->id,
+                                                        'option_id' => $optionId
                                                     ]);
                                                 }
                                             } else {
-                                                // Selección única
+                                                // Para preguntas de selección única, actualizar o crear una sola respuesta
                                                 \App\Models\TestResponse::updateOrCreate(
                                                     [
                                                         'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id
+                                                        'question_id' => $question->id,
+                                                        'user_id' => auth()->id()
                                                     ],
                                                     [
-                                                        'option_id' => $answer,
-                                                        'user_id' => auth()->id()
+                                                        'option_id' => $answer
                                                     ]
                                                 );
                                             }
@@ -717,31 +730,43 @@ class RealizarTestResource extends Resource
                                         $answer = $answers[$question->id] ?? null;
                                         if (!empty($answer)) {
                                             if ($question->is_multiple) {
-                                                // Eliminar respuestas anteriores de este usuario para esta pregunta y asignación
-                                                \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                // Para preguntas de selección múltiple
+                                                // Primero eliminamos todas las respuestas existentes para esta pregunta
+                                                $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
                                                     ->where('question_id', $question->id)
                                                     ->where('user_id', auth()->id())
-                                                    ->delete();
+                                                    ->first();
 
-                                                // Guardar nuevas respuestas (una por cada opción seleccionada)
+                                                if ($existingResponse) {
+                                                    $existingResponse->options()->delete();
+                                                    $existingResponse->delete();
+                                                }
+
+                                                // Creamos una nueva respuesta
+                                                $response = \App\Models\TestResponse::create([
+                                                    'test_assignment_id' => $record->id,
+                                                    'question_id' => $question->id,
+                                                    'option_id' => $answer[0], // Guardamos la primera opción como principal
+                                                    'user_id' => auth()->id()
+                                                ]);
+
+                                                // Guardamos todas las opciones seleccionadas
                                                 foreach ($answer as $optionId) {
-                                                    \App\Models\TestResponse::create([
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id,
-                                                        'option_id' => $optionId,
-                                                        'user_id' => auth()->id()
+                                                    \App\Models\TestResponseOption::create([
+                                                        'test_response_id' => $response->id,
+                                                        'option_id' => $optionId
                                                     ]);
                                                 }
                                             } else {
-                                                // Selección única
+                                                // Para preguntas de selección única, actualizar o crear una sola respuesta
                                                 \App\Models\TestResponse::updateOrCreate(
                                                     [
                                                         'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id
+                                                        'question_id' => $question->id,
+                                                        'user_id' => auth()->id()
                                                     ],
                                                     [
-                                                        'option_id' => $answer,
-                                                        'user_id' => auth()->id()
+                                                        'option_id' => $answer
                                                     ]
                                                 );
                                             }

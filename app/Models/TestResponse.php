@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TestResponse extends Model
 {
@@ -16,12 +17,14 @@ class TestResponse extends Model
         'option_id',
         'user_id',
         'is_correct',
-        'score'
+        'score',
+        'multiple_options'
     ];
 
     protected $casts = [
         'is_correct' => 'boolean',
-        'score' => 'float'
+        'score' => 'float',
+        'multiple_options' => 'array'
     ];
 
     // Eager loading por defecto
@@ -45,6 +48,11 @@ class TestResponse extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function options(): HasMany
+    {
+        return $this->hasMany(TestResponseOption::class);
     }
 
     // Scopes para consultas comunes
@@ -106,5 +114,17 @@ class TestResponse extends Model
                 $response->score = $option->score ?? 0;
             }
         });
+    }
+
+    // Método para obtener todas las opciones seleccionadas
+    public function getSelectedOptions()
+    {
+        return $this->options()->pluck('option_id')->toArray();
+    }
+
+    // Método para verificar si una opción está seleccionada
+    public function hasOption($optionId)
+    {
+        return $this->options()->where('option_id', $optionId)->exists();
     }
 }

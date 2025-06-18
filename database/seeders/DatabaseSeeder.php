@@ -18,6 +18,7 @@ use Database\Seeders\TestCompetencyLevelSeeder;
 use Database\Seeders\TestAreaCompetencyLevelsSeeder;
 use Database\Seeders\UsuariosFromExcelSeeder;
 use Database\Seeders\TestInteligenciaArtificialSeeder;
+use Database\Seeders\AssignTestsToTeachersSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -49,6 +50,9 @@ class DatabaseSeeder extends Seeder
             TestAreaCompetencyLevelsSeeder::class,
             UsuariosFromExcelSeeder::class,
             TestInteligenciaArtificialSeeder::class,
+            
+            // 5. Asignación de tests a docentes
+            AssignTestsToTeachersSeeder::class,
         ]);
     }
 }
