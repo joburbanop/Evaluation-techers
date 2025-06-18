@@ -14,5 +14,6 @@ class TestCompetencyLevelSeeder extends Seeder
     public function run(): void
     {
          TestCompetencyLevel::initializeLevels();
+         TestCompetencyLevel::initializeLevelsIA();
     }
 }

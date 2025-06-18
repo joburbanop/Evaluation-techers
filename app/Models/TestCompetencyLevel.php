@@ -130,4 +130,67 @@ class TestCompetencyLevel extends Model
     
     } 
 
+    public static function initializeLevelsIA(): void
+    {
+        $test = Test::where('name', 'Test Inteligencia Artificial')->first();
+
+        $levels = [
+            [
+                'test_id'=> $test->id,
+                'name' => 'Novato',
+                'code' => 'A1',
+                'min_score' => 0,
+                'max_score' =>32,
+                'description' => 'Muy poca experiencia y contacto con la tecnología educativa. Necesita orientación continua para mejorar su nivel competencial digital docente.'
+            ],
+            [
+                'test_id'=> $test->id,
+                'name' => 'Explorador',
+                'code' => 'A2',
+                'min_score' => 33,
+                'max_score' => 52,
+                'description' => 'Poco contacto con la tecnología educativa. No ha desarrollado estrategias específicas para incluir las TIC en el aula. Necesita orientación externa para mejorar su nivel competencial digital docente.'
+            ],
+            [
+                'test_id'=> $test->id,
+                'name' => 'Integrador',
+                'code' => 'B1',
+                'min_score' => 53,
+                'max_score' => 76,
+                'description' => 'Experimenta con la tecnología educativa y reflexiona sobre su idoneidad para los distintos contextos educativos.'
+            ],
+            [
+                'test_id'=> $test->id,
+                'name' => 'Experto',
+                'code' => 'B2',
+                'min_score' => 77,
+                'max_score' => 104,
+                'description' => 'Utiliza una amplia gama de tecnologías educativas con seguridad, confianza y creatividad. Busca la mejora continua de sus prácticas docentes.'
+            ],
+            [
+                'test_id'=> $test->id,
+                'name' => 'Líder',
+                'code' => 'C1',
+                'min_score' => 105,
+                'max_score' => 132,
+                'description' => 'Capaz de adaptar a sus necesidades los distintos recursos, estrategias y conocimientos a su alcance. Es una fuente de inspiración para otros docentes.'
+            ],
+            [
+                'test_id'=> $test->id,
+                'name' => 'Pionero',
+                'code' => 'C2',
+                'min_score' => 133,
+                'max_score' => 150,
+                'description' => 'Cuestiona las prácticas digitales y pedagógicas contemporáneas, de las que ellos mismos son expertos. Lideran la innovación con TIC y son un modelo a seguir para otros docentes'
+            ],
+        ];
+
+        foreach ($levels as $level) {
+            static::firstOrCreate(
+                ['code' => $level['code'], 'test_id' => $test->id],
+                $level
+            );
+        }
+    }
+
 }
