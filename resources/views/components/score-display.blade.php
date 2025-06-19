@@ -52,128 +52,116 @@
     </a>
 </div>
 @endif
-<!-- Título del informe -->
-<div class="text-center mb-4">
-    <h1 class="text-2xl font-bold text-gray-900">Informe de Evaluación de Competencias Digitales</h1>
-</div>
 
-
-
-<div class="bg-white border-2 border-gray-800 rounded-none shadow-lg overflow-hidden mx-6 my-4">
-    <div class="p-6">
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <!-- Columna izquierda - Datos personales -->
-                <td style="width: 35%; border-right: 2px solid #1F2937; vertical-align: top; padding-right: 16px;">
-                    <!-- Datos del examen -->
-                    <div style="font-size: 0.875rem; line-height: 1.25rem;">
-                        <div style="margin-bottom: 0.5rem;">
-                            <strong>Fecha de asignación:</strong><br>
-                            <span>{{ $applicationDate }}</span>
-                        </div>
-                        <div style="margin-bottom: 0.5rem;">
-                            <strong>Fecha de finalización:</strong><br>
-                            <span>{{ $publicationDate }}</span>
-                        </div>
-                        <div style="margin-bottom: 1rem;">
-                            <strong>Nombre:</strong><br>
-                            <span style="font-family: monospace;">{{ $evaluatedName }}</span>
-                        </div>
-                        <hr style="border-color: #9CA3AF; margin: 0.75rem 0;">
-                        <div style="margin-bottom: 0.5rem;">
-                            <strong>Identificación:</strong><br>
-                            <span>{{ $identification }}</span>
-                        </div>
-                        <div style="margin-bottom: 0.5rem;">
-                            <strong>Institución:</strong><br>
-                            <span>{{ $institution }}</span>
-                        </div>
-                        <div>
-                            <strong>Programa:</strong><br>
-                            <span>{{ $program }}</span>
-                        </div>
+<div class="flex justify-center items-center w-full">
+    <div class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-2xl shadow-xl p-8 w-full max-w-4xl">
+        <h1 class="text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-8">Informe de Evaluación de Competencias Digitales</h1>
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Datos personales -->
+            <div class="md:w-1/3 w-full flex flex-col gap-4 justify-start bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Fecha de asignación</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $applicationDate }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Fecha de finalización</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $publicationDate }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Nombre</div>
+                    <div class="text-sm font-mono text-gray-900 dark:text-gray-100">{{ $evaluatedName }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Identificación</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $identification }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Institución</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $institution }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Programa</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $program }}</div>
+                </div>
+            </div>
+            <!-- Resultados globales -->
+            <div class="md:w-2/3 w-full flex flex-col gap-6 justify-center">
+                <div class="flex items-center gap-4">
+                    <span class="inline-block w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                        <x-heroicon-o-academic-cap class="w-10 h-10 text-primary-600" />
+                    </span>
+                    <div>
+                        <div class="text-lg font-bold uppercase text-gray-900 dark:text-gray-100">Puntaje Global</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-300">De {{ $maxScore }} puntos posibles</div>
                     </div>
-                </td>
-                <!-- Columna derecha - Resultados globales -->
-                <td style="width: 65%; padding-left: 16px; vertical-align: top;">
-                    <!-- Sección de puntaje global -->
-                    <div style="border-bottom: 2px solid #1F2937; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-                        <div style="display: table; width: 100%;">
-                            <div style="display: table-cell; vertical-align: middle; width: 80%;">
-                                <!-- Icono de puntaje global (puedes reemplazar por SVG inline si lo deseas) -->
-                                <img src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjNEI1NTYzIiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgM2MtMy45IDAtNyA0LjA5LTcgOSAwIDMuODMgMi43IDYuODMgNiA2Ljgzcy02IDMuMDEtNiA2LjgzYzAgNC45MSAzLjEgOSA3IDkgMy45IDAgNy00LjA5IDctOSAwLTMuODMtMi43LTYuODMtNi02LjgzczYtMy4wMSA2LTYuODNjMC00LjktMy4xLTktNy05em0wIDE2Yy0yLjIxIDAtNC0yLjQ5LTQtNS41cyAxLjc5LTUuNSA0LTUuNSA0IDIuNDkgNCA1LjUtMS43OSA1LjUtNCA1LjV6Ii8+PC9zdmc+" alt="" style="width: 48px; height: 48px; vertical-align: middle;">
-                                <span style="font-size: 1rem; font-weight: bold; text-transform: uppercase; margin-left: 0.5rem;">Puntaje Global</span><br>
-                                <span style="font-size: 0.875rem; color: #4B5563;">De {{ $maxScore }} puntos posibles</span>
-                            </div>
-                            <div style="display: table-cell; vertical-align: middle; width: 20%; text-align: right;">
-                                <span style="font-size: 2rem; font-weight: 900;">{{ $score }}</span>
-                                <div style="margin-top: 0.25rem; text-align: right;">
-                                    <span style="font-size: 0.9rem; color: #374151; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">{{ $levelName }}</span><br>
-                                    <span style="font-size: 1.2rem; font-weight: 800; color: #1F2937;">{{ $levelCode }}</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="ml-auto text-right">
+                        <div class="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{{ $score }}</div>
+                        <div class="text-base font-semibold text-gray-700 dark:text-gray-200 uppercase">{{ $levelName }}</div>
+                        <div class="text-xl font-extrabold text-primary-700 dark:text-primary-400">{{ $levelCode }}</div>
                     </div>
-                    <!-- Nivel alcanzado -->
-                    <div style="margin-bottom: 1rem; display: table; width: 100%;">
-                        <div style="display: table-cell; vertical-align: top; width: 95%; padding-left: 0.5rem;">
-                            <span style="font-weight: bold; font-size: 1rem;">{{ $levelName }} {{ $levelCode }}</span><br>
-                            <span style="font-size: 0.875rem; color: #4B5563;">{{ $levelDescription }}</span>
-                        </div>
+                </div>
+                <div>
+                    <div class="font-bold text-base text-gray-900 dark:text-gray-100">{{ $levelName }} {{ $levelCode }}</div>
+                    <div class="text-sm text-gray-700 dark:text-gray-200 mt-1">{{ $levelDescription }}</div>
+                </div>
+                @if($percentileInfo)
+                <div>
+                    <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-1">
+                        Respecto a todos los demás docentes, usted está en el percentil {{ $percentileRankGlobal }}%
                     </div>
-                    <!-- Sección de percentiles -->
-                    @if($percentileInfo)
-                    <div style="margin-bottom: 1rem;">
-                        <!-- Percentil Global -->
-                        <div style="margin-bottom: 0.75rem;">
-                            <p style="font-size: 0.875rem; color: #4B5563; font-weight: bold; margin: 0 0 0.25rem 0;">
-                                Respecto a todos los demás docentes, usted está en el percentil {{ $percentileRankGlobal }}%
-                            </p>
-                            <div style="width: 100%; background-color: #E5E7EB; height: 0.75rem; border-radius: 0.125rem; overflow: hidden;">
-                                <div style="width: {{ $percentileRankGlobal }}%; background-color: #4F46E5; height: 100%;"></div>
-                            </div>
+                    <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden mt-2 bg-gray-200 dark:bg-gray-700">
+                        <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500
+                                    bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400"
+                             style="width: {{ $percentileRankGlobal }}%">
                         </div>
-                        
-                    @endif
-                    <!-- Barra de progreso final -->
-                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #D1D5DB; margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #4B5563; margin-bottom: 0.5rem;">
-                            <strong>Porcentaje obtenido</strong>
-                            <strong>{{ $percentage }}%</strong>
-                        </div>
-                        <div style="width: 100%; background-color: #E5E7EB; height: 1rem; border: 1px solid #D1D5DB; border-radius: 0.125rem; overflow: hidden;">
-                            <div style="width: {{ $percentage }}%; background-color: #1F2937; height: 100%;"></div>
-                        </div>
+                        <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                            {{ $percentileRankGlobal }}%
+                        </span>
                     </div>
-                </td>
-            </tr>
-        </table>
+                </div>
+                @endif
+                <div>
+                    <div class="flex justify-between text-sm text-gray-700 dark:text-gray-200 mb-1 mt-4">
+                        <strong>Porcentaje obtenido</strong>
+                        <strong>{{ $percentage }}%</strong>
+                    </div>
+                    <div class="relative w-full h-6 bg-gray-200 dark:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden mt-2">
+                        <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500
+                                    bg-gradient-to-r from-green-400 to-emerald-500 dark:from-green-300 dark:to-emerald-400"
+                             style="width: {{ $percentage }}%">
+                        </div>
+                        <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                            {{ $percentage }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @if(isset($areaResults) && $areaResults->count())
-<div style="page-break-before: always;"></div>
 <div class="mt-8 mx-6 mb-8">
-    <h2 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-400 pb-2">Resultados por Área</h2>
+    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-b border-gray-400 dark:border-gray-600 pb-2">Resultados por Área</h2>
     <div class="overflow-x-auto">
-        <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem;">
-            <thead style="background-color: #E5E7EB;"> {{-- bg-gray-200 --}}
+        <table class="min-w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm">
+            <thead>
                 <tr>
-                    <th style="border: 1px solid #1F2937; padding: 0.5rem; text-align: left; font-weight: bold;">Área</th>
-                    <th style="border: 1px solid #1F2937; padding: 0.5rem; text-align: center; font-weight: bold;">Puntaje alcanzado</th>
-                    <th style="border: 1px solid #1F2937; padding: 0.5rem; text-align: center; font-weight: bold;">Puntaje posible</th>
-                    <th style="border: 1px solid #1F2937; padding: 0.5rem; text-align: center; font-weight: bold;">Código de nivel</th>
-                    <th style="border: 1px solid #1F2937; padding: 0.5rem; text-align: left; font-weight: bold;">Descripción del nivel</th>
+                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Área</th>
+                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Puntaje alcanzado</th>
+                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Puntaje posible</th>
+                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Código de nivel</th>
+                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Descripción del nivel</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($areaResults as $index => $area)
-                    <tr style="{{ $index % 2 === 0 ? 'background-color: #FFFFFF;' : 'background-color: #F9FAFB;' }}"> {{-- filas alternas --}}
-                        <td style="border: 1px solid #1F2937; padding: 0.5rem;">{{ $area['area_name'] }}</td>
-                        <td style="border: 1px solid #1F2937; padding: 0.5rem; text-align: center;">{{ $area['obtained_score'] }}</td>
-                        <td style="border: 1px solid #1F2937; padding: 0.5rem; text-align: center;">{{ $area['max_possible'] }}</td>
-                        <td style="border: 1px solid #1F2937; padding: 0.5rem; text-align: center;">{{ $area['level_code'] }}</td>
-                        <td style="border: 1px solid #1F2937; padding: 0.5rem;">{{ $area['level_description'] }}</td>
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800' }}">
+                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100">{{ $area['area_name'] }}</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ $area['obtained_score'] }}</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ $area['max_possible'] }}</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ $area['level_code'] }}</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100">{{ $area['level_description'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -262,3 +250,4 @@ body {
     margin-bottom: 2rem;
 }
 </style>
+
