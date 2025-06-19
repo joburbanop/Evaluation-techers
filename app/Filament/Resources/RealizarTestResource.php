@@ -221,7 +221,6 @@ class RealizarTestResource extends Resource
                                                     //
                                                     // 2) CALCULAR PERCENTIL POR INSTITUCIÓN
                                                     //
-                                                   
                                                    /* $userInstitutionId = auth()->user()->institution_id;
                                                     $institutionScores = \App\Models\TestAssignment::with(['responses.option','user'])
                                                         ->where('test_id', $record->test_id)
@@ -445,8 +444,8 @@ class RealizarTestResource extends Resource
                                                         $options = [];
                                                         foreach ($question->options as $option) {
                                                             $options[$option->id] = new \Illuminate\Support\HtmlString(
-                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
-                                                                    <span class="text-base font-semibold text-gray-800 group-hover:text-indigo-700 transition">' . e($option->option) . '</span>
+                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                                    <span class="text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">' . e($option->option) . '</span>
                                                                 </div>'
                                                             );
                                                         }
@@ -468,8 +467,8 @@ class RealizarTestResource extends Resource
                                                         $options = [];
                                                         foreach ($question->options as $option) {
                                                             $options[$option->id] = new \Illuminate\Support\HtmlString(
-                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
-                                                                    <span class="text-base font-semibold text-gray-800 group-hover:text-indigo-700 transition">' . e($option->option) . '</span>
+                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                                    <span class="text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">' . e($option->option) . '</span>
                                                                     <span class="absolute right-3 top-1/2 -translate-y-1/2 hidden group-[.filament-radio-option-checked]:block">
                                                                         <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
