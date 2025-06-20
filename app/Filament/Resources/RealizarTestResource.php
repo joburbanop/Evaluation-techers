@@ -709,7 +709,7 @@ class RealizarTestResource extends Resource
                             $allQuestions = $record->test->questions()->get();
                             $faltantes = [];
 
-                            foreach ($allQuestions as $question) {
+                            foreach ($allQuestions as $idx => $question) {
                                 $answer = $answers[$question->id] ?? null;
                                 if (!empty($answer)) {
                                     if ($question->is_multiple) {
@@ -754,13 +754,16 @@ class RealizarTestResource extends Resource
                                         );
                                     }
                                 } else {
-                                    $faltantes[] = $question->id;
+                                    $faltantes[] = [
+                                        'numero' => $idx + 1,
+                                        'texto' => $question->question,
+                                    ];
                                 }
                             }
                            if (count($faltantes) > 0) {
                                 $lista = '<ul class="pl-4 mt-2 space-y-1">';
                                 foreach ($faltantes as $faltante) {
-                                    $lista .= '<li class="list-disc text-sm text-gray-700"><b>Pregunta '.$faltante['numero'].':</b> '. '</li>';
+                                    $lista .= '<li class="list-disc text-sm text-gray-700"><b>Pregunta '.$faltante['numero'].':</b> '. $faltante['texto'] . '</li>';
                                 }
                                 $lista .= '</ul>';
 
