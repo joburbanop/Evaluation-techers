@@ -13,6 +13,13 @@ use Filament\Notifications\Notification;
 use Filament\Forms\Components\ViewField;
 use Filament\Tables\Filters\SelectFilter;
 use App\Models\TestAreaCompetencyLevel;
+use Filament\Forms\Components\Select;
+use App\Models\User;
+use App\Models\Departamento;
+use App\Models\Ciudad;
+use App\Models\Facultad;
+use App\Models\Programa;
+
 class RealizarTestResource extends Resource
 {
     protected static ?string $model = TestAssignment::class;
@@ -387,7 +394,21 @@ class RealizarTestResource extends Resource
 
             $formFields = [
                 Forms\Components\Hidden::make('current_page')
-                    ->default(0),
+                    ->default(function (TestAssignment $record) use ($questions) {
+                        $allQuestions = $questions->flatten();
+                        $questionsPerPage = 5;
+                        $totalPages = ceil($allQuestions->count() / $questionsPerPage);
+                        $existingResponses = $record->responses()->pluck('question_id')->toArray();
+                        for ($page = 0; $page < $totalPages; $page++) {
+                            $pageQuestions = $allQuestions->slice($page * $questionsPerPage, $questionsPerPage);
+                            foreach ($pageQuestions as $question) {
+                                if (!in_array($question->id, $existingResponses)) {
+                                    return $page;
+                                }
+                            }
+                        }
+                        return $totalPages - 1;
+                    }),
 
                 Forms\Components\Placeholder::make('progress')
                     ->label('Progreso del Test')
@@ -414,39 +435,19 @@ class RealizarTestResource extends Resource
 
             for ($page = 0; $page < $totalPages; $page++) {
                 $pageQuestions = $allQuestions->slice($page * $questionsPerPage, $questionsPerPage);
-                $firstQuestionNumber = ($page * $questionsPerPage) + 1;
-
-                // Verificar si la página actual contiene la pregunta con MOOC
-                $hasMoocQuestion = $pageQuestions->contains(function ($question) {
-                    return str_contains($question->question, 'MOOCs*');
-                });
-
-                // Debug: Verificar qué preguntas están en cada página
-                \Log::info("Página {$page}:", [
-                    'firstQuestionNumber' => $firstQuestionNumber,
-                    'hasMoocQuestion' => $hasMoocQuestion,
-                    'questions' => $pageQuestions->pluck('question')->toArray()
-                ]);
+                
+                $hasMoocQuestion = $pageQuestions->contains(fn($q) => str_contains($q->question, 'MOOCs*'));
 
                 $pageSchema = [
                     Forms\Components\Group::make()
-                        ->schema(function () use ($pageQuestions, $allQuestions, $firstQuestionNumber) {
+                        ->schema(function () use ($pageQuestions, $allQuestions) {
                             $fields = [];
-
-                            foreach ($pageQuestions as $index => $question) {
-                                $globalIndex = $firstQuestionNumber + $index - 1;
-
-                                $fields[] = Forms\Components\Card::make()
+                            foreach ($pageQuestions as $question) {
+                                $fields[] = Forms\Components\Fieldset::make()
+                                    ->label(new \Illuminate\Support\HtmlString('<span class="text-xl font-bold text-gray-800 dark:text-gray-200">' . 'Pregunta ' . $question->order . ': ' . $question->question . '</span>'))
+                                    ->id('question-'.$question->id)
                                     ->schema([
-                                        Forms\Components\ViewField::make("question_{$question->id}_header")
-                                            ->view('question-header', [
-                                                'index' => $globalIndex,
-                                                'totalQuestions' => $allQuestions->count(),
-                                                'questionText' => $question->question,
-                                                'factor' => $question->factor->name,
-                                                'area' => $question->area->name
-                                            ]),
-
+                                        // Radio o CheckboxList según el tipo de pregunta
                                         $question->is_multiple 
                                             ? Forms\Components\CheckboxList::make("answers.{$question->id}")
                                                 ->options(function() use ($question) {
@@ -500,16 +501,14 @@ class RealizarTestResource extends Resource
                                                 }),
                                     ])
                                     ->columnSpanFull()
-                                    ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
+                                    ->extraAttributes(['class' => 'mb-6 p-6']);
                             }
-
                             return $fields;
                         })
                         ->columns(1)
                         ->columnSpanFull(),
                 ];
 
-                // Agregar sección de definiciones si la página contiene la pregunta con MOOC
                 if ($hasMoocQuestion) {
                     $pageSchema[] = Forms\Components\Section::make('Definiciones')
                         ->schema([
@@ -527,8 +526,7 @@ class RealizarTestResource extends Resource
                         ->columnSpanFull()
                         ->extraAttributes(['class' => 'mt-6']);
                 }
-
-                // Agregar sección de acciones
+                
                 $pageSchema[] = Forms\Components\Actions::make([
                     // Botón Guardar
                     Forms\Components\Actions\Action::make('guardar')
@@ -664,13 +662,72 @@ class RealizarTestResource extends Resource
                     // Botón Siguiente
                     Forms\Components\Actions\Action::make('siguiente')
                         ->label('Siguiente')
-                        ->color('primary')
+                        ->color(function ($get) use ($allQuestions, $questionsPerPage) {
+                            $currentPage = $get('current_page') ?? 0;
+                            $answers = $get('answers') ?? [];
+                            
+                            // Obtener las preguntas de la página actual
+                            $pageQuestions = $allQuestions->slice($currentPage * $questionsPerPage, $questionsPerPage);
+                            
+                            // Verificar que todas las preguntas de la página actual estén respondidas
+                            foreach ($pageQuestions as $question) {
+                                $answer = $answers[$question->id] ?? null;
+                                if (empty($answer)) {
+                                    return 'gray'; // Deshabilitado (gris)
+                                }
+                            }
+                            
+                            return 'primary'; // Habilitado (azul)
+                        })
                         ->icon('heroicon-o-arrow-right')
                         ->iconPosition('after')
-                        ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700'])
+                        ->extraAttributes(function ($get) use ($allQuestions, $questionsPerPage) {
+                            $currentPage = $get('current_page') ?? 0;
+                            $answers = $get('answers') ?? [];
+                            
+                            // Obtener las preguntas de la página actual
+                            $pageQuestions = $allQuestions->slice($currentPage * $questionsPerPage, $questionsPerPage);
+                            $isComplete = true;
+                            
+                            // Verificar que todas las preguntas de la página actual estén respondidas
+                            foreach ($pageQuestions as $question) {
+                                $answer = $answers[$question->id] ?? null;
+                                if (empty($answer)) {
+                                    $isComplete = false;
+                                    break;
+                                }
+                            }
+                            
+                            if ($isComplete) {
+                                return [
+                                    'class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 cursor-pointer',
+                                    'data-action' => 'siguiente'
+                                ];
+                            } else {
+                                return [
+                                    'class' => 'px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-gray-400 bg-gray-100 cursor-not-allowed',
+                                    'disabled' => 'disabled'
+                                ];
+                            }
+                        })
                         ->hidden(fn ($get) => ($get('current_page') ?? 0) >= ($totalPages - 1))
-                        ->action(function ($set, $get) {
-                            $set('current_page', ($get('current_page') ?? 0) + 1);
+                        ->action(function ($set, $get) use ($allQuestions, $questionsPerPage) {
+                            $currentPage = $get('current_page') ?? 0;
+                            $answers = $get('answers') ?? [];
+                            
+                            // Obtener las preguntas de la página actual
+                            $pageQuestions = $allQuestions->slice($currentPage * $questionsPerPage, $questionsPerPage);
+                            
+                            // Verificar que todas las preguntas de la página actual estén respondidas
+                            foreach ($pageQuestions as $question) {
+                                $answer = $answers[$question->id] ?? null;
+                                if (empty($answer)) {
+                                    return; // No hacer nada si faltan respuestas
+                                }
+                            }
+                            
+                            // Si todas están respondidas, avanzar a la siguiente página
+                            $set('current_page', $currentPage + 1);
                         })
                         ->after(function () {
                             return 'window.scrollTo({ top: 0, behavior: "smooth" });';
@@ -812,6 +869,12 @@ class RealizarTestResource extends Resource
             }
 
             return $formFields;
+        })
+        ->fillForm(function (TestAssignment $record) {
+            $user = auth()->user();
+            return [
+                // No hay datos sociodemográficos que rellenar aquí por ahora
+            ];
         })
 ])
 
