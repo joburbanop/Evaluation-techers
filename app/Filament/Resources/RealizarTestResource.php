@@ -416,413 +416,396 @@ class RealizarTestResource extends Resource
                 $pageQuestions = $allQuestions->slice($page * $questionsPerPage, $questionsPerPage);
                 $firstQuestionNumber = ($page * $questionsPerPage) + 1;
 
+                // Verificar si la página actual contiene la pregunta con MOOC
+                $hasMoocQuestion = $pageQuestions->contains(function ($question) {
+                    return str_contains($question->question, 'MOOCs*');
+                });
+
+                // Debug: Verificar qué preguntas están en cada página
+                \Log::info("Página {$page}:", [
+                    'firstQuestionNumber' => $firstQuestionNumber,
+                    'hasMoocQuestion' => $hasMoocQuestion,
+                    'questions' => $pageQuestions->pluck('question')->toArray()
+                ]);
+
+                $pageSchema = [
+                    Forms\Components\Group::make()
+                        ->schema(function () use ($pageQuestions, $allQuestions, $firstQuestionNumber) {
+                            $fields = [];
+
+                            foreach ($pageQuestions as $index => $question) {
+                                $globalIndex = $firstQuestionNumber + $index - 1;
+
+                                $fields[] = Forms\Components\Card::make()
+                                    ->schema([
+                                        Forms\Components\ViewField::make("question_{$question->id}_header")
+                                            ->view('question-header', [
+                                                'index' => $globalIndex,
+                                                'totalQuestions' => $allQuestions->count(),
+                                                'questionText' => $question->question,
+                                                'factor' => $question->factor->name,
+                                                'area' => $question->area->name
+                                            ]),
+
+                                        $question->is_multiple 
+                                            ? Forms\Components\CheckboxList::make("answers.{$question->id}")
+                                                ->options(function() use ($question) {
+                                                    $options = [];
+                                                    foreach ($question->options as $option) {
+                                                        $options[$option->id] = new \Illuminate\Support\HtmlString(
+                                                            '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                                    <span class="text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">' . e($option->option) . '</span>
+                                                                </div>'
+                                                            );
+                                                    }
+                                                    return $options;
+                                                })
+                                                ->label('Selecciona todas las opciones que apliquen:')
+                                                ->columnSpanFull()
+                                                ->extraAttributes(['class' => 'space-y-3'])
+                                                ->live()
+                                                ->dehydrated(true)
+                                                ->default(function (TestAssignment $record) use ($question) {
+                                                    return $record->responses()
+                                                        ->where('question_id', $question->id)
+                                                        ->pluck('option_id')
+                                                        ->toArray();
+                                                })
+                                            : Forms\Components\Radio::make("answers.{$question->id}")
+                                                ->options(function() use ($question) {
+                                                    $options = [];
+                                                    foreach ($question->options as $option) {
+                                                        $options[$option->id] = new \Illuminate\Support\HtmlString(
+                                                            '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
+                                                                <span class="text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">' . e($option->option) . '</span>
+                                                                <span class="absolute right-3 top-1/2 -translate-y-1/2 hidden group-[.filament-radio-option-checked]:block">
+                                                                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </div>'
+                                                        );
+                                                    }
+                                                    return $options;
+                                                })
+                                                ->label('Selecciona una respuesta:')
+                                                ->columnSpanFull()
+                                                ->extraAttributes(['class' => 'space-y-3'])
+                                                ->live()
+                                                ->dehydrated(true)
+                                                ->default(function (TestAssignment $record) use ($question) {
+                                                    return $record->responses()
+                                                        ->where('question_id', $question->id)
+                                                        ->value('option_id');
+                                                }),
+                                    ])
+                                    ->columnSpanFull()
+                                    ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
+                            }
+
+                            return $fields;
+                        })
+                        ->columns(1)
+                        ->columnSpanFull(),
+                ];
+
+                // Agregar sección de definiciones si la página contiene la pregunta con MOOC
+                if ($hasMoocQuestion) {
+                    $pageSchema[] = Forms\Components\Section::make('Definiciones')
+                        ->schema([
+                            Forms\Components\Placeholder::make('definiciones')
+                                ->content(new \Illuminate\Support\HtmlString('
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Términos utilizados en este test:</h4>
+                                        <ul class="space-y-1 text-sm text-gray-700">
+                                            <li><strong>MOOC*:</strong> Massive Open Online Course (Curso Masivo Abierto en Línea)</li>
+                                        </ul>
+                                    </div>
+                                '))
+                                ->columnSpanFull()
+                        ])
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'mt-6']);
+                }
+
+                // Agregar sección de acciones
+                $pageSchema[] = Forms\Components\Actions::make([
+                    // Botón Guardar
+                    Forms\Components\Actions\Action::make('guardar')
+                        ->label('Guardar progreso')
+                        ->color('primary')
+                        ->icon('heroicon-o-bookmark')
+                        ->iconPosition('before')
+                        ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700'])
+                        ->action(function (TestAssignment $record, array $data, $get) {
+                            \Log::info('Datos recibidos en guardar:', [
+                                'data' => $data,
+                                'all_data' => $get(),
+                            ]);
+
+                            $answers = $get('answers') ?? [];
+                            $allQuestions = $record->test->questions()->get();
+                            $hasAnswers = false;
+                            $guardadas = [];
+
+                            foreach ($allQuestions as $question) {
+                                $answer = $answers[$question->id] ?? null;
+                                if (!empty($answer)) {
+                                    $hasAnswers = true;
+                                    $guardadas[$question->id] = $answer;
+                                    try {
+                                        if ($question->is_multiple) {
+                                            // Para preguntas de selección múltiple
+                                            // Primero eliminamos todas las respuestas existentes para esta pregunta
+                                            $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                                ->where('question_id', $question->id)
+                                                ->where('user_id', auth()->id())
+                                                ->first();
+
+                                            if ($existingResponse) {
+                                                $existingResponse->options()->delete();
+                                                $existingResponse->delete();
+                                            }
+
+                                            // Creamos una nueva respuesta
+                                            $response = \App\Models\TestResponse::create([
+                                                'test_assignment_id' => $record->id,
+                                                'question_id' => $question->id,
+                                                'option_id' => $answer[0], // Guardamos la primera opción como principal
+                                                'user_id' => auth()->id()
+                                            ]);
+
+                                            // Guardamos todas las opciones seleccionadas
+                                            foreach ($answer as $optionId) {
+                                                \App\Models\TestResponseOption::create([
+                                                    'test_response_id' => $response->id,
+                                                    'option_id' => $optionId
+                                                ]);
+                                            }
+                                        } else {
+                                            // Para preguntas de selección única, actualizar o crear una sola respuesta
+                                            \App\Models\TestResponse::updateOrCreate(
+                                                [
+                                                    'test_assignment_id' => $record->id,
+                                                    'question_id' => $question->id,
+                                                    'user_id' => auth()->id()
+                                                ],
+                                                [
+                                                    'option_id' => $answer
+                                                ]
+                                            );
+                                        }
+                                    } catch (\Exception $e) {
+                                        \Log::error('Error al guardar respuesta:', [
+                                            'error' => $e->getMessage(),
+                                            'question_id' => $question->id,
+                                            'answer' => $answer
+                                        ]);
+                                    }
+                                }
+                            }
+
+                            \Log::info('Resultado del guardado:', [
+                                'hasAnswers' => $hasAnswers,
+                                'guardadas' => $guardadas
+                            ]);
+
+                            if ($hasAnswers) {
+                                try {
+                                    $record->update([
+                                        'status' => 'in_progress',
+                                    ]);
+
+                                    // Calcular el progreso
+                                    $totalQuestions = $record->test->questions()->count();
+                                    $answeredQuestions = $record->responses()->count();
+                                    $progress = round(($answeredQuestions / $totalQuestions) * 100);
+
+                                    Notification::make()
+                                        ->title('Avance guardado')
+                                        ->success()
+                                        ->body(view('notifications.test-progress', [
+                                            'progress' => $progress,
+                                            'answeredQuestions' => $answeredQuestions,
+                                            'totalQuestions' => $totalQuestions,
+                                            'remainingQuestions' => $totalQuestions - $answeredQuestions
+                                        ]))
+                                        ->persistent()
+                                        ->actions([
+                                            \Filament\Notifications\Actions\Action::make('continuar')
+                                                ->label('Continuar después')
+                                                ->button()
+                                                ->close(),
+                                        ])
+                                        ->send();
+
+                                    return redirect()->to(RealizarTestResource::getUrl('index'));
+                                } catch (\Exception $e) {
+                                    \Log::error('Error al actualizar estado:', [
+                                        'error' => $e->getMessage(),
+                                        'record_id' => $record->id
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Error al guardar')
+                                        ->danger()
+                                        ->body('Ha ocurrido un error al guardar el progreso. Por favor, intenta nuevamente.')
+                                        ->send();
+                                }
+                            } else {
+                                Notification::make()
+                                    ->title('Sin respuestas')
+                                    ->warning()
+                                    ->body('No has respondido ninguna pregunta en este intento. Puedes continuar después.')
+                                    ->send();
+                            }
+                        }),
+
+                    // Botón Siguiente
+                    Forms\Components\Actions\Action::make('siguiente')
+                        ->label('Siguiente')
+                        ->color('primary')
+                        ->icon('heroicon-o-arrow-right')
+                        ->iconPosition('after')
+                        ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700'])
+                        ->hidden(fn ($get) => ($get('current_page') ?? 0) >= ($totalPages - 1))
+                        ->action(function ($set, $get) {
+                            $set('current_page', ($get('current_page') ?? 0) + 1);
+                        })
+                        ->after(function () {
+                            return 'window.scrollTo({ top: 0, behavior: "smooth" });';
+                        }),
+
+                    // Botón Regresar
+                    Forms\Components\Actions\Action::make('regresar')
+                        ->label('Regresar')
+                        ->color('gray')
+                        ->icon('heroicon-o-arrow-left')
+                        ->iconPosition('before')
+                        ->extraAttributes(['class' => 'px-4 py-2 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50'])
+                        ->hidden(fn ($get) => ($get('current_page') ?? 0) === 0)
+                        ->action(function ($set, $get) {
+                            $set('current_page', ($get('current_page') ?? 0) - 1);
+                        })
+                        ->after(function () {
+                            return 'window.scrollTo({ top: 0, behavior: "smooth" });';
+                        }),
+
+                    // Botón Enviar
+                    Forms\Components\Actions\Action::make('enviar')
+                        ->label('Enviar respuestas')
+                        ->color('success')
+                        ->icon('heroicon-o-check')
+                        ->iconPosition('before')
+                        ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700'])
+                        ->hidden(fn ($get) => ($get('current_page') ?? 0) < ($totalPages - 1))
+                        ->action(function (TestAssignment $record, array $data, $get) {
+                            \Log::info('Datos recibidos en enviar:', [
+                                'data' => $data,
+                                'all_data' => $get(),
+                            ]);
+
+                            $answers = $get('answers') ?? [];
+                            $allQuestions = $record->test->questions()->get();
+                            $faltantes = [];
+
+                            foreach ($allQuestions as $question) {
+                                $answer = $answers[$question->id] ?? null;
+                                if (!empty($answer)) {
+                                    if ($question->is_multiple) {
+                                        // Para preguntas de selección múltiple
+                                        // Primero eliminamos todas las respuestas existentes para esta pregunta
+                                        $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
+                                            ->where('question_id', $question->id)
+                                            ->where('user_id', auth()->id())
+                                            ->first();
+
+                                        if ($existingResponse) {
+                                            $existingResponse->options()->delete();
+                                            $existingResponse->delete();
+                                        }
+
+                                        // Creamos una nueva respuesta
+                                        $response = \App\Models\TestResponse::create([
+                                            'test_assignment_id' => $record->id,
+                                            'question_id' => $question->id,
+                                            'option_id' => $answer[0], // Guardamos la primera opción como principal
+                                            'user_id' => auth()->id()
+                                        ]);
+
+                                        // Guardamos todas las opciones seleccionadas
+                                        foreach ($answer as $optionId) {
+                                            \App\Models\TestResponseOption::create([
+                                                'test_response_id' => $response->id,
+                                                'option_id' => $optionId
+                                            ]);
+                                        }
+                                    } else {
+                                        // Para preguntas de selección única, actualizar o crear una sola respuesta
+                                        \App\Models\TestResponse::updateOrCreate(
+                                            [
+                                                'test_assignment_id' => $record->id,
+                                                'question_id' => $question->id,
+                                                'user_id' => auth()->id()
+                                            ],
+                                            [
+                                                'option_id' => $answer
+                                            ]
+                                        );
+                                    }
+                                } else {
+                                    $faltantes[] = $question->id;
+                                }
+                            }
+                           if (count($faltantes) > 0) {
+                                $lista = '<ul class="pl-4 mt-2 space-y-1">';
+                                foreach ($faltantes as $faltante) {
+                                    $lista .= '<li class="list-disc text-sm text-gray-700"><b>Pregunta '.$faltante['numero'].':</b> '. '</li>';
+                                }
+                                $lista .= '</ul>';
+
+                                Notification::make()
+                                    ->title('Faltan preguntas por responder')
+                                    ->warning()
+                                    ->body('Debes responder todas las preguntas antes de enviar el test.<br><b>Preguntas pendientes:</b>' . $lista)
+                                    ->send();
+                                return;
+                            }
+
+                            try {
+                                $record->update([
+                                    'status' => 'completed',
+                                ]);
+
+                                Notification::make()
+                                    ->title('Test completado')
+                                    ->success()
+                                    ->body('Has completado el test correctamente.')
+                                    ->send();
+
+                                return redirect()->to(RealizarTestResource::getUrl('index'));
+                            } catch (\Exception $e) {
+                                \Log::error('Error al guardar respuestas:', [
+                                    'error' => $e->getMessage(),
+                                    'data' => $data
+                                ]);
+
+                                Notification::make()
+                                    ->title('Error al guardar respuestas')
+                                    ->danger()
+                                    ->body('Ha ocurrido un error al guardar tus respuestas. Por favor, intenta nuevamente.')
+                                    ->send();
+                            }
+                        }),
+                ])
+                ->alignEnd()
+                ->columnSpanFull()
+                ->extraAttributes(['class' => 'mt-6 flex flex-wrap gap-3 justify-end']);
+
                 $formFields[] = Forms\Components\Group::make()
                     ->id("page-{$page}")
                     ->hidden(fn ($get) => ($get('current_page') ?? 0) != $page)
-                    ->schema([
-                        Forms\Components\Group::make()
-                            ->schema(function () use ($pageQuestions, $allQuestions, $firstQuestionNumber) {
-                                $fields = [];
-
-                                foreach ($pageQuestions as $index => $question) {
-                                    $globalIndex = $firstQuestionNumber + $index - 1;
-
-                                    $fields[] = Forms\Components\Card::make()
-                                        ->schema([
-                                            Forms\Components\ViewField::make("question_{$question->id}_header")
-                                                ->view('question-header', [
-                                                    'index' => $globalIndex,
-                                                    'totalQuestions' => $allQuestions->count(),
-                                                    'questionText' => $question->question,
-                                                    'factor' => $question->factor->name,
-                                                    'area' => $question->area->name
-                                                ]),
-
-                                            $question->is_multiple 
-                                                ? Forms\Components\CheckboxList::make("answers.{$question->id}")
-                                                    ->options(function() use ($question) {
-                                                        $options = [];
-                                                        foreach ($question->options as $option) {
-                                                            $options[$option->id] = new \Illuminate\Support\HtmlString(
-                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
-                                                                    <span class="text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">' . e($option->option) . '</span>
-                                                                </div>'
-                                                            );
-                                                        }
-                                                        return $options;
-                                                    })
-                                                    ->label('Selecciona todas las opciones que apliquen:')
-                                                    ->columnSpanFull()
-                                                    ->extraAttributes(['class' => 'space-y-3'])
-                                                    ->live()
-                                                    ->dehydrated(true)
-                                                    ->default(function (TestAssignment $record) use ($question) {
-                                                        return $record->responses()
-                                                            ->where('question_id', $question->id)
-                                                            ->pluck('option_id')
-                                                            ->toArray();
-                                                    })
-                                                : Forms\Components\Radio::make("answers.{$question->id}")
-                                                    ->options(function() use ($question) {
-                                                        $options = [];
-                                                        foreach ($question->options as $option) {
-                                                            $options[$option->id] = new \Illuminate\Support\HtmlString(
-                                                                '<div class="relative group flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 hover:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-300">
-                                                                    <span class="text-base font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">' . e($option->option) . '</span>
-                                                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 hidden group-[.filament-radio-option-checked]:block">
-                                                                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                                                                        </svg>
-                                                                    </span>
-                                                                </div>'
-                                                            );
-                                                        }
-                                                        return $options;
-                                                    })
-                                                    ->label('Selecciona una respuesta:')
-                                                    ->columnSpanFull()
-                                                    ->extraAttributes(['class' => 'space-y-3'])
-                                                    ->live()
-                                                    ->dehydrated(true)
-                                                    ->default(function (TestAssignment $record) use ($question) {
-                                                        return $record->responses()
-                                                            ->where('question_id', $question->id)
-                                                            ->value('option_id');
-                                                    }),
-                                        ])
-                                        ->columnSpanFull()
-                                        ->extraAttributes(['class' => 'mb-6 border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:border-primary-300 transition-colors duration-200']);
-                                }
-
-                                return $fields;
-                            })
-                            ->columns(1)
-                            ->columnSpanFull(),
-
-                        Forms\Components\Actions::make([
-
-
-                            // Botón Guardar
-                            Forms\Components\Actions\Action::make('guardar')
-                                ->label('Guardar progreso')
-                                ->color('primary')
-                                ->icon('heroicon-o-bookmark')
-                                ->iconPosition('before')
-                                ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700'])
-                                ->action(function (TestAssignment $record, array $data, $get) {
-                                    \Log::info('Datos recibidos en guardar:', [
-                                        'data' => $data,
-                                        'all_data' => $get(),
-                                    ]);
-
-                                    $answers = $get('answers') ?? [];
-                                    $allQuestions = $record->test->questions()->get();
-                                    $hasAnswers = false;
-                                    $guardadas = [];
-
-                                    foreach ($allQuestions as $question) {
-                                        $answer = $answers[$question->id] ?? null;
-                                        if (!empty($answer)) {
-                                            $hasAnswers = true;
-                                            $guardadas[$question->id] = $answer;
-                                            try {
-                                                if ($question->is_multiple) {
-                                                    // Para preguntas de selección múltiple
-                                                    // Primero eliminamos todas las respuestas existentes para esta pregunta
-                                                    $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
-                                                        ->where('question_id', $question->id)
-                                                        ->where('user_id', auth()->id())
-                                                        ->first();
-
-                                                    if ($existingResponse) {
-                                                        $existingResponse->options()->delete();
-                                                        $existingResponse->delete();
-                                                    }
-
-                                                    // Creamos una nueva respuesta
-                                                    $response = \App\Models\TestResponse::create([
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id,
-                                                        'option_id' => $answer[0], // Guardamos la primera opción como principal
-                                                        'user_id' => auth()->id()
-                                                    ]);
-
-                                                    // Guardamos todas las opciones seleccionadas
-                                                    foreach ($answer as $optionId) {
-                                                        \App\Models\TestResponseOption::create([
-                                                            'test_response_id' => $response->id,
-                                                            'option_id' => $optionId
-                                                        ]);
-                                                    }
-                                                } else {
-                                                    // Para preguntas de selección única, actualizar o crear una sola respuesta
-                                                    \App\Models\TestResponse::updateOrCreate(
-                                                        [
-                                                            'test_assignment_id' => $record->id,
-                                                            'question_id' => $question->id,
-                                                            'user_id' => auth()->id()
-                                                        ],
-                                                        [
-                                                            'option_id' => $answer
-                                                        ]
-                                                    );
-                                                }
-                                            } catch (\Exception $e) {
-                                                \Log::error('Error al guardar respuesta:', [
-                                                    'error' => $e->getMessage(),
-                                                    'question_id' => $question->id,
-                                                    'answer' => $answer
-                                                ]);
-                                            }
-                                        }
-                                    }
-
-                                    \Log::info('Resultado del guardado:', [
-                                        'hasAnswers' => $hasAnswers,
-                                        'guardadas' => $guardadas
-                                    ]);
-
-                                    if ($hasAnswers) {
-                                        try {
-                                            $record->update([
-                                                'status' => 'in_progress',
-                                            ]);
-
-                                            // Calcular el progreso
-                                            $totalQuestions = $record->test->questions()->count();
-                                            $answeredQuestions = $record->responses()->count();
-                                            $progress = round(($answeredQuestions / $totalQuestions) * 100);
-
-                                            Notification::make()
-                                                ->title('Avance guardado')
-                                                ->success()
-                                                ->body(view('notifications.test-progress', [
-                                                    'progress' => $progress,
-                                                    'answeredQuestions' => $answeredQuestions,
-                                                    'totalQuestions' => $totalQuestions,
-                                                    'remainingQuestions' => $totalQuestions - $answeredQuestions
-                                                ]))
-                                                ->persistent()
-                                                ->actions([
-                                                    \Filament\Notifications\Actions\Action::make('continuar')
-                                                        ->label('Continuar después')
-                                                        ->button()
-                                                        ->close(),
-                                                ])
-                                                ->send();
-
-                                            return redirect()->to(RealizarTestResource::getUrl('index'));
-                                        } catch (\Exception $e) {
-                                            \Log::error('Error al actualizar estado:', [
-                                                'error' => $e->getMessage(),
-                                                'record_id' => $record->id
-                                            ]);
-
-                                            Notification::make()
-                                                ->title('Error al guardar')
-                                                ->danger()
-                                                ->body('Ha ocurrido un error al guardar el progreso. Por favor, intenta nuevamente.')
-                                                ->send();
-                                        }
-                                    } else {
-                                        Notification::make()
-                                            ->title('Sin respuestas')
-                                            ->warning()
-                                            ->body('No has respondido ninguna pregunta en este intento. Puedes continuar después.')
-                                            ->send();
-                                    }
-                                }),
-
-
-                            // Botón Siguiente
-                            Forms\Components\Actions\Action::make('siguiente')
-                                ->label('Siguiente')
-                                ->color('primary')
-                                ->icon('heroicon-o-arrow-right')
-                                ->iconPosition('after')
-                                ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700'])
-                                ->hidden(fn ($get) => ($get('current_page') ?? 0) >= ($totalPages - 1))
-                                ->action(function ($set, $get) {
-                                    $set('current_page', ($get('current_page') ?? 0) + 1);
-                                }),
-                                  // Botón Regresar
-                            Forms\Components\Actions\Action::make('regresar')
-                            ->label('Regresar')
-                            ->color('gray')
-                            ->icon('heroicon-o-arrow-left')
-                            ->iconPosition('before')
-                            ->extraAttributes(['class' => 'px-4 py-2 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50'])
-                            ->hidden(fn ($get) => ($get('current_page') ?? 0) === 0)
-                            ->action(function ($set, $get) {
-                                $set('current_page', ($get('current_page') ?? 0) - 1);
-                            }),
-
-                            // Botón Enviar
-                            Forms\Components\Actions\Action::make('enviar')
-                                ->label('Enviar respuestas')
-                                ->color('success')
-                                ->icon('heroicon-o-check')
-                                ->iconPosition('before')
-                                ->extraAttributes(['class' => 'px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700'])
-                                ->hidden(fn ($get) => ($get('current_page') ?? 0) < ($totalPages - 1))
-                                ->action(function (TestAssignment $record, array $data, $get) {
-                                    \Log::info('Datos recibidos en enviar:', [
-                                        'data' => $data,
-                                        'all_data' => $get(),
-                                    ]);
-
-                                    $answers = $get('answers') ?? [];
-                                    $allQuestions = $record->test->questions()->get();
-                                    $faltantes = [];
-
-                                    foreach ($allQuestions as $question) {
-                                        $answer = $answers[$question->id] ?? null;
-                                        if (!empty($answer)) {
-                                            if ($question->is_multiple) {
-                                                // Para preguntas de selección múltiple
-                                                // Primero eliminamos todas las respuestas existentes para esta pregunta
-                                                $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
-                                                    ->where('question_id', $question->id)
-                                                    ->where('user_id', auth()->id())
-                                                    ->first();
-
-                                                if ($existingResponse) {
-                                                    $existingResponse->options()->delete();
-                                                    $existingResponse->delete();
-                                                }
-
-                                                // Creamos una nueva respuesta
-                                                $response = \App\Models\TestResponse::create([
-                                                    'test_assignment_id' => $record->id,
-                                                    'question_id' => $question->id,
-                                                    'option_id' => $answer[0], // Guardamos la primera opción como principal
-                                                    'user_id' => auth()->id()
-                                                ]);
-
-                                                // Guardamos todas las opciones seleccionadas
-                                                foreach ($answer as $optionId) {
-                                                    \App\Models\TestResponseOption::create([
-                                                        'test_response_id' => $response->id,
-                                                        'option_id' => $optionId
-                                                    ]);
-                                                }
-                                            } else {
-                                                // Para preguntas de selección única, actualizar o crear una sola respuesta
-                                                \App\Models\TestResponse::updateOrCreate(
-                                                    [
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id,
-                                                        'user_id' => auth()->id()
-                                                    ],
-                                                    [
-                                                        'option_id' => $answer
-                                                    ]
-                                                );
-                                            }
-                                        } else {
-                                            $faltantes[] = $question->id;
-                                        }
-                                    }
-
-                                    $faltantes = [];
-                                    foreach ($allQuestions as $idx => $question) {
-                                        $answer = $answers[$question->id] ?? null;
-                                        if (!empty($answer)) {
-                                            if ($question->is_multiple) {
-                                                // Para preguntas de selección múltiple
-                                                // Primero eliminamos todas las respuestas existentes para esta pregunta
-                                                $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
-                                                    ->where('question_id', $question->id)
-                                                    ->where('user_id', auth()->id())
-                                                    ->first();
-
-                                                if ($existingResponse) {
-                                                    $existingResponse->options()->delete();
-                                                    $existingResponse->delete();
-                                                }
-
-                                                // Creamos una nueva respuesta
-                                                $response = \App\Models\TestResponse::create([
-                                                    'test_assignment_id' => $record->id,
-                                                    'question_id' => $question->id,
-                                                    'option_id' => $answer[0], // Guardamos la primera opción como principal
-                                                    'user_id' => auth()->id()
-                                                ]);
-
-                                                // Guardamos todas las opciones seleccionadas
-                                                foreach ($answer as $optionId) {
-                                                    \App\Models\TestResponseOption::create([
-                                                        'test_response_id' => $response->id,
-                                                        'option_id' => $optionId
-                                                    ]);
-                                                }
-                                            } else {
-                                                // Para preguntas de selección única, actualizar o crear una sola respuesta
-                                                \App\Models\TestResponse::updateOrCreate(
-                                                    [
-                                                        'test_assignment_id' => $record->id,
-                                                        'question_id' => $question->id,
-                                                        'user_id' => auth()->id()
-                                                    ],
-                                                    [
-                                                        'option_id' => $answer
-                                                    ]
-                                                );
-                                            }
-                                        } else {
-                                            // Puedes guardar el texto y el número
-                                            $faltantes[] = [
-                                                'numero' => $idx + 1,
-                                                'texto' => $question->question,
-                                            ];
-                                        }
-                                    }
-                                   if (count($faltantes) > 0) {
-                                        $lista = '<ul class="pl-4 mt-2 space-y-1">';
-                                        foreach ($faltantes as $faltante) {
-                                            $lista .= '<li class="list-disc text-sm text-gray-700"><b>Pregunta '.$faltante['numero'].':</b> '. '</li>';
-                                        }
-                                        $lista .= '</ul>';
-
-                                        Notification::make()
-                                            ->title('Faltan preguntas por responder')
-                                            ->warning()
-                                            ->body('Debes responder todas las preguntas antes de enviar el test.<br><b>Preguntas pendientes:</b>' . $lista)
-                                            ->send();
-                                        return;
-                                    }
-
-                                    try {
-                                        $record->update([
-                                            'status' => 'completed',
-                                        ]);
-
-                                        Notification::make()
-                                            ->title('Test completado')
-                                            ->success()
-                                            ->body('Has completado el test correctamente.')
-                                            ->send();
-
-                                        return redirect()->to(RealizarTestResource::getUrl('index'));
-                                    } catch (\Exception $e) {
-                                        \Log::error('Error al guardar respuestas:', [
-                                            'error' => $e->getMessage(),
-                                            'data' => $data
-                                        ]);
-
-                                        Notification::make()
-                                            ->title('Error al guardar respuestas')
-                                            ->danger()
-                                            ->body('Ha ocurrido un error al guardar tus respuestas. Por favor, intenta nuevamente.')
-                                            ->send();
-                                    }
-                                }),
-                        ])
-                        ->alignEnd()
-                        ->columnSpanFull()
-                        ->extraAttributes(['class' => 'mt-6 flex flex-wrap gap-3 justify-end']),
-                    ])
-                    ->columnSpanFull();
+                    ->schema($pageSchema);
             }
 
             return $formFields;

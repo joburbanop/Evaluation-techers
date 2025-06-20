@@ -32,6 +32,59 @@
     ]);
 @endphp
 
+@if(app()->runningInConsole() || Route::currentRouteName() === 'realizar-test.pdf')
+    <div style="background: #fff; color: #000; font-family: Arial, sans-serif; padding: 24px;">
+        <h1 style="text-align: center; font-size: 2rem; font-weight: bold; margin-bottom: 24px;">
+            Informe de Evaluación de Competencias Digitales
+        </h1>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+            <tr>
+                <td style="width: 40%; vertical-align: top;">
+                    <strong>Fecha de asignación:</strong> {{ $applicationDate }}<br>
+                    <strong>Fecha de finalización:</strong> {{ $publicationDate }}<br>
+                    <strong>Nombre:</strong> {{ $evaluatedName }}<br>
+                    <strong>Identificación:</strong> {{ $identification }}<br>
+                    <strong>Institución:</strong> {{ $institution }}<br>
+                    <strong>Programa:</strong> {{ $program }}
+                </td>
+                <td style="width: 60%; vertical-align: top;">
+                    <strong>Puntaje Global:</strong> {{ $score }} / {{ $maxScore }}<br>
+                    <strong>Nivel:</strong> {{ $levelName }} ({{ $levelCode }})<br>
+                    <strong>Descripción:</strong> {{ $levelDescription }}<br>
+                    <strong>Porcentaje obtenido:</strong> {{ $percentage }}%<br>
+                    <strong>Percentil global:</strong> {{ $percentileRankGlobal }}%
+                </td>
+            </tr>
+        </table>
+        @if(isset($areaResults) && $areaResults->count())
+            <h2 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 12px;">Resultados por Área</h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                <thead>
+                    <tr style="background: #eee;">
+                        <th style="border: 1px solid #ccc; padding: 6px;">Área</th>
+                        <th style="border: 1px solid #ccc; padding: 6px;">Puntaje alcanzado</th>
+                        <th style="border: 1px solid #ccc; padding: 6px;">Puntaje posible</th>
+                        <th style="border: 1px solid #ccc; padding: 6px;">Código de nivel</th>
+                        <th style="border: 1px solid #ccc; padding: 6px;">Descripción del nivel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($areaResults as $area)
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 6px;">{{ $area['area_name'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">{{ $area['obtained_score'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">{{ $area['max_possible'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">{{ $area['level_code'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 6px;">{{ $area['level_description'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+    @php return; @endphp
+@endif
+
 @if(!app()->runningInConsole() && Route::currentRouteName() !== 'realizar-test.pdf')
 <div style="text-align: center; margin-bottom: 1rem;">
     <!-- Botón para descargar PDF desde servidor con estilos inline -->

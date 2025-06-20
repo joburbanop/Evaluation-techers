@@ -20,7 +20,7 @@ class TestsSeeder extends Seeder
 
         $test = Test::create([
             'name' => 'Evaluación de Competencias Digitales Docentes',
-            'description' => 'Test para evaluar las competencias digitales de los docentes según el marco DigCompEdu',
+            'description' => 'El presente cuestionario tiene como objetivo evaluar la Competencia Digital Docente en los profesores de educación superior.',
             'is_active' => true
         ]);
 
@@ -47,7 +47,7 @@ class TestsSeeder extends Seeder
 
         Option::create([
             'question_id' => $question1->id,
-            'option' => "Combino diferentes canales de comunicación, por ejemplo el correo electrónico, el blog de la clase o el sitio web de la institución.",
+            'option' => "Combino diferentes canales de comunicación, por ejemplo el correo electrónico, las plataformas institucionales o el sitio web de la institución.",
             'score' => 2,
         ]);
 
@@ -144,7 +144,7 @@ class TestsSeeder extends Seeder
 
         $question4 = Question::create([
             'test_id' => $test->id,
-            'question' => "Participo en capacitaciones en línea cuando tengo la oportunidad. Por ejemplo: cursos online, MOOCs, webinars, congresos virtuales…",
+            'question' => "Participo en capacitaciones en línea cuando tengo la oportunidad. Por ejemplo: cursos online, MOOCs*, webinars, congresos virtuales…",
             'area_id' => 1,
             'factor_id' => 1,
             'order' => 4
