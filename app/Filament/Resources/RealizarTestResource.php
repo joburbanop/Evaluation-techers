@@ -377,12 +377,12 @@ class RealizarTestResource extends Resource
             }
 
             // Código para tests pendientes o en progreso
-            $questions = $record->test->questions()
+            $allQuestions = $record->test->questions()
                 ->with(['options', 'factor', 'area'])
-                ->get()
-                ->groupBy('factor.name');
+                ->orderByRaw('CASE WHEN area_id = 8 AND factor_id = 8 THEN 0 ELSE 1 END ASC, `order` ASC')
+                ->get();
 
-            if ($questions->isEmpty()) {
+            if ($allQuestions->isEmpty()) {
                 return [
                     Forms\Components\Placeholder::make('no-questions')
                         ->label('No hay preguntas disponibles')
@@ -394,8 +394,8 @@ class RealizarTestResource extends Resource
 
             $formFields = [
                 Forms\Components\Hidden::make('current_page')
-                    ->default(function (TestAssignment $record) use ($questions) {
-                        $allQuestions = $questions->flatten();
+                    ->default(function (TestAssignment $record) use ($allQuestions) {
+                        $allQuestions = $allQuestions->flatten();
                         $questionsPerPage = 5;
                         $totalPages = ceil($allQuestions->count() / $questionsPerPage);
                         $existingResponses = $record->responses()->pluck('question_id')->toArray();
@@ -412,8 +412,8 @@ class RealizarTestResource extends Resource
 
                 Forms\Components\Placeholder::make('progress')
                     ->label('Progreso del Test')
-                    ->content(function ($get) use ($questions) {
-                        $totalQuestions = $questions->flatten()->count();
+                    ->content(function ($get) use ($allQuestions) {
+                        $totalQuestions = $allQuestions->flatten()->count();
                         $currentPage = $get('current_page') ?? 0;
                         $questionsPerPage = 5;
                         $currentQuestion = ($currentPage * $questionsPerPage) + 1;
@@ -429,7 +429,6 @@ class RealizarTestResource extends Resource
                     ->columnSpanFull(),
             ];
 
-            $allQuestions = $questions->flatten();
             $questionsPerPage = 5;
             $totalPages = ceil($allQuestions->count() / $questionsPerPage);
 
