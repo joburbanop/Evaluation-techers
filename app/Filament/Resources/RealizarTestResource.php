@@ -771,9 +771,7 @@ class RealizarTestResource extends Resource
                             // Si todas están respondidas, avanzar a la siguiente página
                             $set('current_page', $currentPage + 1);
                         })
-                        ->after(function () {
-                            return 'window.scrollTo({ top: 0, behavior: "smooth" });';
-                        }),
+                        ->after(fn () => 'setTimeout(() => { const modalContent = document.querySelector(\'.fi-modal-content\'); if (modalContent) { modalContent.scrollTo({ top: 0, behavior: \'smooth\' }); } }, 50)'),
 
                     // Botón Regresar
                     Forms\Components\Actions\Action::make('regresar')
@@ -786,9 +784,7 @@ class RealizarTestResource extends Resource
                         ->action(function ($set, $get) {
                             $set('current_page', ($get('current_page') ?? 0) - 1);
                         })
-                        ->after(function () {
-                            return 'window.scrollTo({ top: 0, behavior: "smooth" });';
-                        }),
+                        ->after(fn () => 'setTimeout(() => { const modalContent = document.querySelector(\'.fi-modal-content\'); if (modalContent) { modalContent.scrollTo({ top: 0, behavior: \'smooth\' }); } }, 50)'),
 
                     // Botón Enviar
                     Forms\Components\Actions\Action::make('enviar')
