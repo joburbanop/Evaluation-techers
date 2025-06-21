@@ -60,7 +60,9 @@ class RealizarTestResource extends Resource
                     ->label('Avance')
                     ->getStateUsing(function ($record) {
                         $total = $record->test?->questions?->count() ?? 0;
-                        $respondidas = $record->responses?->count() ?? 0;
+                        // Contar las respuestas únicas por pregunta para evitar duplicados
+                        $respondidas = $record->responses()->distinct('question_id')->count();
+                        
                         // Si el estado es completado, siempre 100%
                         $porcentaje = $record->status === 'completed'
                             ? 100
@@ -466,10 +468,33 @@ class RealizarTestResource extends Resource
                                                 ->live()
                                                 ->dehydrated(true)
                                                 ->default(function (TestAssignment $record) use ($question) {
-                                                    return $record->responses()
-                                                        ->where('question_id', $question->id)
-                                                        ->pluck('option_id')
-                                                        ->toArray();
+                                                    if ($question->is_multiple) {
+                                                        // Para preguntas de selección múltiple, obtener todas las opciones seleccionadas
+                                                        $responses = $record->responses()
+                                                            ->where('question_id', $question->id)
+                                                            ->with('responseOptions')
+                                                            ->get();
+                                                        
+                                                        $selectedOptions = [];
+                                                        foreach ($responses as $response) {
+                                                            // Agregar la opción principal
+                                                            $selectedOptions[] = $response->option_id;
+                                                            
+                                                            // Agregar las opciones adicionales si existen
+                                                            if ($response->responseOptions) {
+                                                                foreach ($response->responseOptions as $responseOption) {
+                                                                    $selectedOptions[] = $responseOption->id;
+                                                                }
+                                                            }
+                                                        }
+                                                        
+                                                        return array_unique($selectedOptions);
+                                                    } else {
+                                                        // Para preguntas de selección única
+                                                        return $record->responses()
+                                                            ->where('question_id', $question->id)
+                                                            ->value('option_id');
+                                                    }
                                                 })
                                             : Forms\Components\Radio::make("answers.{$question->id}")
                                                 ->options(function() use ($question) {
@@ -494,6 +519,7 @@ class RealizarTestResource extends Resource
                                                 ->live()
                                                 ->dehydrated(true)
                                                 ->default(function (TestAssignment $record) use ($question) {
+                                                    // Para preguntas de selección única
                                                     return $record->responses()
                                                         ->where('question_id', $question->id)
                                                         ->value('option_id');
@@ -553,7 +579,6 @@ class RealizarTestResource extends Resource
                                     try {
                                         if ($question->is_multiple) {
                                             // Para preguntas de selección múltiple
-                                            // Primero eliminamos todas las respuestas existentes para esta pregunta
                                             $existingResponse = \App\Models\TestResponse::where('test_assignment_id', $record->id)
                                                 ->where('question_id', $question->id)
                                                 ->where('user_id', auth()->id())
@@ -564,15 +589,13 @@ class RealizarTestResource extends Resource
                                                 $existingResponse->delete();
                                             }
 
-                                            // Creamos una nueva respuesta
                                             $response = \App\Models\TestResponse::create([
                                                 'test_assignment_id' => $record->id,
                                                 'question_id' => $question->id,
-                                                'option_id' => $answer[0], // Guardamos la primera opción como principal
+                                                'option_id' => $answer[0],
                                                 'user_id' => auth()->id()
                                             ]);
 
-                                            // Guardamos todas las opciones seleccionadas
                                             foreach ($answer as $optionId) {
                                                 \App\Models\TestResponseOption::create([
                                                     'test_response_id' => $response->id,
@@ -580,7 +603,7 @@ class RealizarTestResource extends Resource
                                                 ]);
                                             }
                                         } else {
-                                            // Para preguntas de selección única, actualizar o crear una sola respuesta
+                                            // Para preguntas de selección única
                                             \App\Models\TestResponse::updateOrCreate(
                                                 [
                                                     'test_assignment_id' => $record->id,
@@ -618,25 +641,18 @@ class RealizarTestResource extends Resource
                                     $answeredQuestions = $record->responses()->count();
                                     $progress = round(($answeredQuestions / $totalQuestions) * 100);
 
+                                    // Notificación simple
                                     Notification::make()
-                                        ->title('Avance guardado')
+                                        ->title('¡Guardado exitoso!')
                                         ->success()
-                                        ->body(view('notifications.test-progress', [
-                                            'progress' => $progress,
-                                            'answeredQuestions' => $answeredQuestions,
-                                            'totalQuestions' => $totalQuestions,
-                                            'remainingQuestions' => $totalQuestions - $answeredQuestions
-                                        ]))
-                                        ->persistent()
-                                        ->actions([
-                                            \Filament\Notifications\Actions\Action::make('continuar')
-                                                ->label('Continuar después')
-                                                ->button()
-                                                ->close(),
-                                        ])
+                                        ->body('Has guardado ' . $answeredQuestions . ' de ' . $totalQuestions . ' preguntas (' . $progress . '%)')
                                         ->send();
 
-                                    return redirect()->to(RealizarTestResource::getUrl('index'));
+                                    \Log::info('Notificación enviada exitosamente');
+
+                                    // Cerrar el modal y refrescar la página
+                                    return redirect()->to(RealizarTestResource::getUrl('index'))->with('success', 'Test guardado exitosamente');
+
                                 } catch (\Exception $e) {
                                     \Log::error('Error al actualizar estado:', [
                                         'error' => $e->getMessage(),
@@ -646,14 +662,14 @@ class RealizarTestResource extends Resource
                                     Notification::make()
                                         ->title('Error al guardar')
                                         ->danger()
-                                        ->body('Ha ocurrido un error al guardar el progreso. Por favor, intenta nuevamente.')
+                                        ->body('Ha ocurrido un error al guardar el progreso.')
                                         ->send();
                                 }
                             } else {
                                 Notification::make()
                                     ->title('Sin respuestas')
                                     ->warning()
-                                    ->body('No has respondido ninguna pregunta en este intento. Puedes continuar después.')
+                                    ->body('No has respondido ninguna pregunta.')
                                     ->send();
                             }
                         }),
@@ -869,10 +885,27 @@ class RealizarTestResource extends Resource
 
             return $formFields;
         })
-        ->fillForm(function (TestAssignment $record) {
-            $user = auth()->user();
+        ->fillForm(function (TestAssignment $record): array {
+            $answers = [];
+            $responses = $record->responses()->with(['question', 'options'])->get();
+
+            foreach ($responses as $response) {
+                if (!$response->question) {
+                    continue;
+                }
+                $questionId = $response->question_id;
+
+                if ($response->question->is_multiple) {
+                    // Para preguntas múltiples, se recogen todas las opciones
+                    $answers[$questionId] = $response->options->pluck('option_id')->toArray();
+                } else {
+                    // Para preguntas simples
+                    $answers[$questionId] = $response->option_id;
+                }
+            }
+            
             return [
-                // No hay datos sociodemográficos que rellenar aquí por ahora
+                'answers' => $answers,
             ];
         })
 ])
