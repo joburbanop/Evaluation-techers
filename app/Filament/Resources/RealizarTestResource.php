@@ -397,19 +397,46 @@ class RealizarTestResource extends Resource
             $formFields = [
                 Forms\Components\Hidden::make('current_page')
                     ->default(function (TestAssignment $record) use ($allQuestions) {
-                        $allQuestions = $allQuestions->flatten();
                         $questionsPerPage = 5;
                         $totalPages = ceil($allQuestions->count() / $questionsPerPage);
-                        $existingResponses = $record->responses()->pluck('question_id')->toArray();
-                        for ($page = 0; $page < $totalPages; $page++) {
-                            $pageQuestions = $allQuestions->slice($page * $questionsPerPage, $questionsPerPage);
-                            foreach ($pageQuestions as $question) {
-                                if (!in_array($question->id, $existingResponses)) {
-                                    return $page;
-                                }
-                            }
+                        
+                        // Contar el número total de preguntas respondidas
+                        $answeredQuestionsCount = $record->responses()
+                            ->distinct()
+                            ->count('question_id');
+
+                        // Calcular la página basándose en el número de preguntas respondidas
+                        // Si respondiste 8 preguntas, estás en página 2 (para completar preguntas 9-10)
+                        // Si respondiste 10 preguntas, estás en página 3 (para continuar con preguntas 11-15)
+                        if ($answeredQuestionsCount % $questionsPerPage === 0) {
+                            // Es múltiplo de 5, ir a la siguiente página
+                            $calculatedPage = ($answeredQuestionsCount / $questionsPerPage);
+                        } else {
+                            // No es múltiplo de 5, ir a la página donde están las preguntas pendientes
+                            $calculatedPage = floor($answeredQuestionsCount / $questionsPerPage);
                         }
-                        return $totalPages - 1;
+                        
+                        // Asegurar que no exceda el número total de páginas y no sea negativo
+                        $pageToReturn = max(0, min($calculatedPage, $totalPages - 1));
+                        
+                        // Logs para diagnóstico
+                        \Log::info('Cálculo de página de inicio:', [
+                            'test_assignment_id' => $record->id,
+                            'total_questions' => $allQuestions->count(),
+                            'answered_questions_count' => $answeredQuestionsCount,
+                            'questions_per_page' => $questionsPerPage,
+                            'is_multiple_of_5' => ($answeredQuestionsCount % $questionsPerPage === 0),
+                            'calculated_page' => $calculatedPage,
+                            'total_pages' => $totalPages,
+                            'page_to_return' => $pageToReturn
+                        ]);
+                        
+                        // Si no hay respuestas, empezar desde la primera página
+                        if ($answeredQuestionsCount === 0) {
+                            return 0;
+                        }
+                        
+                        return $pageToReturn;
                     }),
 
                 Forms\Components\Placeholder::make('progress')
@@ -904,8 +931,32 @@ class RealizarTestResource extends Resource
                 }
             }
             
+            // Calcular la página de inicio para el log
+            $questionsPerPage = 5;
+            $allQuestions = $record->test->questions()->get();
+            $answeredQuestionsCount = $record->responses()->distinct()->count('question_id');
+            
+            if ($answeredQuestionsCount % $questionsPerPage === 0) {
+                // Es múltiplo de 5, ir a la siguiente página
+                $calculatedPage = ($answeredQuestionsCount / $questionsPerPage);
+            } else {
+                // No es múltiplo de 5, ir a la página donde están las preguntas pendientes
+                $calculatedPage = floor($answeredQuestionsCount / $questionsPerPage);
+            }
+            
+            $pageToReturn = max(0, min($calculatedPage, ceil($allQuestions->count() / $questionsPerPage) - 1));
+            
+            \Log::info('fillForm - Valores calculados:', [
+                'test_assignment_id' => $record->id,
+                'answered_questions_count' => $answeredQuestionsCount,
+                'is_multiple_of_5' => ($answeredQuestionsCount % $questionsPerPage === 0),
+                'calculated_page' => $calculatedPage,
+                'page_to_return' => $pageToReturn
+            ]);
+            
             return [
                 'answers' => $answers,
+                'current_page' => $pageToReturn,
             ];
         })
 ])
