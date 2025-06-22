@@ -23,6 +23,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
      */
     protected $fillable = [
         'name',
+        'apellido1',
+        'apellido2',
         'email',
         'password',
         'phone',
@@ -111,6 +113,24 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public function programa(): BelongsTo
     {
         return $this->belongsTo(Programa::class, 'programa_id');
+    }
+
+    /**
+     * Obtiene el nombre completo del usuario incluyendo apellidos.
+     */
+    public function getFullNameAttribute(): string
+    {
+        $fullName = trim($this->name ?? '');
+        
+        if (!empty($this->apellido1)) {
+            $fullName .= ' ' . trim($this->apellido1);
+        }
+        
+        if (!empty($this->apellido2)) {
+            $fullName .= ' ' . trim($this->apellido2);
+        }
+        
+        return trim($fullName);
     }
 
     /**

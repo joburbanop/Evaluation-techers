@@ -181,7 +181,7 @@ class RealizarTestPdfController extends Controller
             'percentileRankGlobal' => $percentileRankGlobal,
             'percentileInstitution' => $percentileInstitution,
             'percentileProgram' => $percentileProgram,
-            'evaluatedName' => auth()->user()->name,
+            'evaluatedName' => auth()->user()->full_name,
             'identification' => auth()->user()->document_number ?? 'Sin identificación',
             'institution' => auth()->user()->institution?->name ?? 'Sin institución',
             'program' => auth()->user()->programa?->nombre ?? 'Sin programa',

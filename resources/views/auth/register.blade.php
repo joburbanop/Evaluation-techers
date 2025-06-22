@@ -1,43 +1,43 @@
 @extends('layouts.app')
 @stack('styles')
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="md:flex">
                 <!-- Columna Izquierda - Imagen/Fondo -->
-                <div class="hidden md:block md:w-2/5 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex items-center justify-center relative">
+                <div class="hidden md:block md:w-2/5 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 lg:p-12 flex items-center justify-center relative">
                     <div class="absolute inset-0 opacity-10 bg-pattern"></div>
                     <div class="relative z-10 text-center">
-                        <h2 class="text-3xl font-bold text-white mb-6">Bienvenido a Nuestro Sistema</h2>
-                        <p class="text-blue-100 mb-8 text-lg">Únete a nuestra plataforma para acceder a todas las herramientas y recursos exclusivos.</p>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-white mb-6">Bienvenido a Nuestro Sistema</h2>
+                        <p class="text-blue-100 mb-8 text-base lg:text-lg">Únete a nuestra plataforma para acceder a todas las herramientas y recursos exclusivos.</p>
                         <div class="flex justify-center">
-                            <img src="{{ asset('img/image.png') }}" alt="Logo" class="w-96 rounded-xl border-4 border-white/30 shadow-2xl transform hover:scale-105 transition-transform duration-300">
+                            <img src="{{ asset('img/image.png') }}" alt="Logo" class="w-64 lg:w-96 rounded-xl border-4 border-white/30 shadow-2xl transform hover:scale-105 transition-transform duration-300">
                         </div>
                     </div>
                 </div>
                 
                 <!-- Columna Derecha - Formulario -->
-                <div class="w-full md:w-3/5 p-6 md:p-12">
+                <div class="w-full md:w-3/5 p-6 md:p-8 lg:p-12">
                     <div class="text-center mb-8">
-                        <h3 class="text-3xl font-extrabold text-gray-900">Crear Cuenta</h3>
-                        <p class="mt-2 text-gray-600">Completa el formulario para registrarte</p>
+                        <h3 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Crear Cuenta</h3>
+                        <p class="mt-3 text-gray-600">Completa el formulario para registrarte</p>
                     </div>
 
-                    <form method="POST" action="{{ route('register') }}" class="space-y-6" id="registerForm">
+                    <form method="POST" action="{{ route('register') }}" class="space-y-8" id="registerForm">
                         @csrf
                         <meta name="csrf-token" content="{{ csrf_token() }}">
 
                         <!-- Tabs -->
-                        <div class="border-b border-gray-200">
-                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                                <button type="button" class="tab-btn active border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="personal">
+                        <div class="border-b border-gray-200 mb-8">
+                            <nav class="-mb-px flex flex-wrap gap-4 sm:gap-8" aria-label="Tabs">
+                                <button type="button" class="tab-btn active border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-2 sm:px-4 border-b-2 font-medium text-sm" data-tab="personal">
                                     <i class="fas fa-user mr-2"></i>Datos Personales
                                 </button>
-                                <button type="button" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="location">
+                                <button type="button" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-2 sm:px-4 border-b-2 font-medium text-sm" data-tab="location">
                                     <i class="fas fa-map-marker-alt mr-2"></i>Ubicación
                                 </button>
-                                <button type="button" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="institution">
+                                <button type="button" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-2 sm:px-4 border-b-2 font-medium text-sm" data-tab="institution">
                                     <i class="fas fa-building mr-2"></i>Institución
                                 </button>
                             </nav>
@@ -45,11 +45,12 @@
 
                         <!-- Contenido de las pestañas -->
                         <div class="tab-content" id="personal">
-                            <!-- Nombre -->
-                            <div class="space-y-6">
-                                <div>
-                                    <label for="name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                                    <div class="mt-1 relative rounded-md shadow-sm">
+                            <!-- Datos Personales -->
+                            <div class="space-y-8">
+                                <!-- Nombre -->
+                                <div class="form-group">
+                                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                                    <div class="relative rounded-md shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="fas fa-user text-gray-400"></i>
                                         </div>
@@ -58,51 +59,53 @@
                                             placeholder="Juan Pérez">
                                     </div>
                                     @error('name')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
                                 <!-- Tipo y número de documento -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="document_type" class="block text-sm font-medium text-gray-700">Tipo de Documento</label>
-                                        <div class="mt-1 relative rounded-md shadow-sm">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-id-card text-gray-400"></i>
+                                <div class="form-group">
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="document_type" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Documento</label>
+                                            <div class="relative rounded-md shadow-sm">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <i class="fas fa-id-card text-gray-400"></i>
+                                                </div>
+                                                <select id="document_type" name="document_type" required
+                                                    class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('document_type') border-red-500 @enderror">
+                                                    <option value="">Seleccione...</option>
+                                                    <option value="CC" {{ old('document_type') == 'CC' ? 'selected' : '' }}>Cédula de Ciudadanía</option>
+                                                    <option value="CE" {{ old('document_type') == 'CE' ? 'selected' : '' }}>Cédula de Extranjería</option>
+                                                    <option value="TI" {{ old('document_type') == 'TI' ? 'selected' : '' }}>Tarjeta de Identidad</option>
+                                                    <option value="PP" {{ old('document_type') == 'PP' ? 'selected' : '' }}>Pasaporte</option>
+                                                </select>
                                             </div>
-                                            <select id="document_type" name="document_type" required
-                                                class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('document_type') border-red-500 @enderror">
-                                                <option value="">Seleccione...</option>
-                                                <option value="CC" {{ old('document_type') == 'CC' ? 'selected' : '' }}>Cédula de Ciudadanía</option>
-                                                <option value="CE" {{ old('document_type') == 'CE' ? 'selected' : '' }}>Cédula de Extranjería</option>
-                                                <option value="TI" {{ old('document_type') == 'TI' ? 'selected' : '' }}>Tarjeta de Identidad</option>
-                                                <option value="PP" {{ old('document_type') == 'PP' ? 'selected' : '' }}>Pasaporte</option>
-                                            </select>
+                                            @error('document_type')
+                                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
                                         </div>
-                                        @error('document_type')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label for="document_number" class="block text-sm font-medium text-gray-700">Número de Documento</label>
-                                        <div class="mt-1 relative rounded-md shadow-sm">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-hashtag text-gray-400"></i>
+                                        <div>
+                                            <label for="document_number" class="block text-sm font-medium text-gray-700 mb-2">Número de Documento</label>
+                                            <div class="relative rounded-md shadow-sm">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <i class="fas fa-hashtag text-gray-400"></i>
+                                                </div>
+                                                <input type="text" id="document_number" name="document_number" value="{{ old('document_number') }}" required 
+                                                    class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('document_number') border-red-500 @enderror"
+                                                    placeholder="12345678">
                                             </div>
-                                            <input type="text" id="document_number" name="document_number" value="{{ old('document_number') }}" required 
-                                                class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('document_number') border-red-500 @enderror"
-                                                placeholder="12345678">
+                                            @error('document_number')
+                                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
                                         </div>
-                                        @error('document_number')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
                                     </div>
                                 </div>
 
                                 <!-- Email -->
-                                <div>
-                                    <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="form-group">
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                                    <div class="relative rounded-md shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="fas fa-envelope text-gray-400"></i>
                                         </div>
@@ -111,36 +114,38 @@
                                             placeholder="ejemplo@correo.com">
                                     </div>
                                     @error('email')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
-                                <!-- Contraseña -->
-                                <div class="space-y-6">
-                                    <div>
-                                        <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                                        <div class="mt-1 relative rounded-md shadow-sm">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-lock text-gray-400"></i>
+                                <!-- Contraseñas -->
+                                <div class="form-group">
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                                            <div class="relative rounded-md shadow-sm">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <i class="fas fa-lock text-gray-400"></i>
+                                                </div>
+                                                <input type="password" id="password" name="password" required
+                                                    class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('password') border-red-500 @enderror"
+                                                    placeholder="********">
                                             </div>
-                                            <input type="password" id="password" name="password" required
-                                                class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('password') border-red-500 @enderror"
-                                                placeholder="********">
+                                            @error('password')
+                                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
                                         </div>
-                                        @error('password')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
 
-                                    <div>
-                                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
-                                        <div class="mt-1 relative rounded-md shadow-sm">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-lock text-gray-400"></i>
+                                        <div>
+                                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
+                                            <div class="relative rounded-md shadow-sm">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <i class="fas fa-lock text-gray-400"></i>
+                                                </div>
+                                                <input type="password" id="password_confirmation" name="password_confirmation" required
+                                                    class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                                                    placeholder="********">
                                             </div>
-                                            <input type="password" id="password_confirmation" name="password_confirmation" required
-                                                class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                                                placeholder="********">
                                         </div>
                                     </div>
                                 </div>
@@ -149,11 +154,11 @@
 
                         <div class="tab-content hidden" id="location">
                             <!-- Ubicación -->
-                            <div class="space-y-6">
+                            <div class="space-y-8">
                                 <!-- Departamento -->
-                                <div>
-                                    <label for="departamento_id" class="block text-sm font-medium text-gray-700">Departamento</label>
-                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="form-group">
+                                    <label for="departamento_id" class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
+                                    <div class="relative rounded-md shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="fas fa-map-marker-alt text-gray-400"></i>
                                         </div>
@@ -163,14 +168,14 @@
                                         </select>
                                     </div>
                                     @error('departamento_id')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
                                 <!-- Ciudad -->
-                                <div>
-                                    <label for="ciudad_id" class="block text-sm font-medium text-gray-700">Ciudad</label>
-                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="form-group">
+                                    <label for="ciudad_id" class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
+                                    <div class="relative rounded-md shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="fas fa-city text-gray-400"></i>
                                         </div>
@@ -180,7 +185,7 @@
                                         </select>
                                     </div>
                                     @error('ciudad_id')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
@@ -188,73 +193,74 @@
 
                         <div class="tab-content hidden" id="institution">
                             <!-- Institución -->
-                            <div>
-                                <label for="institution_id" class="block text-sm font-medium text-gray-700">Institución</label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-building text-gray-400"></i>
+                            <div class="space-y-8">
+                                <!-- Institución -->
+                                <div class="form-group">
+                                    <label for="institution_id" class="block text-sm font-medium text-gray-700 mb-2">Institución</label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-building text-gray-400"></i>
+                                        </div>
+                                        <select id="institution_id" name="institution_id" required disabled
+                                            class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('institution_id') border-red-500 @enderror">
+                                            <option value="">Seleccione una institución...</option>
+                                        </select>
                                     </div>
-                                    <select id="institution_id" name="institution_id" required disabled
-                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('institution_id') border-red-500 @enderror">
-                                        <option value="">Seleccione una institución...</option>
-                                    </select>
+                                    @error('institution_id')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('institution_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
 
-                            <!-- Facultad -->
-                            <div>
-                                <label for="facultad_id" class="block text-sm font-medium text-gray-700">Facultad</label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-university text-gray-400"></i>
+                                <!-- Facultad -->
+                                <div class="form-group">
+                                    <label for="facultad_id" class="block text-sm font-medium text-gray-700 mb-2">Facultad</label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-university text-gray-400"></i>
+                                        </div>
+                                        <select id="facultad_id" name="facultad_id" required disabled
+                                            class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('facultad_id') border-red-500 @enderror">
+                                            <option value="">Seleccione una facultad...</option>
+                                        </select>
                                     </div>
-                                    <select id="facultad_id" name="facultad_id" required disabled
-                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('facultad_id') border-red-500 @enderror">
-                                        <option value="">Seleccione una facultad...</option>
-                                    </select>
+                                    @error('facultad_id')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('facultad_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
 
-
-                            <!-- Programa -->
-                            <div>
-                                <label for="programa_id" class="block text-sm font-medium text-gray-700">Programa Académico</label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-graduation-cap text-gray-400"></i>
+                                <!-- Programa -->
+                                <div class="form-group">
+                                    <label for="programa_id" class="block text-sm font-medium text-gray-700 mb-2">Programa Académico</label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-graduation-cap text-gray-400"></i>
+                                        </div>
+                                        <select id="programa_id" name="programa_id" required disabled
+                                            class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('programa_id') border-red-500 @enderror">
+                                            <option value="">Seleccione un programa...</option>
+                                        </select>
                                     </div>
-                                    <select id="programa_id" name="programa_id" required disabled
-                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @error('programa_id') border-red-500 @enderror">
-                                        <option value="">Seleccione un programa...</option>
-                                    </select>
+                                    @error('programa_id')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('programa_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
                             </div>
-
                         </div>
 
                         <!-- Botones de navegación -->
-                        <div class="flex justify-between pt-6">
-                            <button type="button" id="prevBtn" class="hidden px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <div class="flex flex-col sm:flex-row justify-between gap-4 pt-8">
+                            <button type="button" id="prevBtn" class="hidden order-2 sm:order-1 px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i>Anterior
                             </button>
-                            <button type="button" id="nextBtn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="button" id="nextBtn" class="order-1 sm:order-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
                                 Siguiente<i class="fas fa-arrow-right ml-2"></i>
                             </button>
-                            <button type="submit" id="submitBtn" class="hidden w-full justify-center items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="submit" id="submitBtn" class="hidden order-1 sm:order-2 w-full sm:w-auto justify-center items-center px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border border-transparent rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
                                 <i class="fas fa-user-plus mr-2"></i>Crear mi cuenta
                             </button>
                         </div>
 
-                        <div class="text-center mt-6">
+                        <div class="text-center mt-8">
                             <p class="text-gray-600">¿Ya tienes una cuenta? 
                                 <a href="{{ route('login') }}" class="text-indigo-600 font-medium hover:text-indigo-500 transition duration-150">
                                     Inicia sesión aquí
@@ -302,6 +308,40 @@
     .tab-content:not(.hidden) {
         display: block;
         opacity: 1;
+    }
+
+    /* Mejoras para grupos de formulario */
+    .form-group {
+        @apply space-y-2;
+    }
+
+    /* Mejoras responsive para tabs */
+    @media (max-width: 640px) {
+        .tab-btn {
+            @apply text-xs px-2 py-3;
+        }
+        
+        .tab-btn i {
+            @apply mr-1;
+        }
+    }
+
+    /* Mejoras para inputs y selects */
+    input, select {
+        @apply transition-all duration-200;
+    }
+
+    input:focus, select:focus {
+        @apply transform scale-[1.02];
+    }
+
+    /* Mejoras para botones */
+    button {
+        @apply transition-all duration-200;
+    }
+
+    button:hover {
+        @apply transform scale-[1.02];
     }
 </style>
 @endpush
@@ -405,7 +445,7 @@ $(document).ready(function() {
 
 
     // -----------------------------------
-    // 3) Cuando cambia “Departamento” → cargo “Ciudad”
+    // 3) Cuando cambia "Departamento" → cargo "Ciudad"
     // -----------------------------------
     $('#departamento_id').on('change', function() {
         let departamentoId = $(this).val();
@@ -459,7 +499,7 @@ $(document).ready(function() {
 
 
      // -----------------------------------
-    // 4) Cuando cambia “Ciudad” → cargo “Institución” usando el nombre del municipio
+    // 4) Cuando cambia "Ciudad" → cargo "Institución" usando el nombre del municipio
     // -----------------------------------
     $('#ciudad_id').on('change', function() {
         // En lugar del ID, tomamos el texto (nombre del municipio) del <option> seleccionado:
@@ -528,7 +568,7 @@ $(document).ready(function() {
     });
 
 // -----------------------------------
-// 5) Cuando cambia “Institución” → cargo “Facultad”
+// 5) Cuando cambia "Institución" → cargo "Facultad"
 // -----------------------------------
 $('#institution_id').on('change', function() {
     let institutionId = $(this).val();
@@ -587,13 +627,13 @@ $('#institution_id').on('change', function() {
 
 
     // -----------------------------------
-    // 6) Cuando cambia “Facultad” → cargo “Programa”
+    // 6) Cuando cambia "Facultad" → cargo "Programa"
     // -----------------------------------
   $('#facultad_id').on('change', function() {
     let facultadId = $(this).val();
     let programaSelect = $('#programa_id');
 
-    // Limpiar y mostrar “Cargando programas…”
+    // Limpiar y mostrar "Cargando programas..."
     programaSelect
       .empty()
       .append('<option value="">Cargando programas...</option>')

@@ -22,6 +22,9 @@
 
     // ID de asignación para generar PDF
     'assignmentId',
+
+    // Nombre dinámico del test
+    'testName' => 'Informe de Evaluación',
 ])
 
 @php
@@ -39,7 +42,7 @@
         </h1>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
-                <td style="width: 40%; vertical-align: top;">
+                <td style="width: 40%; vertical-align: top; padding-right: 16px;">
                     <strong>Fecha de asignación:</strong> {{ $applicationDate }}<br>
                     <strong>Fecha de finalización:</strong> {{ $publicationDate }}<br>
                     <strong>Nombre:</strong> {{ $evaluatedName }}<br>
@@ -47,7 +50,7 @@
                     <strong>Institución:</strong> {{ $institution }}<br>
                     <strong>Programa:</strong> {{ $program }}
                 </td>
-                <td style="width: 60%; vertical-align: top;">
+                <td style="width: 60%; vertical-align: top; padding-left: 16px;">
                     <strong>Puntaje Global:</strong> {{ $score }} / {{ $maxScore }}<br>
                     <strong>Nivel:</strong> {{ $levelName }} ({{ $levelCode }})<br>
                     <strong>Descripción:</strong> {{ $levelDescription }}<br>
@@ -61,21 +64,21 @@
             <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
                 <thead>
                     <tr style="background: #eee;">
-                        <th style="border: 1px solid #ccc; padding: 6px;">Área</th>
-                        <th style="border: 1px solid #ccc; padding: 6px;">Puntaje alcanzado</th>
-                        <th style="border: 1px solid #ccc; padding: 6px;">Puntaje posible</th>
-                        <th style="border: 1px solid #ccc; padding: 6px;">Código de nivel</th>
-                        <th style="border: 1px solid #ccc; padding: 6px;">Descripción del nivel</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: left; width: 25%;">Área</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 15%;">Puntaje alcanzado</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 15%;">Puntaje posible</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 15%;">Código de nivel</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; text-align: left; width: 30%;">Descripción del nivel</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($areaResults as $area)
                         <tr>
-                            <td style="border: 1px solid #ccc; padding: 6px;">{{ $area['area_name'] }}</td>
-                            <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">{{ $area['obtained_score'] }}</td>
-                            <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">{{ $area['max_possible'] }}</td>
-                            <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">{{ $area['level_code'] }}</td>
-                            <td style="border: 1px solid #ccc; padding: 6px;">{{ $area['level_description'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; word-wrap: break-word;">{{ $area['area_name'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">{{ $area['obtained_score'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">{{ $area['max_possible'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">{{ $area['level_code'] }}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; word-wrap: break-word;">{{ $area['level_description'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -107,121 +110,130 @@
 @endif
 
 <div class="flex justify-center items-center w-full">
-    <div class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-2xl shadow-xl p-8 w-full max-w-4xl">
-        <h1 class="text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-8">Informe de Evaluación de Competencias Digitales</h1>
-        <div class="flex flex-col md:flex-row gap-8">
-            <!-- Datos personales -->
-            <div class="md:w-1/3 w-full flex flex-col gap-4 justify-start bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <div>
-                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Fecha de asignación</div>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $applicationDate }}</div>
+    <div class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-2xl shadow-xl p-8 lg:p-12 w-full max-w-6xl">
+        <h1 class="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-10">{{ $testName }}</h1>
+        
+        <div class="flex flex-col md:flex-row gap-10 lg:gap-12">
+            <!-- Columna Izquierda: Datos del Evaluado -->
+            <div class="md:w-1/3 w-full bg-gray-50 dark:bg-gray-800 rounded-xl p-6 lg:p-8 border border-gray-200 dark:border-gray-700 flex flex-col space-y-6">
+                <div class="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <span class="inline-block p-3 bg-blue-100 dark:bg-blue-900 rounded-full mb-3">
+                        <x-heroicon-o-user class="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    </span>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Información del Docente</h2>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Fecha de finalización</div>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $publicationDate }}</div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Nombre</div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 break-words leading-relaxed">{{ $evaluatedName }}</div>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Nombre</div>
-                    <div class="text-sm font-mono text-gray-900 dark:text-gray-100">{{ $evaluatedName }}</div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Identificación</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $identification }}</div>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Identificación</div>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $identification }}</div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Institución</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $institution }}</div>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Institución</div>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $institution }}</div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Programa</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $program }}</div>
+                </div>
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Fecha de asignación</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $applicationDate }}</div>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Programa</div>
-                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ $program }}</div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Fecha de finalización</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $publicationDate }}</div>
                 </div>
             </div>
-            <!-- Resultados globales -->
-            <div class="md:w-2/3 w-full flex flex-col gap-6 justify-center">
-                <div class="flex items-center gap-4">
-                    <span class="inline-block w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                        <x-heroicon-o-academic-cap class="w-10 h-10 text-primary-600" />
-                    </span>
-                    <div>
-                        <div class="text-lg font-bold uppercase text-gray-900 dark:text-gray-100">Puntaje Global</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-300">De {{ $maxScore }} puntos posibles</div>
-                    </div>
-                    <div class="ml-auto text-right">
-                        <div class="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{{ $score }}</div>
-                        <div class="text-base font-semibold text-gray-700 dark:text-gray-200 uppercase">{{ $levelName }}</div>
-                        <div class="text-xl font-extrabold text-primary-700 dark:text-primary-400">{{ $levelCode }}</div>
-                    </div>
-                </div>
-                <div>
-                    <div class="font-bold text-base text-gray-900 dark:text-gray-100">{{ $levelName }} {{ $levelCode }}</div>
-                    <div class="text-sm text-gray-700 dark:text-gray-200 mt-1">{{ $levelDescription }}</div>
-                </div>
-                @if($percentileInfo)
-                <div>
-                    <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-1">
-                        Respecto a todos los demás docentes, usted está en el percentil {{ $percentileRankGlobal }}%
-                    </div>
-                    <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden mt-2 bg-gray-200 dark:bg-gray-700">
-                        <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500
-                                    bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400"
-                             style="width: {{ $percentileRankGlobal }}%">
+
+            <!-- Columna Derecha: Resultados -->
+            <div class="md:w-2/3 w-full flex flex-col gap-8">
+                <!-- Tarjeta de Puntaje y Nivel -->
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <div class="flex flex-col sm:flex-row items-center gap-6">
+                        <div class="flex-shrink-0">
+                            <span class="inline-block p-4 bg-primary-100 rounded-full">
+                                <x-heroicon-o-academic-cap class="w-10 h-10 text-primary-600" />
+                            </span>
                         </div>
-                        <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
-                            {{ $percentileRankGlobal }}%
-                        </span>
+                        <div class="flex-grow text-center sm:text-left">
+                            <div class="text-lg font-bold uppercase text-gray-900 dark:text-gray-100">Puntaje Global</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-300">De {{ $maxScore }} puntos posibles</div>
+                        </div>
+                        <div class="flex-shrink-0 text-center sm:text-right">
+                            <div class="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{{ $score }}</div>
+                            <div class="text-base font-semibold text-gray-700 dark:text-gray-200 uppercase">{{ $levelName }} {{ $levelCode }}</div>
+                        </div>
                     </div>
                 </div>
-                @endif
-                <div>
-                    <div class="flex justify-between text-sm text-gray-700 dark:text-gray-200 mb-1 mt-4">
-                        <strong>Porcentaje obtenido</strong>
-                        <strong>{{ $percentage }}%</strong>
-                    </div>
-                    <div class="relative w-full h-6 bg-gray-200 dark:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden mt-2">
-                        <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500
-                                    bg-gradient-to-r from-green-400 to-emerald-500 dark:from-green-300 dark:to-emerald-400"
-                             style="width: {{ $percentage }}%">
+
+                <!-- Tarjeta de Descripción del Nivel -->
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-gray-100 mb-2">{{ $levelName }} {{ $levelCode }}</h3>
+                    <p class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">{{ $levelDescription }}</p>
+                </div>
+
+                <!-- Tarjetas de Percentiles y Porcentaje -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    @if($percentileInfo)
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
+                            Percentil general
                         </div>
-                        <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
-                            {{ $percentage }}%
-                        </span>
+                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a todos los docentes</p>
+                        <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400" style="width: {{ $percentileRankGlobal }}%"></div>
+                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankGlobal }}%</span>
+                        </div>
+                    </div>
+                    @endif
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
+                            <span>Porcentaje obtenido</span>
+                            <span class="text-lg">{{ $percentage }}%</span>
+                        </div>
+                        <div class="relative w-full h-6 bg-gray-200 dark:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-green-400 to-emerald-500 dark:from-green-300 dark:to-emerald-400" style="width: {{ $percentage }}%"></div>
+                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentage }}%</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-@if(isset($areaResults) && $areaResults->count())
-<div class="mt-8 mx-6 mb-8">
-    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-b border-gray-400 dark:border-gray-600 pb-2">Resultados por Área</h2>
-    <div class="overflow-x-auto">
-        <table class="min-w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm">
-            <thead>
-                <tr>
-                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Área</th>
-                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Puntaje alcanzado</th>
-                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Puntaje posible</th>
-                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Código de nivel</th>
-                    <th class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-100">Descripción del nivel</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($areaResults as $index => $area)
-                    <tr class="{{ $index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800' }}">
-                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100">{{ $area['area_name'] }}</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ $area['obtained_score'] }}</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ $area['max_possible'] }}</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ $area['level_code'] }}</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100">{{ $area['level_description'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        @if(isset($areaResults) && $areaResults->count())
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 pb-3 border-b-2 border-gray-200 dark:border-gray-700">Resultados por Área</h2>
+            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="min-w-full text-sm align-middle">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th scope="col" class="px-6 py-4 text-left font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Área</th>
+                            <th scope="col" class="px-6 py-4 text-center font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Puntaje alcanzado</th>
+                            <th scope="col" class="px-6 py-4 text-center font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Puntaje posible</th>
+                            <th scope="col" class="px-6 py-4 text-center font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Código de nivel</th>
+                            <th scope="col" class="px-6 py-4 text-left font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Descripción del nivel</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach($areaResults as $area)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-100">{{ $area['area_name'] }}</td>
+                                <td class="px-6 py-4 text-center text-gray-600 dark:text-gray-300">{{ $area['obtained_score'] }}</td>
+                                <td class="px-6 py-4 text-center text-gray-600 dark:text-gray-300">{{ $area['max_possible'] }}</td>
+                                <td class="px-6 py-4 text-center font-semibold text-gray-800 dark:text-gray-100">{{ $area['level_code'] }}</td>
+                                <td class="px-6 py-4 text-gray-600 dark:text-gray-300 leading-relaxed">{{ $area['level_description'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
-@endif
 
 <style>
 /* Evitar que DomPDF muestre URL de los enlaces en PDF */
