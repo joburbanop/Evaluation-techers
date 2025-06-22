@@ -117,6 +117,21 @@ class RealizarTestPdfController extends Controller
             $percentileProgram = round((($belowProg + 0.5 * $equalProg) / $programScores->count()) * 100);
         }
 
+        // Percentil por facultad
+        $userFacultad = auth()->user()->programa?->facultad;
+        $percentileRankFacultad = 0;
+        if ($userFacultad) {
+            $facultadAssignments = $completedAssignments->filter(function ($assignment) use ($userFacultad) {
+                return $assignment->user->programa?->facultad_id === $userFacultad->id;
+            });
+
+            if ($facultadAssignments->count() > 0) {
+                $scoresFacultad = $facultadAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+                $usersBelowFacultad = $scoresFacultad->filter(fn($s) => $s < $totalScore)->count();
+                $percentileRankFacultad = round(($usersBelowFacultad / $facultadAssignments->count()) * 100);
+            }
+        }
+
         //    - Resultados por área
         $preguntasAgrupadas = $record->test->questions()
             ->with([
@@ -181,10 +196,13 @@ class RealizarTestPdfController extends Controller
             'percentileRankGlobal' => $percentileRankGlobal,
             'percentileInstitution' => $percentileInstitution,
             'percentileProgram' => $percentileProgram,
+            'percentileRankFacultad' => $percentileRankFacultad,
+            'percentileRankPrograma' => $percentileProgram,
             'evaluatedName' => auth()->user()->full_name,
             'identification' => auth()->user()->document_number ?? 'Sin identificación',
             'institution' => auth()->user()->institution?->name ?? 'Sin institución',
             'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
+            'facultad' => $userFacultad?->nombre ?? 'Sin facultad',
             'icon' => 'heroicon-o-academic-cap',
             'areaResults' => $areaResults,
             'assignmentId' => $record->id,
