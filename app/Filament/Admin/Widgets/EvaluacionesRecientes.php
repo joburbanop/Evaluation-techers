@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Actions\Action;
 use App\Models\TestAreaCompetencyLevel;
+use Filament\Tables\Filters\SelectFilter;
+use App\Models\Test;
 
 class EvaluacionesRecientes extends BaseWidget
 {
@@ -133,6 +135,20 @@ class EvaluacionesRecientes extends BaseWidget
                         ]);
                     })
                     ->modalWidth('7xl')
+            ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pending' => 'Pendiente',
+                        'in_progress' => 'En progreso',
+                        'completed' => 'Completado',
+                        'expired' => 'Expirado',
+                    ]),
+                SelectFilter::make('test_id')
+                    ->label('Test')
+                    ->options(Test::all()->pluck('name', 'id')->toArray())
+                    ->searchable()
             ])
             ->defaultSort('created_at', 'desc')
             ->paginated(false);
