@@ -167,6 +167,36 @@ class RealizarTestResource extends Resource
                                     $usersBelow = $scores->filter(fn($s) => $s < $totalScore)->count();
                                     $percentileRankGlobal = $totalUsers > 0 ? round(($usersBelow / $totalUsers) * 100) : 0;
 
+                                    // Cálculo de percentil por facultad
+                                    $userFacultad = auth()->user()->programa?->facultad ?? null;
+                                    $percentileRankFacultad = 0;
+                                    if ($userFacultad) {
+                                        $facultadAssignments = $completedAssignments->filter(function($assignment) use ($userFacultad) {
+                                            return $assignment->user->programa?->facultad?->id === $userFacultad->id;
+                                        });
+                                        $totalUsersFacultad = $facultadAssignments->count();
+                                        if ($totalUsersFacultad > 0) {
+                                            $scoresFacultad = $facultadAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+                                            $usersBelowFacultad = $scoresFacultad->filter(fn($s) => $s < $totalScore)->count();
+                                            $percentileRankFacultad = round(($usersBelowFacultad / $totalUsersFacultad) * 100);
+                                        }
+                                    }
+
+                                    // Cálculo de percentil por programa
+                                    $userPrograma = auth()->user()->programa ?? null;
+                                    $percentileRankPrograma = 0;
+                                    if ($userPrograma) {
+                                        $programaAssignments = $completedAssignments->filter(function($assignment) use ($userPrograma) {
+                                            return $assignment->user->programa?->id === $userPrograma->id;
+                                        });
+                                        $totalUsersPrograma = $programaAssignments->count();
+                                        if ($totalUsersPrograma > 0) {
+                                            $scoresPrograma = $programaAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+                                            $usersBelowPrograma = $scoresPrograma->filter(fn($s) => $s < $totalScore)->count();
+                                            $percentileRankPrograma = round(($usersBelowPrograma / $totalUsersPrograma) * 100);
+                                        }
+                                    }
+
                                     $preguntasAgrupadas = $record->test->questions()->with('area')->get()->filter(fn($q) => $q->area)->groupBy('area.id');
                                     $areaResults = collect();
                                     foreach ($preguntasAgrupadas as $areaId => $preguntas) {
@@ -195,10 +225,13 @@ class RealizarTestResource extends Resource
                                         'applicationDate' => \Illuminate\Support\Carbon::parse($record->created_at)->locale('es')->translatedFormat('d \\D\\E F \\D\\E Y, H:i'),
                                         'percentileInfo' => true,
                                         'percentileRankGlobal' => $percentileRankGlobal,
+                                        'percentileRankFacultad' => $percentileRankFacultad,
+                                        'percentileRankPrograma' => $percentileRankPrograma,
                                         'evaluatedName' => auth()->user()->full_name,
                                         'identification' => auth()->user()->document_number ?? 'Sin identificación',
                                         'institution' => auth()->user()->institution?->name ?? 'Sin institución',
                                         'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
+                                        'facultad' => auth()->user()->programa?->facultad?->nombre ?? 'Sin facultad',
                                         'icon' => 'heroicon-o-academic-cap',
                                         'areaResults' => $areaResults,
                                         'assignmentId' => $record->id,

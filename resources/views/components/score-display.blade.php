@@ -7,6 +7,8 @@
     'maxScore' => 300,
     'percentileInfo' => null,
     'percentileRankGlobal',
+    'percentileRankFacultad' => 0,
+    'percentileRankPrograma' => 0,
     'levelCode',
     'areaResults',
     'percentileProgram',
@@ -18,6 +20,7 @@
     'evaluatedName' => 'EK202030694190',
     'identification' => 'CC 1098782994',
     'institution' => 'UNIVERSIDAD INDUSTRIAL DE SANTANDER-BUCARAMANGA',
+    'facultad' => 'FACULTAD DE CIENCIAS',
     'program' => 'LICENCIATURA EN ESPAÑOL Y LITERATURA',
 
     // ID de asignación para generar PDF
@@ -48,6 +51,7 @@
                     <strong>Nombre:</strong> {{ $evaluatedName }}<br>
                     <strong>Identificación:</strong> {{ $identification }}<br>
                     <strong>Institución:</strong> {{ $institution }}<br>
+                    <strong>Facultad:</strong> {{ $facultad }}<br>
                     <strong>Programa:</strong> {{ $program }}
                 </td>
                 <td style="width: 60%; vertical-align: top; padding-left: 16px;">
@@ -56,6 +60,8 @@
                     <strong>Descripción:</strong> {{ $levelDescription }}<br>
                     <strong>Porcentaje obtenido:</strong> {{ $percentage }}%<br>
                     <strong>Percentil global:</strong> {{ $percentileRankGlobal }}%
+                    @if($percentileRankFacultad > 0)<br><strong>Percentil por facultad:</strong> {{ $percentileRankFacultad }}%@endif
+                    @if($percentileRankPrograma > 0)<br><strong>Percentil por programa:</strong> {{ $percentileRankPrograma }}%@endif
                 </td>
             </tr>
         </table>
@@ -135,6 +141,10 @@
                     <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $institution }}</div>
                 </div>
                 <div>
+                    <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Facultad</div>
+                    <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $facultad }}</div>
+                </div>
+                <div>
                     <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Programa</div>
                     <div class="text-sm text-gray-900 dark:text-gray-100 break-words">{{ $program }}</div>
                 </div>
@@ -176,7 +186,7 @@
                 </div>
 
                 <!-- Tarjetas de Percentiles y Porcentaje -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     @if($percentileInfo)
                     <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
@@ -188,7 +198,38 @@
                             <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankGlobal }}%</span>
                         </div>
                     </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
+                            Percentil por facultad
+                        </div>
+                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a la facultad {{ $facultad }}</p>
+                        <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
+                            @if($percentileRankFacultad > 0)
+                                <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400" style="width: {{ $percentileRankFacultad }}%"></div>
+                                <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankFacultad }}%</span>
+                            @else
+                                <span class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-500 dark:text-gray-400">No hay datos</span>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
+                            Percentil por programa
+                        </div>
+                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto al programa {{ $program }}</p>
+                        <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
+                             @if($percentileRankPrograma > 0)
+                                <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-400" style="width: {{ $percentileRankPrograma }}%"></div>
+                                <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankPrograma }}%</span>
+                             @else
+                                <span class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-500 dark:text-gray-400">No hay datos</span>
+                            @endif
+                        </div>
+                    </div>
                     @endif
+                    
                     <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <div class="flex justify-between items-center text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
                             <span>Porcentaje obtenido</span>
