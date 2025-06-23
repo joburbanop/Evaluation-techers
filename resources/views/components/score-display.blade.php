@@ -59,9 +59,9 @@
                     <strong>Nivel:</strong> {{ $levelName }} ({{ $levelCode }})<br>
                     <strong>Descripción:</strong> {{ $levelDescription }}<br>
                     <strong>Porcentaje obtenido:</strong> {{ $percentage }}%<br>
-                    <strong>Percentil global:</strong> {{ $percentileRankGlobal }}%
-                    @if($percentileRankFacultad > 0)<br><strong>Percentil por facultad:</strong> {{ $percentileRankFacultad }}%@endif
-                    @if($percentileRankPrograma > 0)<br><strong>Percentil por programa:</strong> {{ $percentileRankPrograma }}%@endif
+                    <strong>Percentil global:</strong> {{ $percentileRankGlobal }}%<br>
+                    <strong>Percentil por facultad:</strong> {{ $percentileRankFacultad }}%<br>
+                    <strong>Percentil por programa:</strong> {{ $percentileRankPrograma }}%
                 </td>
             </tr>
         </table>
@@ -205,12 +205,8 @@
                         </div>
                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a la facultad {{ $facultad }}</p>
                         <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                            @if($percentileRankFacultad > 0)
-                                <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400" style="width: {{ $percentileRankFacultad }}%"></div>
-                                <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankFacultad }}%</span>
-                            @else
-                                <span class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-500 dark:text-gray-400">No hay datos</span>
-                            @endif
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400" style="width: {{ $percentileRankFacultad }}%"></div>
+                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankFacultad }}%</span>
                         </div>
                     </div>
                     
@@ -220,12 +216,8 @@
                         </div>
                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto al programa {{ $program }}</p>
                         <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                             @if($percentileRankPrograma > 0)
-                                <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-400" style="width: {{ $percentileRankPrograma }}%"></div>
-                                <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankPrograma }}%</span>
-                             @else
-                                <span class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-500 dark:text-gray-400">No hay datos</span>
-                            @endif
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-400" style="width: {{ $percentileRankPrograma }}%"></div>
+                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankPrograma }}%</span>
                         </div>
                     </div>
                     @endif

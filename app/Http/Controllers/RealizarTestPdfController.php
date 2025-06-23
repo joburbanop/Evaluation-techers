@@ -23,114 +23,40 @@ class RealizarTestPdfController extends Controller
         $totalScore = $record->responses->sum(fn($r) => $r->option->score ?? 0);
         $maxPossibleScore = $record->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
         
-        // Cálculo del porcentaje obtenido
-        $percentage = 0;
-        if ($maxPossibleScore > 0) {
-            $percentage = round(($totalScore / $maxPossibleScore) * 100);
-        }
-
-       
+        $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
         
         $nivelGlobal = TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
+        $completedAssignments = \App\Models\TestAssignment::with(['user.programa.facultad', 'responses.option'])
+            ->where('test_id', $record->test_id)
+            ->where('status', 'completed')
+            ->get();
+            
+        $user = $record->user;
         
-        $completedAssignments = \App\Models\TestAssignment::with(['responses.option'])
-            ->where('test_id', $record->test_id)
-            ->where('status', 'completed')
-            ->get();
-
-        $levels = \App\Models\TestCompetencyLevel::where('test_id', $record->test_id)
-            ->orderBy('min_score')
-            ->get();
-
-        $getLevel = function($score, $levels) {
-            foreach ($levels as $level) {
-                if ($score >= $level->min_score && $score <= $level->max_score) {
-                    return $level->code;
-                }
+        // Función reutilizable para el cálculo de percentil (versión simple)
+        $calculatePercentileSimple = function ($assignments, $currentScore) {
+            if ($assignments->isEmpty()) {
+                return 0;
             }
-            return null;
+            $scores = $assignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+            $usersBelow = $scores->filter(fn($s) => $s < $currentScore)->count();
+            return round(($usersBelow / $assignments->count()) * 100);
         };
-
-        $userLevels = [];
-        foreach ($completedAssignments as $assignment) {
-            $score = $assignment->responses->sum(fn($r) => $r->option->score ?? 0);
-            $maxScore = $assignment->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
-            $percentage = $maxScore > 0 ? ($score / $maxScore) * 100 : 0;
-            $level = $getLevel($score, $levels);
-            if ($level) {
-                $userLevels[] = $level;
-            }
-        }
-
-        $totalUsers = count($userLevels);
-        $levelCounts = array_count_values($userLevels);
-        $orderedLevels = $levels->pluck('code')->toArray();
-        $levelPercentages = [];
-        foreach ($orderedLevels as $code) {
-            $levelPercentages[$code] = isset($levelCounts[$code]) ? ($levelCounts[$code] / $totalUsers) * 100 : 0;
-        }
-
-        $userPercentage = $maxPossibleScore > 0 ? ($totalScore / $maxPossibleScore) * 100 : 0;
-        $userLevel = $getLevel($totalScore, $levels);
-        $userLevelIndex = array_search($userLevel, $orderedLevels);
-        $usersBelow = 0;
-        if ($userLevelIndex !== false) {
-            for ($i = 0; $i < $userLevelIndex; $i++) {
-                $levelCode = $orderedLevels[$i];
-                $usersBelow += $levelCounts[$levelCode] ?? 0;
-            }
-        }
-        $percentileRankGlobal = $totalUsers > 0 ? round(($usersBelow / $totalUsers) * 100) : 0;
-
-        //    - Percentil por institución
-        $userInstitutionId = auth()->user()->institution_id;
-        $institutionScores = \App\Models\TestAssignment::with(['responses.option','user'])
-            ->where('test_id', $record->test_id)
-            ->where('status', 'completed')
-            ->whereHas('user', fn($q) => $q->where('institution_id', $userInstitutionId))
-            ->get()
-            ->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0))
-            ->sort()
-            ->values();
-        $percentileInstitution = 0;
-        if ($institutionScores->count()) {
-            $belowInst = $institutionScores->filter(fn($s) => $s < $totalScore)->count();
-            $equalInst = $institutionScores->filter(fn($s) => $s === $totalScore)->count();
-            $percentileInstitution = round((($belowInst + 0.5 * $equalInst) / $institutionScores->count()) * 100);
-        }
-
-        //    - Percentil por programa
-        $userProgramId = auth()->user()->programa_id;
-        $programScores = \App\Models\TestAssignment::with(['responses.option','user'])
-            ->where('test_id', $record->test_id)
-            ->where('status', 'completed')
-            ->whereHas('user', fn($q) => $q->where('programa_id', $userProgramId))
-            ->get()
-            ->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0))
-            ->sort()
-            ->values();
-        $percentileProgram = 0;
-        if ($programScores->count()) {
-            $belowProg = $programScores->filter(fn($s) => $s < $totalScore)->count();
-            $equalProg = $programScores->filter(fn($s) => $s === $totalScore)->count();
-            $percentileProgram = round((($belowProg + 0.5 * $equalProg) / $programScores->count()) * 100);
-        }
+        
+        // Percentil Global
+        $percentileRankGlobal = $calculatePercentileSimple($completedAssignments, $totalScore);
 
         // Percentil por facultad
-        $userFacultad = auth()->user()->programa?->facultad;
-        $percentileRankFacultad = 0;
-        if ($userFacultad) {
-            $facultadAssignments = $completedAssignments->filter(function ($assignment) use ($userFacultad) {
-                return $assignment->user->programa?->facultad_id === $userFacultad->id;
-            });
+        $facultadAssignments = $completedAssignments->filter(fn($a) => $a->user->programa?->facultad_id === $user->programa?->facultad_id);
+        $percentileRankFacultad = $calculatePercentileSimple($facultadAssignments, $totalScore);
 
-            if ($facultadAssignments->count() > 0) {
-                $scoresFacultad = $facultadAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
-                $usersBelowFacultad = $scoresFacultad->filter(fn($s) => $s < $totalScore)->count();
-                $percentileRankFacultad = round(($usersBelowFacultad / $facultadAssignments->count()) * 100);
-            }
-        }
+        // Percentil por programa
+        $programaAssignments = $completedAssignments->filter(fn($a) => $a->user->programa_id === $user->programa_id);
+        $percentileRankPrograma = $calculatePercentileSimple($programaAssignments, $totalScore);
+
+        $percentileInstitution = $percentileRankFacultad;
+        $percentileProgram = $percentileRankPrograma;
 
         //    - Resultados por área
         $preguntasAgrupadas = $record->test->questions()
@@ -197,12 +123,12 @@ class RealizarTestPdfController extends Controller
             'percentileInstitution' => $percentileInstitution,
             'percentileProgram' => $percentileProgram,
             'percentileRankFacultad' => $percentileRankFacultad,
-            'percentileRankPrograma' => $percentileProgram,
+            'percentileRankPrograma' => $percentileRankPrograma,
             'evaluatedName' => auth()->user()->full_name,
             'identification' => auth()->user()->document_number ?? 'Sin identificación',
             'institution' => auth()->user()->institution?->name ?? 'Sin institución',
             'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
-            'facultad' => $userFacultad?->nombre ?? 'Sin facultad',
+            'facultad' => $user->programa?->facultad?->nombre ?? 'Sin facultad',
             'icon' => 'heroicon-o-academic-cap',
             'areaResults' => $areaResults,
             'assignmentId' => $record->id,
