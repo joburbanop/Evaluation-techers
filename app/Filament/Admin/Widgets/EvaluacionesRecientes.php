@@ -134,7 +134,14 @@ class EvaluacionesRecientes extends BaseWidget
                             'areaScores' => $areaScores
                         ]);
                     })
-                    ->modalWidth('7xl')
+                    ->modalWidth('7xl'),
+                Action::make('download_pdf')
+                    ->label('PDF')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->url(fn (TestAssignment $record): string => route('realizar-test.pdf', ['id' => $record->id]))
+                    ->openUrlInNewTab()
+                    ->visible(fn (TestAssignment $record): bool => $record->status === 'completed'),
             ])
             ->filters([
                 SelectFilter::make('status')

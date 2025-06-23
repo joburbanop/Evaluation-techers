@@ -124,10 +124,10 @@ class RealizarTestPdfController extends Controller
             'percentileProgram' => $percentileProgram,
             'percentileRankFacultad' => $percentileRankFacultad,
             'percentileRankPrograma' => $percentileRankPrograma,
-            'evaluatedName' => auth()->user()->full_name,
-            'identification' => auth()->user()->document_number ?? 'Sin identificación',
-            'institution' => auth()->user()->institution?->name ?? 'Sin institución',
-            'program' => auth()->user()->programa?->nombre ?? 'Sin programa',
+            'evaluatedName' => $user->full_name,
+            'identification' => $user->document_number ?? 'Sin identificación',
+            'institution' => $user->institution?->name ?? 'Sin institución',
+            'program' => $user->programa?->nombre ?? 'Sin programa',
             'facultad' => $user->programa?->facultad?->nombre ?? 'Sin facultad',
             'icon' => 'heroicon-o-academic-cap',
             'areaResults' => $areaResults,
@@ -136,7 +136,7 @@ class RealizarTestPdfController extends Controller
         ]);
 
         // 3) Forzar la descarga del PDF
-        $fileName = 'evaluacion_' . auth()->user()->document_number . '.pdf';
+        $fileName = 'evaluacion_' . $user->document_number . '.pdf';
         return $pdf->download($fileName);
     }
 }
