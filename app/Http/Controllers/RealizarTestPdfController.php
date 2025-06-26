@@ -16,30 +16,39 @@ class RealizarTestPdfController extends Controller
 {
     public function generate($id)
     {
-        $record = TestAssignment::with(['responses.option', 'test.questions.area'])->findOrFail($id);
+        $record = TestAssignment::with(['responses.option.question.area', 'test.questions.area'])->findOrFail($id);
 
         // 1) Repetir la misma lógica que ya tienes en RealizarTestResource para obtener todos los datos:
-        //    - Puntaje global
-        $totalScore = $record->responses->sum(fn($r) => $r->option->score ?? 0);
-        $maxPossibleScore = $record->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
+        //    - Puntaje global (excluyendo preguntas sociodemográficas)
+        $nonSociodemographicResponses = $record->responses->filter(function($response) {
+            return $response->question->area_id !== 8;
+        });
+        
+        $totalScore = $nonSociodemographicResponses->sum(fn($r) => $r->option->score ?? 0);
+        $maxPossibleScore = $nonSociodemographicResponses->sum(fn($r) => $r->question->options->max('score') ?? 0);
         
         $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
         
         $nivelGlobal = TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
-        $completedAssignments = \App\Models\TestAssignment::with(['user.programa.facultad', 'responses.option'])
+        $completedAssignments = \App\Models\TestAssignment::with(['user.programa.facultad', 'responses.option.question.area'])
             ->where('test_id', $record->test_id)
             ->where('status', 'completed')
             ->get();
             
         $user = $record->user;
         
-        // Función reutilizable para el cálculo de percentil (versión simple)
+        // Función reutilizable para el cálculo de percentil (versión simple) - excluyendo sociodemográficas
         $calculatePercentileSimple = function ($assignments, $currentScore) {
             if ($assignments->isEmpty()) {
                 return 0;
             }
-            $scores = $assignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+            $scores = $assignments->map(function($a) {
+                $nonSociodemographicResponses = $a->responses->filter(function($response) {
+                    return $response->question->area_id !== 8;
+                });
+                return $nonSociodemographicResponses->sum(fn($r) => $r->option->score ?? 0);
+            });
             $usersBelow = $scores->filter(fn($s) => $s < $currentScore)->count();
             return round(($usersBelow / $assignments->count()) * 100);
         };
@@ -58,7 +67,7 @@ class RealizarTestPdfController extends Controller
         $percentileInstitution = $percentileRankFacultad;
         $percentileProgram = $percentileRankPrograma;
 
-        //    - Resultados por área
+        //    - Resultados por área (excluyendo área sociodemográfica)
         $preguntasAgrupadas = $record->test->questions()
             ->with([
                 'area',
@@ -67,6 +76,7 @@ class RealizarTestPdfController extends Controller
                     $query->where('test_assignment_id', $record->id);
                 }
             ])
+            ->where('area_id', '!=', 8) // Excluir área sociodemográfica
             ->get()
             ->filter(fn ($q) => $q->area !== null)
             ->groupBy(fn ($q) => $q->area->id);
@@ -95,13 +105,16 @@ class RealizarTestPdfController extends Controller
             ]);
         }
 
-         //calculo de porcentaje obtenido global
-         $puntajeTotal = $record->responses->sum(function ($response) {
+         //calculo de porcentaje obtenido global (excluyendo sociodemográficas)
+         $puntajeTotal = $nonSociodemographicResponses->sum(function ($response) {
             return $response->option->score ?? 0;
         });
-        $puntajePosible = $record->test->questions->sum(function ($question) {
-            return $question->options->max('score') ?? 0;
-        });
+        $puntajePosible = $record->test->questions()
+            ->where('area_id', '!=', 8) // Excluir área sociodemográfica
+            ->get()
+            ->sum(function ($question) {
+                return $question->options->max('score') ?? 0;
+            });
         $porcentajeObtenidoGlobal = round(($puntajeTotal / $puntajePosible) * 100);
 
         // 2) Generar el PDF usando la misma vista 'components.score-display'

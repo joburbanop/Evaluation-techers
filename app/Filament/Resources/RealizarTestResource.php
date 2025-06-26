@@ -155,15 +155,27 @@ class RealizarTestResource extends Resource
                              Forms\Components\Placeholder::make('total_score_display')
                                 ->label('') // Sin etiqueta
                                 ->content(function () use ($record) {
-                                    $totalScore = $record->responses->sum(fn($r) => $r->option->score ?? 0);
-                                    $maxPossibleScore = $record->responses->sum(fn($r) => $r->question->options->max('score') ?? 0);
+                                    // Excluir preguntas sociodemográficas (area_id = 8)
+                                    $nonSociodemographicResponses = $record->responses->filter(function($response) {
+                                        return $response->question->area_id !== 8;
+                                    });
+                                    
+                                    $totalScore = $nonSociodemographicResponses->sum(fn($r) => $r->option->score ?? 0);
+                                    $maxPossibleScore = $nonSociodemographicResponses->sum(fn($r) => $r->question->options->max('score') ?? 0);
                                     $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
                                     $nivelGlobal = \App\Models\TestCompetencyLevel::getLevelForScore($record->test_id, $totalScore);
 
                                     $completedAssignments = \App\Models\TestAssignment::where('test_id', $record->test_id)->where('status', 'completed')->get();
                                     $levels = \App\Models\TestCompetencyLevel::where('test_id', $record->test_id)->orderBy('min_score')->get();
                                     $totalUsers = $completedAssignments->count();
-                                    $scores = $completedAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+                                    
+                                    // Calcular percentiles excluyendo preguntas sociodemográficas
+                                    $scores = $completedAssignments->map(function($a) {
+                                        $nonSociodemographicResponses = $a->responses->filter(function($response) {
+                                            return $response->question->area_id !== 8;
+                                        });
+                                        return $nonSociodemographicResponses->sum(fn($r) => $r->option->score ?? 0);
+                                    });
                                     $usersBelow = $scores->filter(fn($s) => $s < $totalScore)->count();
                                     $percentileRankGlobal = $totalUsers > 0 ? round(($usersBelow / $totalUsers) * 100) : 0;
 
@@ -176,7 +188,12 @@ class RealizarTestResource extends Resource
                                         });
                                         $totalUsersFacultad = $facultadAssignments->count();
                                         if ($totalUsersFacultad > 0) {
-                                            $scoresFacultad = $facultadAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+                                            $scoresFacultad = $facultadAssignments->map(function($a) {
+                                                $nonSociodemographicResponses = $a->responses->filter(function($response) {
+                                                    return $response->question->area_id !== 8;
+                                                });
+                                                return $nonSociodemographicResponses->sum(fn($r) => $r->option->score ?? 0);
+                                            });
                                             $usersBelowFacultad = $scoresFacultad->filter(fn($s) => $s < $totalScore)->count();
                                             $percentileRankFacultad = round(($usersBelowFacultad / $totalUsersFacultad) * 100);
                                         }
@@ -191,13 +208,25 @@ class RealizarTestResource extends Resource
                                         });
                                         $totalUsersPrograma = $programaAssignments->count();
                                         if ($totalUsersPrograma > 0) {
-                                            $scoresPrograma = $programaAssignments->map(fn($a) => $a->responses->sum(fn($r) => $r->option->score ?? 0));
+                                            $scoresPrograma = $programaAssignments->map(function($a) {
+                                                $nonSociodemographicResponses = $a->responses->filter(function($response) {
+                                                    return $response->question->area_id !== 8;
+                                                });
+                                                return $nonSociodemographicResponses->sum(fn($r) => $r->option->score ?? 0);
+                                            });
                                             $usersBelowPrograma = $scoresPrograma->filter(fn($s) => $s < $totalScore)->count();
                                             $percentileRankPrograma = round(($usersBelowPrograma / $totalUsersPrograma) * 100);
                                         }
                                     }
 
-                                    $preguntasAgrupadas = $record->test->questions()->with('area')->get()->filter(fn($q) => $q->area)->groupBy('area.id');
+                                    // Excluir área sociodemográfica (area_id = 8) de los resultados por área
+                                    $preguntasAgrupadas = $record->test->questions()
+                                        ->with('area')
+                                        ->where('area_id', '!=', 8) // Excluir área sociodemográfica
+                                        ->get()
+                                        ->filter(fn($q) => $q->area)
+                                        ->groupBy('area.id');
+                                    
                                     $areaResults = collect();
                                     foreach ($preguntasAgrupadas as $areaId => $preguntas) {
                                         $area = $preguntas->first()->area;
