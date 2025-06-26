@@ -41,7 +41,7 @@
 @if(app()->runningInConsole() || Route::currentRouteName() === 'realizar-test.pdf')
     <div style="background: #fff; color: #000; font-family: Arial, sans-serif; padding: 24px;">
         <h1 style="text-align: center; font-size: 2rem; font-weight: bold; margin-bottom: 24px;">
-            Informe de Evaluación de Competencias Digitales
+            {{ $testName }}
         </h1>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>

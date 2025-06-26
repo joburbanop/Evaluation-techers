@@ -16,7 +16,7 @@ class RealizarTestPdfController extends Controller
 {
     public function generate($id)
     {
-        $record = TestAssignment::with(['responses.option.question.area', 'test.questions.area'])->findOrFail($id);
+        $record = TestAssignment::with(['responses.option.question.area', 'test', 'test.questions.area'])->findOrFail($id);
 
         // 1) Repetir la misma lógica que ya tienes en RealizarTestResource para obtener todos los datos:
         //    - Puntaje global (excluyendo preguntas sociodemográficas)
@@ -117,6 +117,13 @@ class RealizarTestPdfController extends Controller
             });
         $porcentajeObtenidoGlobal = round(($puntajeTotal / $puntajePosible) * 100);
 
+        // Debug: Verificar que el test se cargue correctamente
+        \Log::info('Test cargado:', [
+            'test_id' => $record->test_id,
+            'test_name' => $record->test->name ?? 'Nombre no encontrado',
+            'test_object' => $record->test ? 'Test cargado' : 'Test no cargado'
+        ]);
+
         // 2) Generar el PDF usando la misma vista 'components.score-display'
         $pdf = PDF::loadView('components.score-display', [
             'maxScore' => $maxPossibleScore,
@@ -146,6 +153,7 @@ class RealizarTestPdfController extends Controller
             'areaResults' => $areaResults,
             'assignmentId' => $record->id,
             'percentage' => $porcentajeObtenidoGlobal,
+            'testName' => 'Informe de Evaluación: ' . ($record->test->name ?? 'Test sin nombre'),
         ]);
 
         // 3) Forzar la descarga del PDF

@@ -14,7 +14,7 @@ class Test extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title',
+        'name',
         'description',
         'category_id',
         'is_active',
