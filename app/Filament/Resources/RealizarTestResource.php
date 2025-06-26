@@ -169,7 +169,7 @@ class RealizarTestResource extends Resource
                                     $levels = \App\Models\TestCompetencyLevel::where('test_id', $record->test_id)->orderBy('min_score')->get();
                                     $totalUsers = $completedAssignments->count();
                                     
-                                    // Calcular percentiles excluyendo preguntas sociodemográficas
+                                    // Calcular resultados excluyendo preguntas sociodemográficas
                                     $scores = $completedAssignments->map(function($a) {
                                         $nonSociodemographicResponses = $a->responses->filter(function($response) {
                                             return $response->question->area_id !== 8;
@@ -179,7 +179,7 @@ class RealizarTestResource extends Resource
                                     $usersBelow = $scores->filter(fn($s) => $s < $totalScore)->count();
                                     $percentileRankGlobal = $totalUsers > 0 ? round(($usersBelow / $totalUsers) * 100) : 0;
 
-                                    // Cálculo de percentil por facultad
+                                    // Cálculo de resultados por facultad
                                     $userFacultad = auth()->user()->programa?->facultad ?? null;
                                     $percentileRankFacultad = 0;
                                     if ($userFacultad) {
@@ -199,7 +199,7 @@ class RealizarTestResource extends Resource
                                         }
                                     }
 
-                                    // Cálculo de percentil por programa
+                                    // Cálculo de resultados por programa
                                     $userPrograma = auth()->user()->programa ?? null;
                                     $percentileRankPrograma = 0;
                                     if ($userPrograma) {

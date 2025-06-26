@@ -59,9 +59,9 @@
                     <strong>Nivel:</strong> {{ $levelName }} ({{ $levelCode }})<br>
                     <strong>Descripción:</strong> {{ $levelDescription }}<br>
                     <strong>Porcentaje obtenido:</strong> {{ $percentage }}%<br>
-                    <strong>Percentil global:</strong> {{ $percentileRankGlobal }}%<br>
-                    <strong>Percentil por facultad:</strong> {{ $percentileRankFacultad }}%<br>
-                    <strong>Percentil por programa:</strong> {{ $percentileRankPrograma }}%
+                    <strong>Resultados globales:</strong> {{ $percentileRankGlobal }}%<br>
+                    <strong>Resultados por facultad:</strong> {{ $percentileRankFacultad }}%<br>
+                    <strong>Resultados por programa:</strong> {{ $percentileRankPrograma }}%
                 </td>
             </tr>
         </table>
@@ -185,12 +185,12 @@
                     <p class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">{{ $levelDescription }}</p>
                 </div>
 
-                <!-- Tarjetas de Percentiles y Porcentaje -->
+                <!-- Tarjetas de Resultados y Porcentaje -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     @if($percentileInfo)
                     <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Percentil general
+                            Resultados globales
                         </div>
                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a todos los docentes</p>
                         <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -201,7 +201,7 @@
                     
                     <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Percentil por facultad
+                            Resultados por facultad
                         </div>
                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a la facultad {{ $facultad }}</p>
                         <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -212,7 +212,7 @@
                     
                     <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                         <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Percentil por programa
+                            Resultados por programa
                         </div>
                          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto al programa {{ $program }}</p>
                         <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">

@@ -38,7 +38,7 @@ class RealizarTestPdfController extends Controller
             
         $user = $record->user;
         
-        // Función reutilizable para el cálculo de percentil (versión simple) - excluyendo sociodemográficas
+        // Función reutilizable para el cálculo de resultados (versión simple) - excluyendo sociodemográficas
         $calculatePercentileSimple = function ($assignments, $currentScore) {
             if ($assignments->isEmpty()) {
                 return 0;
@@ -53,14 +53,14 @@ class RealizarTestPdfController extends Controller
             return round(($usersBelow / $assignments->count()) * 100);
         };
         
-        // Percentil Global
+        // Resultados Globales
         $percentileRankGlobal = $calculatePercentileSimple($completedAssignments, $totalScore);
 
-        // Percentil por facultad
+        // Resultados por facultad
         $facultadAssignments = $completedAssignments->filter(fn($a) => $a->user->programa?->facultad_id === $user->programa?->facultad_id);
         $percentileRankFacultad = $calculatePercentileSimple($facultadAssignments, $totalScore);
 
-        // Percentil por programa
+        // Resultados por programa
         $programaAssignments = $completedAssignments->filter(fn($a) => $a->user->programa_id === $user->programa_id);
         $percentileRankPrograma = $calculatePercentileSimple($programaAssignments, $totalScore);
 
