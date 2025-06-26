@@ -68,8 +68,7 @@ class TestAssignmentResource extends Resource
                             
                         Forms\Components\Textarea::make('instructions')
                             ->label('Instrucciones adicionales')
-                            ->columnSpanFull()
-                            ->maxLength(500),
+                            ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->collapsible(),

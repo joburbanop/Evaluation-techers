@@ -39,8 +39,6 @@ class PermissionResource extends Resource
                         TextInput::make('name')
                             ->label('Nombre del Rol')
                             ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true)
                             ->placeholder('Ej: Coordinador Académico')
                             ->columnSpanFull()
                             ->disabled(fn ($record) => $record !== null),

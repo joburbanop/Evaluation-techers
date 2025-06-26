@@ -36,11 +36,9 @@ class CategoryResource extends Resource
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nombre del Área')
-                                    ->required()
-                                    ->maxLength(255),
+                                    ->required(),
                                 Forms\Components\Textarea::make('description')
-                                    ->label('Descripción')
-                                    ->maxLength(65535),
+                                    ->label('Descripción'),
                             ])
                             ->createOptionUsing(function (array $data) {
                                 return Area::create($data)->id;
@@ -48,12 +46,10 @@ class CategoryResource extends Resource
 
                         Forms\Components\TextInput::make('name')
                             ->label('Nombre del Factor')
-                            ->required()
-                            ->maxLength(255),
+                            ->required(),
 
                         Forms\Components\Textarea::make('description')
                             ->label('Descripción')
-                            ->maxLength(65535)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -124,7 +120,7 @@ class CategoryResource extends Resource
     }
 
     public static function canAccess(): bool
-{
-    return auth()->check() && auth()->user()->hasRole('Administradorsd');
-}
+    {
+        return auth()->check() && auth()->user()->hasRole('Administradorsd');
+    }
 }

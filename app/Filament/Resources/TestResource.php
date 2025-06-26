@@ -43,7 +43,6 @@ class TestResource extends Resource
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nombre del Test')
                                     ->required()
-                                    ->maxLength(255)
                                     ->columnSpanFull()
                                     ->extraAttributes(['class' => 'text-lg font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm'])
                                     ->prefixIcon('heroicon-o-document-text')
@@ -51,7 +50,6 @@ class TestResource extends Resource
 
                                 Forms\Components\Textarea::make('description')
                                     ->label('Descripción')
-                                    ->maxLength(500)
                                     ->columnSpanFull()
                                     ->extraAttributes(['class' => 'text-base font-medium border-2 border-primary-200 focus:border-primary-500 rounded-lg shadow-sm p-4'])
                                     ->placeholder('Ingrese una descripción detallada del test...'),
@@ -130,13 +128,11 @@ class TestResource extends Resource
                                                 Forms\Components\TextInput::make('name')
                                                     ->label('Nombre del nivel')
                                                     ->required()
-                                                    ->maxLength(50)
                                                     ->helperText('Ejemplo: Inicial, Experto, Avanzado'),
 
                                                 Forms\Components\TextInput::make('code')
                                                     ->label('Código')
                                                     ->required()
-                                                    ->maxLength(10)
                                                     ->helperText('Ejemplo: A1, B2, C3...'),
 
                                                 Forms\Components\TextInput::make('min_score')
@@ -266,7 +262,6 @@ class TestResource extends Resource
                                                                     Forms\Components\TextInput::make('option')
                                                                         ->label('Opción de Respuesta')
                                                                         ->required()
-                                                                        ->maxLength(255)
                                                                         ->columnSpan(2),
                                                                     Forms\Components\Toggle::make('is_correct')
                                                                         ->label('Correcta')

@@ -49,8 +49,7 @@ class AreaCompetencyLevelResource extends Resource
 
                 Forms\Components\Textarea::make('description')
                     ->rows(3)
-                    ->label('Descripción')
-                    ->maxLength(1000),
+                    ->label('Descripción'),
             ]);
     }
 

@@ -44,7 +44,6 @@ class InstitutionResource extends Resource
                                         Forms\Components\TextInput::make('name')
                                             ->label('Nombre de la IES')
                                             ->required()
-                                            ->maxLength(255)
                                             ->helperText('Nombre completo según registro')
                                             ->columnSpanFull(),
                                         
@@ -108,12 +107,10 @@ class InstitutionResource extends Resource
                                         Grid::make(2)
                                             ->schema([
                                                 Forms\Components\TextInput::make('contact_person')
-                                                    ->label('Nombre Completo')
-                                                    ->maxLength(100),
+                                                    ->label('Nombre Completo'),
                                                 
                                                 Forms\Components\TextInput::make('contact_position')
-                                                    ->label('Cargo/Puesto')
-                                                    ->maxLength(100),
+                                                    ->label('Cargo/Puesto'),
                                                 
                                                 Forms\Components\TextInput::make('contact_phone')
                                                     ->label('Teléfono de Contacto')
@@ -141,12 +138,10 @@ class InstitutionResource extends Resource
                                                         Forms\Components\TextInput::make('name')
                                                             ->label('Nombre del Test')
                                                             ->required()
-                                                            ->maxLength(255)
                                                             ->columnSpan(1),
                                                         
                                                         Forms\Components\TextInput::make('description')
                                                             ->label('Descripción')
-                                                            ->maxLength(255)
                                                             ->columnSpan(1),
                                                         
                                                         Forms\Components\ColorPicker::make('color')
