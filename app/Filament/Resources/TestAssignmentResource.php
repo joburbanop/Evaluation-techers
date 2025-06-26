@@ -144,6 +144,53 @@ class TestAssignmentResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                \Filament\Tables\Actions\Action::make('ver_detalles')
+                    ->label('Ver Detalles')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading(fn ($record) => "Resultados de {$record->user->name}")
+                    ->modalContent(function ($record) {
+                        $responses = $record->responses->loadMissing('question.options', 'option');
+                        $areas = \App\Models\Area::all();
+                        $areaScores = $areas->map(function ($area) use ($record) {
+                            $areaResponses = $record->responses()
+                                ->whereHas('question', function ($query) use ($area) {
+                                    $query->where('area_id', $area->id);
+                                })->get();
+                            $totalScore = $areaResponses->sum(function ($response) {
+                                return $response->option->score ?? 0;
+                            });
+                            $maxPossibleScore = $areaResponses->sum(function ($response) {
+                                return $response->question->options->max('score');
+                            });
+                            $percentage = $maxPossibleScore > 0 ? round(($totalScore / $maxPossibleScore) * 100) : 0;
+                            $level = \App\Models\TestAreaCompetencyLevel::getLevelByScore($record->test_id, $area->id, $totalScore);
+                            return [
+                                'area' => $area->name,
+                                'score' => $percentage,
+                                'level' => [
+                                    'name' => $level ? $level->name : 'Sin nivel',
+                                    'code' => $level ? $level->code : '',
+                                    'color' => $level ? $level->color : 'gray'
+                                ],
+                                'totalScore' => $totalScore,
+                                'maxScore' => $maxPossibleScore
+                            ];
+                        });
+                        return view('filament.widgets.evaluacion-detalles', [
+                            'record' => $record,
+                            'responses' => $responses,
+                            'areaScores' => $areaScores
+                        ]);
+                    })
+                    ->modalWidth('7xl')
+                    ->visible(fn ($record) => $record->status === 'completed'),
+                \Filament\Tables\Actions\Action::make('download_pdf')
+                    ->label('PDF')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->url(fn ($record) => route('realizar-test.pdf', ['id' => $record->id]))
+                    ->openUrlInNewTab()
+                    ->visible(fn ($record) => $record->status === 'completed'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
