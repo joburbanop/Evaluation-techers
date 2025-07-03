@@ -54,6 +54,7 @@ class ReportResource extends Resource
                                     ->label('Facultad')
                                     ->options(function() {
                                         return Facultad::with('institution')
+                                            ->where('nombre', 'like', 'Facultad de%')
                                             ->get()
                                             ->mapWithKeys(function($facultad) {
                                                 return [$facultad->id => "{$facultad->nombre} - {$facultad->institution->name}"];
