@@ -202,7 +202,19 @@
                 $promedioGeneral = $top_evaluados->avg('score');
                 $maxScore = $top_evaluados->max('score');
                 $minScore = $top_evaluados->min('score');
-                $desviacion = $top_evaluados->std('score');
+            
+                $promedio = $promedioGeneral ?? 0;
+                $count = $top_evaluados->count();
+            
+                if ($count > 0) {
+                    $variance = $top_evaluados->reduce(function ($carry, $evaluado) use ($promedio) {
+                        return $carry + pow($evaluado['score'] - $promedio, 2);
+                    }, 0) / $count;
+            
+                    $desviacion = sqrt($variance);
+                } else {
+                    $desviacion = 0;
+                }
             @endphp
             <div class="stats-grid">
                 <div class="stat-card">
