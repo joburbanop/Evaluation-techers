@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\RiasController;
 use App\Http\Controllers\TestResultController;
 use App\Http\Controllers\RealizarTestPdfController;
+use App\Http\Controllers\ReportController;
 
 // Ruta de inicio que redirige al dashboard según el rol
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -103,10 +104,19 @@ Route::middleware(['auth'])->group(function () {
 // Rutas de resultados de test
 Route::get('/test-results/{assignment}', [TestResultController::class, 'show'])->name('test.results');
 
+// Rutas del sistema de reportes
+Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('index');
+    Route::get('/create', [ReportController::class, 'create'])->name('create');
+    Route::post('/facultad', [ReportController::class, 'generateFacultad'])->name('generate.facultad');
+    Route::post('/programa', [ReportController::class, 'generatePrograma'])->name('generate.programa');
+    Route::get('/download/{report}', [ReportController::class, 'download'])->name('download');
+    Route::delete('/{report}', [ReportController::class, 'destroy'])->name('destroy');
+    Route::get('/{report}/status', [ReportController::class, 'status'])->name('status');
+});
+
 // Las rutas de los paneles /admin, /coordinador y /docente son gestionadas automáticamente por Filament mediante los PanelProviders
 // Por tanto, no es necesario definir rutas manuales aquí.
-
-
 
 Route::get('/realizar-test/{id}/pdf', [RealizarTestPdfController::class, 'generate'])
     ->name('realizar-test.pdf');
