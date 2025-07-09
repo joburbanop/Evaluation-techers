@@ -14,8 +14,7 @@ class ListReports extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Generar Reporte')
-                ->icon('heroicon-o-plus'),
+                ->label('Generar Reporte'),
         ];
     }
-} 
+}

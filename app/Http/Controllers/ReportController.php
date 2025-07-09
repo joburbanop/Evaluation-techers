@@ -18,12 +18,12 @@ class ReportController extends Controller
     {
         $this->reportService = $reportService;
         $this->middleware('auth');
+        $this->middleware('role:Administrador');
     }
 
     public function index()
     {
         $reports = Report::with(['generatedBy', 'entity'])
-            ->where('generated_by', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -110,10 +110,7 @@ class ReportController extends Controller
 
     public function download(Report $report)
     {
-        // Verificar que el usuario puede descargar este reporte
-        if ($report->generated_by !== Auth::id() && !Auth::user()->hasRole('Administrador')) {
-            abort(403, 'No tienes permisos para descargar este reporte');
-        }
+        // Solo los administradores pueden descargar reportes
 
         if ($report->status !== 'completed') {
             abort(404, 'El reporte no está disponible para descarga');
@@ -130,10 +127,7 @@ class ReportController extends Controller
 
     public function destroy(Report $report)
     {
-        // Verificar que el usuario puede eliminar este reporte
-        if ($report->generated_by !== Auth::id() && !Auth::user()->hasRole('Administrador')) {
-            abort(403, 'No tienes permisos para eliminar este reporte');
-        }
+        // Solo los administradores pueden eliminar reportes
 
         // Eliminar el archivo físico
         if ($report->file_path && Storage::exists($report->file_path)) {

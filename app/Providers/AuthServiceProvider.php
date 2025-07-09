@@ -16,6 +16,8 @@ use App\Models\Institution;
 use App\Policies\InstitutionPolicy;
 use App\Models\TestAssignment;
 use App\Policies\TestAssignmentPolicy;
+use App\Models\Report;
+use App\Policies\ReportPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -31,6 +33,7 @@ class AuthServiceProvider extends ServiceProvider
         TestAssignment::class => TestAssignmentPolicy::class,
         Institution::class => InstitutionPolicy::class,
         Permission::class => PermissionPolicy::class,
+        Report::class => ReportPolicy::class,
     ];
 
     /**

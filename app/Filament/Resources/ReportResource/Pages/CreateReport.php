@@ -5,6 +5,8 @@ namespace App\Filament\Resources\ReportResource\Pages;
 use App\Filament\Resources\ReportResource;
 use App\Models\Facultad;
 use App\Models\Programa;
+use App\Models\Institution;
+use App\Models\User;
 use App\Services\ReportService;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
@@ -32,7 +34,19 @@ class CreateReport extends CreateRecord
         try {
             $reportService = app(ReportService::class);
             
-            if (isset($data['tipo_reporte']) && $data['tipo_reporte'] === 'facultad' && isset($data['facultad_id'])) {
+            if (isset($data['tipo_reporte']) && $data['tipo_reporte'] === 'universidad' && isset($data['universidad_id'])) {
+                $institution = Institution::find($data['universidad_id']);
+                $parameters = $this->buildParameters($data);
+                
+                $report = $reportService->generateUniversidadReport($institution, $parameters);
+                
+                Notification::make()
+                    ->title('Reporte generado exitosamente')
+                    ->body("El reporte de la universidad {$institution->name} ha sido generado y está listo para descargar.")
+                    ->success()
+                    ->send();
+                    
+            } elseif (isset($data['tipo_reporte']) && $data['tipo_reporte'] === 'facultad' && isset($data['facultad_id'])) {
                 $facultad = Facultad::find($data['facultad_id']);
                 $parameters = $this->buildParameters($data);
                 
@@ -53,6 +67,18 @@ class CreateReport extends CreateRecord
                 Notification::make()
                     ->title('Reporte generado exitosamente')
                     ->body("El reporte del programa {$programa->nombre} ha sido generado y está listo para descargar.")
+                    ->success()
+                    ->send();
+                    
+            } elseif (isset($data['tipo_reporte']) && $data['tipo_reporte'] === 'profesor' && isset($data['profesor_id'])) {
+                $profesor = User::find($data['profesor_id']);
+                $parameters = $this->buildParameters($data);
+                
+                $report = $reportService->generateProfesorReport($profesor, $parameters);
+                
+                Notification::make()
+                    ->title('Reporte generado exitosamente')
+                    ->body("El reporte del profesor {$profesor->name} {$profesor->apellido1} ha sido generado y está listo para descargar.")
                     ->success()
                     ->send();
             }

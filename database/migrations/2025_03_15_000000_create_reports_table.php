@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['facultad', 'programa', 'institution', 'global']);
+            $table->enum('type', ['universidad', 'facultad', 'programa', 'profesor']);
             $table->unsignedBigInteger('entity_id')->nullable();
             $table->string('entity_type')->nullable();
             $table->string('file_path')->nullable();

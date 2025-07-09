@@ -6,6 +6,8 @@ use App\Filament\Resources\ReportResource\Pages;
 use App\Models\Report;
 use App\Models\Facultad;
 use App\Models\Programa;
+use App\Models\Institution;
+use App\Models\User;
 use App\Services\ReportService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -30,6 +32,37 @@ class ReportResource extends Resource
     protected static ?string $navigationLabel = 'Gestión de Reportes';
     protected static ?string $modelLabel = 'Reporte';
     protected static ?string $pluralModelLabel = 'Reportes';
+    protected static ?string $modelPolicy = \App\Policies\ReportPolicy::class;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()->hasRole('Administrador');
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()->hasRole('Administrador');
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return Auth::user()->hasRole('Administrador');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return Auth::user()->hasRole('Administrador');
+    }
+
+    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return Auth::user()->hasRole('Administrador');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user() && Auth::user()->hasRole('Administrador');
+    }
 
     public static function form(Form $form): Form
     {
@@ -43,11 +76,26 @@ class ReportResource extends Resource
                                 Select::make('tipo_reporte')
                                     ->label('Tipo de Reporte')
                                     ->options([
+                                        'universidad' => 'Reporte por Universidad',
                                         'facultad' => 'Reporte por Facultad',
                                         'programa' => 'Reporte por Programa',
+                                        'profesor' => 'Reporte por Profesor',
                                     ])
                                     ->required()
                                     ->reactive()
+                                    ->columnSpan(1),
+
+                                Select::make('universidad_id')
+                                    ->label('Universidad')
+                                    ->options(function() {
+                                        return Institution::where('academic_character', 'Universidad')
+                                            ->get()
+                                            ->mapWithKeys(function($institution) {
+                                                return [$institution->id => $institution->name];
+                                            });
+                                    })
+                                    ->searchable()
+                                    ->visible(fn ($get) => $get('tipo_reporte') === 'universidad')
                                     ->columnSpan(1),
 
                                 Select::make('facultad_id')
@@ -77,6 +125,23 @@ class ReportResource extends Resource
                                     ->visible(fn ($get) => $get('tipo_reporte') === 'programa')
                                     ->columnSpan(1),
 
+                                Select::make('profesor_id')
+                                    ->label('Profesor')
+                                    ->options(function() {
+                                        return User::whereHas('roles', function($q) {
+                                                $q->where('name', 'Docente');
+                                            })
+                                            ->with(['institution', 'facultad', 'programa'])
+                                            ->get()
+                                            ->mapWithKeys(function($user) {
+                                                $institution = $user->institution ? $user->institution->name : 'Sin institución';
+                                                return [$user->id => "{$user->name} {$user->apellido1} - {$institution}"];
+                                            });
+                                    })
+                                    ->searchable()
+                                    ->visible(fn ($get) => $get('tipo_reporte') === 'profesor')
+                                    ->columnSpan(1),
+
                                 DatePicker::make('date_from')
                                     ->label('Fecha Desde')
                                     ->columnSpan(1),
@@ -104,16 +169,16 @@ class ReportResource extends Resource
                 BadgeColumn::make('type')
                     ->label('Tipo')
                     ->colors([
+                        'danger' => 'universidad',
                         'primary' => 'facultad',
                         'success' => 'programa',
-                        'warning' => 'institution',
-                        'info' => 'global',
+                        'warning' => 'profesor',
                     ])
                     ->formatStateUsing(fn ($state) => match ($state) {
+                        'universidad' => 'Universidad',
                         'facultad' => 'Facultad',
                         'programa' => 'Programa',
-                        'institution' => 'Institución',
-                        'global' => 'Global',
+                        'profesor' => 'Profesor',
                         default => $state,
                     }),
 
@@ -156,10 +221,10 @@ class ReportResource extends Resource
                 Tables\Filters\SelectFilter::make('type')
                     ->label('Tipo de Reporte')
                     ->options([
+                        'universidad' => 'Universidad',
                         'facultad' => 'Facultad',
                         'programa' => 'Programa',
-                        'institution' => 'Institución',
-                        'global' => 'Global',
+                        'profesor' => 'Profesor',
                     ]),
 
                 Tables\Filters\SelectFilter::make('status')
@@ -178,7 +243,7 @@ class ReportResource extends Resource
                     ->color('success')
                     ->url(fn (Report $record) => route('reports.download', $record->id))
                     ->openUrlInNewTab()
-                    ->visible(fn (Report $record) => $record && $record->status === 'completed'),
+                    ->visible(fn (Report $record) => Auth::user()->hasRole('Administrador') && $record && $record->status === 'completed'),
 
                 Action::make('regenerate')
                     ->label('Regenerar')
@@ -208,12 +273,10 @@ class ReportResource extends Resource
                                 ->send();
                         }
                     })
-                    ->visible(fn (Report $record) => $record && in_array($record->status, ['completed', 'failed'])),
+                    ->visible(fn (Report $record) => Auth::user()->hasRole('Administrador') && $record && in_array($record->status, ['completed', 'failed'])),
 
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (Report $record) => 
-                        $record && ($record->generated_by === Auth::id() || Auth::user()->hasRole('Administrador'))
-                    ),
+                    ->visible(fn (Report $record) => Auth::user()->hasRole('Administrador')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -234,25 +297,13 @@ class ReportResource extends Resource
         ];
     }
 
-    public static function canCreate(): bool
-    {
-        return Auth::user()->hasAnyRole(['Administrador', 'Coordinador']);
-    }
-
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        $query = parent::getEloquentQuery();
-        
-        try {
-            // Los administradores ven todos los reportes, otros usuarios solo los suyos
-            if (!Auth::user()->hasRole('Administrador')) {
-                $query->where('generated_by', Auth::id());
-            }
-        } catch (\Exception $e) {
-            // Si hay error, retornar query vacío
-            return $query->whereRaw('1 = 0');
+        // Solo los administradores pueden acceder a este recurso
+        if (!Auth::user()->hasRole('Administrador')) {
+            return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
         
-        return $query;
+        return parent::getEloquentQuery();
     }
 } 
