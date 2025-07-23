@@ -9,8 +9,8 @@
                 <div class="hidden md:block md:w-2/5 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex items-center justify-center relative">
                     <div class="absolute inset-0 opacity-10 bg-pattern"></div>
                     <div class="relative z-10 text-center">
-                        <h2 class="text-3xl font-bold text-white mb-6">Bienvenido de Nuevo</h2>
-                        <p class="text-blue-100 mb-8 text-lg">Accede a tu cuenta para gestionar todas tus herramientas y recursos.</p>
+                        <h2 class="text-3xl font-bold text-white mb-6">Universidad Mariana</h2>
+                        <p class="text-blue-100 mb-8 text-lg">Evaluacion de Competencia Digital Profesoral.</p>
                         <div class="flex justify-center">
                             <img src="{{ asset('img/image.png') }}" alt="Logo" class="w-96 rounded-xl border-4 border-white/30 shadow-2xl transform hover:scale-105 transition-transform duration-300">
                         </div>
