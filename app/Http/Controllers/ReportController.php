@@ -18,7 +18,6 @@ class ReportController extends Controller
     {
         $this->reportService = $reportService;
         $this->middleware('auth');
-        $this->middleware('role:Administrador');
     }
 
     public function index()

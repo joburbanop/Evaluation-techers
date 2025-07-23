@@ -104,8 +104,8 @@ Route::middleware(['auth'])->group(function () {
 // Rutas de resultados de test
 Route::get('/test-results/{assignment}', [TestResultController::class, 'show'])->name('test.results');
 
-// Rutas del sistema de reportes (solo administradores)
-Route::middleware(['auth', 'role:Administrador'])->prefix('reports')->name('reports.')->group(function () {
+// Rutas del sistema de reportes (acceso para cualquier usuario autenticado)
+Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function () {
     Route::get('/', [ReportController::class, 'index'])->name('index');
     Route::get('/create', [ReportController::class, 'create'])->name('create');
     Route::post('/facultad', [ReportController::class, 'generateFacultad'])->name('generate.facultad');

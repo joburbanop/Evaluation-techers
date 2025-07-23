@@ -22,10 +22,7 @@ class ReportService
 {
     public function __construct()
     {
-        // Verificar que solo los administradores puedan usar este servicio
-        if (!auth()->user() || !auth()->user()->hasRole('Administrador')) {
-            abort(403, 'Solo los administradores pueden generar reportes');
-        }
+        // Eliminada la validación redundante del rol de administrador
     }
 
     public function generateFacultadReport(Facultad $facultad, array $parameters = [])
@@ -280,9 +277,10 @@ class ReportService
                     'name' => $user->user_name,
                     'apellido1' => $user->apellido1,
                     'apellido2' => $user->apellido2,
+                    'full_name' => trim($user->user_name . ' ' . $user->apellido1 . ' ' . $user->apellido2),
                 ],
                 'score' => $score,
-                'fecha' => $userEvaluaciones->first()->created_at,
+                'fecha' => Carbon::parse($userEvaluaciones->first()->created_at),
             ];
         })
         ->sortByDesc('score')
