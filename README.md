@@ -433,8 +433,6 @@ SESSION_DRIVER=redis
 - **Spatie**: Por el paquete de permisos
 - **Comunidad PHP**: Por el apoyo continuo
 
----
 
-**Desarrollado con ❤️ para mejorar la educación digital**
 
-*Versión 1.0.0 - Última actualización: Diciembre 2024*
+*Versión 1.0.0*
