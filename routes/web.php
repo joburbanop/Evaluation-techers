@@ -14,6 +14,7 @@ use App\Http\Controllers\RiasController;
 use App\Http\Controllers\TestResultController;
 use App\Http\Controllers\RealizarTestPdfController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportPdfController;
 
 // Ruta de inicio que redirige al dashboard según el rol
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -115,8 +116,28 @@ Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function
     Route::get('/{report}/status', [ReportController::class, 'status'])->name('status');
 });
 
+// Ruta para generar PDF desde el modal (solo para administradores)
+Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/reports/generate-pdf', [ReportController::class, 'generatePDFFromModal'])->name('reports.generate-pdf');
+});
+
+// Ruta para generar PDF desde el modal (solo para coordinadores)
+Route::middleware(['auth', 'role:Coordinador'])->prefix('coordinador')->name('coordinador.')->group(function () {
+    Route::post('/reports/generate-pdf', [ReportController::class, 'generatePDFFromModal'])->name('reports.generate-pdf');
+});
+
 // Las rutas de los paneles /admin, /coordinador y /docente son gestionadas automáticamente por Filament mediante los PanelProviders
 // Por tanto, no es necesario definir rutas manuales aquí.
 
 Route::get('/realizar-test/{id}/pdf', [RealizarTestPdfController::class, 'generate'])
     ->name('realizar-test.pdf');
+
+// Ruta para generar PDF de reportes (Admin)
+Route::get('/admin/reports/pdf', [ReportPdfController::class, 'generate'])
+    ->name('admin.reports.pdf')
+    ->middleware(['auth']);
+
+// Ruta para generar PDF de reportes (Coordinador)
+Route::get('/coordinador/reports/pdf', [ReportPdfController::class, 'generate'])
+    ->name('coordinador.reports.pdf')
+    ->middleware(['auth']);

@@ -3,6 +3,8 @@
 namespace App\Filament\Coordinador\Pages;
 
 use Filament\Pages\Dashboard as BasePage;
+use App\Filament\Coordinador\Widgets\CoordinadorDashboardStats;
+use App\Filament\Coordinador\Widgets\InformacionTecnica;
 
 class Dashboard extends BasePage
 {
@@ -13,4 +15,8 @@ class Dashboard extends BasePage
     protected static ?string $title = 'Panel de Coordinación';
 
     protected static ?int $navigationSort = 1;
+
+
+
+    
 } 

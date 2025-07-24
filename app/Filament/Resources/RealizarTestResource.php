@@ -869,7 +869,7 @@ class RealizarTestResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('Realizar test') ?? false;
+        return auth()->user()?->hasRole('Docente') ?? false;
     }
 
 

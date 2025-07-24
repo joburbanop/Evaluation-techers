@@ -18,9 +18,9 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\EnsureUserHasRole;
-use App\Filament\Widgets\EvaluacionesProgress;
-use App\Filament\Widgets\EvaluacionesRecientes;
-use App\Filament\Widgets\ProgresoPorArea;
+use App\Filament\Admin\Widgets\EvaluacionesProgress;
+use App\Filament\Admin\Widgets\EvaluacionesRecientes;
+use App\Filament\Admin\Widgets\ProgresoPorArea;
 
 class AdminPanelProvider extends PanelProvider
 {

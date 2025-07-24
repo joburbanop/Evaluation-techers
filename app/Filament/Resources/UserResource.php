@@ -58,9 +58,10 @@ class UserResource extends Resource
                             ->native(false) 
                             ->maxDate(now()->subYears(15)) 
                             ->default(now()->subYears(20)) 
-                            ->required()
+                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->nullable()
                             ->columnSpan(['md' => 1])
-                            ->helperText('Seleccione o escriba su fecha de nacimiento')
+                            ->helperText('Seleccione o escriba su fecha de nacimiento (opcional al editar)')
                             ->extraAttributes([
                                 'class' => 'cursor-pointer', 
                             ])
@@ -94,14 +95,15 @@ class UserResource extends Resource
                             ->password()
                             ->label('Contraseña')
                             ->maxLength(255)
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                            ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $operation): bool => $operation === 'create')
-                            ->rule(Password::default())
+                            ->rule(fn (string $operation): bool => $operation === 'create' ? Password::default() : false)
                             ->same('passwordConfirmation')
                             ->validationMessages([
                                 'same' => 'Las contraseñas no coinciden',
                             ])
+                            ->helperText('Dejar vacío para mantener la contraseña actual')
                             ->columnSpan(['md' => 1]),
                             
                         Forms\Components\TextInput::make('passwordConfirmation')
@@ -109,6 +111,7 @@ class UserResource extends Resource
                             ->label('Confirmar Contraseña')
                             ->requiredWith('password')
                             ->dehydrated(false)
+                            ->helperText('Solo si va a cambiar la contraseña')
                             ->columnSpan(['md' => 1]),
                     ])
                     ->columns(['md' => 3]),

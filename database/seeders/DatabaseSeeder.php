@@ -20,6 +20,7 @@ use Database\Seeders\UsuariosFromExcelSeeder;
 use Database\Seeders\TestInteligenciaArtificialSeeder;
 use Database\Seeders\AssignTestsToTeachersSeeder;
 use Database\Seeders\TestInteligenciaArtificialCompetencyLevelsSeeder;
+use Database\Seeders\FinalPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -55,6 +56,9 @@ class DatabaseSeeder extends Seeder
             
             // 5. Asignación de tests a docentes
             AssignTestsToTeachersSeeder::class,
+            
+            // 6. Configuración final de permisos
+            FinalPermissionsSeeder::class,
         ]);
     }
 }

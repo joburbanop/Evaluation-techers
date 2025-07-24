@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\Authenticate as FilamentAuthenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
@@ -33,6 +33,7 @@ class CoordinadorPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Coordinador/Pages'), for: 'App\\Filament\\Coordinador\\Pages')
+            ->discoverWidgets(in: app_path('Filament/Coordinador/Widgets'), for: 'App\\Filament\\Coordinador\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
             ])
@@ -48,7 +49,7 @@ class CoordinadorPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                FilamentAuthenticate::class,
                 EnsureUserHasRole::class . ':Coordinador',
             ])
             ->authGuard('web')

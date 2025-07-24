@@ -12,7 +12,7 @@ class ReportPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->hasAnyRole(['Administrador', 'Coordinador']);
     }
 
     /**
@@ -20,7 +20,7 @@ class ReportPolicy
      */
     public function view(User $user, Report $report): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->hasAnyRole(['Administrador', 'Coordinador']);
     }
 
     /**
@@ -28,7 +28,7 @@ class ReportPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->hasAnyRole(['Administrador', 'Coordinador']);
     }
 
     /**

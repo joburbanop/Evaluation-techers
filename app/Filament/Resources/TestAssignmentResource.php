@@ -27,6 +27,36 @@ class TestAssignmentResource extends Resource
     protected static ?string $modelLabel = 'Asignación de Evaluación';
     protected static ?string $pluralModelLabel = 'Asignaciones de Evaluaciones';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['Administrador', 'Coordinador']) ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('Administrador') ?? false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->hasRole('Administrador') ?? false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->hasRole('Administrador') ?? false;
+    }
+
+    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->hasAnyRole(['Administrador', 'Coordinador']) ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user() && auth()->user()->hasAnyRole(['Administrador', 'Coordinador']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -142,8 +172,10 @@ class TestAssignmentResource extends Resource
                     ->query(fn ($query) => $query->where('status', 'completed')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn () => auth()->user()?->hasRole('Administrador') ?? false),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn () => auth()->user()?->hasRole('Administrador') ?? false),
                 \Filament\Tables\Actions\Action::make('ver_detalles')
                     ->label('Ver Detalles')
                     ->icon('heroicon-o-eye')
@@ -194,7 +226,8 @@ class TestAssignmentResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()?->hasRole('Administrador') ?? false),
                 ]),
             ])
             ->emptyStateHeading('No hay evaluaciones asignadas')
@@ -203,7 +236,8 @@ class TestAssignmentResource extends Resource
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Asignar nueva evaluación')
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->visible(fn () => auth()->user()?->hasRole('Administrador') ?? false),
             ]);
     }
 

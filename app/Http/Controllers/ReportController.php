@@ -109,7 +109,11 @@ class ReportController extends Controller
 
     public function download(Report $report)
     {
-        // Solo los administradores pueden descargar reportes
+        // Solo los administradores y coordinadores pueden descargar reportes
+        $user = Auth::user();
+        if (!$user->hasAnyRole(['Administrador', 'Coordinador'])) {
+            abort(403, 'No tienes permisos para descargar reportes');
+        }
 
         if ($report->status !== 'completed') {
             abort(404, 'El reporte no está disponible para descarga');
@@ -149,5 +153,98 @@ class ReportController extends Controller
             'generated_at' => $report->generated_at?->format('d/m/Y H:i:s'),
             'download_url' => $report->status === 'completed' ? route('reports.download', $report->id) : null
         ]);
+    }
+
+    public function generatePDFFromModal(Request $request)
+    {
+        // Verificar que el usuario esté autenticado
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no autenticado'
+            ], 401);
+        }
+
+        // Verificar que el usuario tenga el rol de Administrador o Coordinador
+        $user = Auth::user();
+        if (!$user->hasAnyRole(['Administrador', 'Coordinador'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para generar reportes. Se requiere rol de Administrador o Coordinador.'
+            ], 403);
+        }
+
+        $request->validate([
+            'tipo_reporte' => 'required|in:universidad,facultad,programa,profesor,profesores_completados',
+            'entidad_id' => 'nullable|integer',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+        ]);
+
+        try {
+            $parameters = [];
+            if ($request->date_from) {
+                $parameters['date_from'] = $request->date_from;
+            }
+            if ($request->date_to) {
+                $parameters['date_to'] = $request->date_to;
+            }
+            if ($request->filtro) {
+                $parameters['filtro'] = $request->filtro;
+            }
+
+            $report = null;
+
+            switch ($request->tipo_reporte) {
+                case 'universidad':
+                    $institution = \App\Models\Institution::findOrFail($request->entidad_id);
+                    $report = $this->reportService->generateUniversidadReport($institution, $parameters);
+                    break;
+                case 'facultad':
+                    $facultad = \App\Models\Facultad::findOrFail($request->entidad_id);
+                    $report = $this->reportService->generateFacultadReport($facultad, $parameters);
+                    break;
+                case 'programa':
+                    $programa = \App\Models\Programa::findOrFail($request->entidad_id);
+                    $report = $this->reportService->generateProgramaReport($programa, $parameters);
+                    break;
+                case 'profesor':
+                    $profesor = \App\Models\User::findOrFail($request->entidad_id);
+                    $report = $this->reportService->generateProfesorReport($profesor, $parameters);
+                    break;
+                case 'profesores_completados':
+                    $report = $this->reportService->generateProfesoresCompletadosReport($parameters);
+                    break;
+            }
+
+            if (!$report) {
+                throw new \Exception('Error al generar el reporte');
+            }
+
+            // Devolver respuesta JSON con información del reporte generado
+            return response()->json([
+                'success' => true,
+                'message' => 'Reporte generado exitosamente',
+                'report' => [
+                    'id' => $report->id,
+                    'name' => $report->name,
+                    'status' => $report->status,
+                    'download_url' => route('reports.download', $report->id),
+                    'redirect_url' => '/admin/reports'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar PDF desde modal: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

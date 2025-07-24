@@ -37,4 +37,9 @@ class EvaluacionPorInstitucion extends Model
     {
         return $query->where('departamento_domicilio', $departamento);
     }
+
+    public function scopeByInstitution($query, $institutionId)
+    {
+        return $query->where('institution_id', $institutionId);
+    }
 } 

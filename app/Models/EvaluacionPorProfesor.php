@@ -63,6 +63,11 @@ class EvaluacionPorProfesor extends Model
         return $query->where('area_id', $areaId);
     }
 
+    public function scopeByProfesor($query, $profesorId)
+    {
+        return $query->where('user_id', $profesorId);
+    }
+
     public function scopeByDateRange($query, $dateFrom, $dateTo)
     {
         return $query->whereBetween('created_at', [$dateFrom, $dateTo]);

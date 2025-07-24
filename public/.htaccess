@@ -9,10 +9,6 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Handle X-XSRF-Token Header
-    RewriteCond %{HTTP:x-xsrf-token} .
-    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
-
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -22,10 +18,26 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
 
-    # Forzar HTTPS
-    RewriteCond %{HTTPS} off
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Configuraciones de PHP para optimizar memoria y tiempo de ejecución
+<IfModule mod_php.c>
+    php_value memory_limit 512M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value post_max_size 100M
+    php_value upload_max_filesize 100M
+</IfModule>
+
+# Configuraciones para PHP-FPM
+<IfModule mod_fastcgi.c>
+    <FilesMatch "\.php$">
+        php_value memory_limit 512M
+        php_value max_execution_time 300
+        php_value max_input_time 300
+        php_value post_max_size 100M
+        php_value upload_max_filesize 100M
+    </FilesMatch>
 </IfModule>
 
 # Proteger archivos sensibles

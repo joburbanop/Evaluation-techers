@@ -16,3 +16,4 @@ Route::get('/ciudades/{departamentoId}', [CiudadController::class, 'getByDeparta
 Route::get('/instituciones/municipio/{municipio}', [InstitutionController::class, 'getByMunicipio']);
 Route::get('/facultades/institucion/{institutionId}', [FacultadController::class, 'getByInstitution']);
 Route::get('/programas/facultad/{facultadId}', [ProgramaController::class, 'getByFacultad']);
+
