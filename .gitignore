@@ -21,3 +21,26 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Archivos grandes que no deben subirse
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.iso
+*.dmg
+*.pkg
+
+# Archivos de backup y temporales
+*.bak
+*.tmp
+*.temp
+*.log
+*.sql
+*.dump
+
+# Archivos de desarrollo
+.env.local
+.env.development
+.env.testing
+.env.staging
