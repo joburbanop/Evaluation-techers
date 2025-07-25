@@ -61,7 +61,6 @@ El **Sistema de Evaluación de Competencias Digitales Docentes** es una aplicaci
 - **MVC (Model-View-Controller)** con Laravel
 - **Admin Panel** con Filament 3.x
 - **Multi-panel** para diferentes roles de usuario
-- **Repository Pattern** para servicios de negocio
 - **Policy-based Authorization** con Spatie Permission
 
 ### Diagrama de Arquitectura
@@ -107,7 +106,6 @@ El **Sistema de Evaluación de Competencias Digitales Docentes** es una aplicaci
 
 ### Herramientas de Desarrollo
 - **Composer** - Gestión de dependencias PHP
-- **Artisan CLI** - Comandos personalizados para automatización
 - **Git** - Control de versiones distribuido
 - **Node.js** - Entorno de ejecución para JavaScript
 
@@ -670,4 +668,4 @@ npm run build
 ---
 
 *Documentación generada el: {{ date('d/m/Y H:i:s') }}*
-*Versión del sistema: 1.0.0* 
+*Versión del sistema: 1.0.0*
