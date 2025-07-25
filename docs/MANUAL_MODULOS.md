@@ -6,7 +6,7 @@
 3. [Módulo de Asignaciones](#módulo-de-asignaciones)
 4. [Módulo de Evaluaciones](#módulo-de-evaluaciones)
 5. [Módulo de Reportes](#módulo-de-reportes)
-6. [Dashboard](#módulo-de-dashboard)
+6. [Dashboard](#dashboard)
 7. [Módulo de Permisos](#módulo-de-permisos)
 
 ---
@@ -869,14 +869,6 @@ private static function getPreviewContent(Report $record): View
 
 ---
 
-## 🔌 Módulo de API
-
-### Configuración de Rutas API
-
-#### Ubicación
-```
-routes/api.php
-```
 
 #### Rutas de Autenticación
 ```php
@@ -1027,7 +1019,7 @@ class ReportController extends Controller
 
 ---
 
-## 📊 Módulo de Dashboard
+## 📊 Dashboard
 
 ### Configuración de Widgets
 
