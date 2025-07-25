@@ -10,7 +10,7 @@
 ### 🛠️ **Manuales de Implementación**
 - **[Manual de Implementación](MANUAL_IMPLEMENTACION.md)** - Guía paso a paso de instalación
 - **[Manual de Despliegue](MANUAL_DESPLEGUE.md)** - Despliegue en servidores de producción
-- **[Guía de Hosting Colombia](GUIA_HOSTING_COLOMBIA.md)** - Despliegue en hosting colombiano
+
 
 ### 👥 **Documentación de Usuario**
 - **[Guía de Usuario](GUIA_USUARIO.md)** - Manual para usuarios finales
