@@ -6,9 +6,8 @@
 3. [Módulo de Asignaciones](#módulo-de-asignaciones)
 4. [Módulo de Evaluaciones](#módulo-de-evaluaciones)
 5. [Módulo de Reportes](#módulo-de-reportes)
-6. [Módulo de API](#módulo-de-api)
-7. [Módulo de Dashboard](#módulo-de-dashboard)
-8. [Módulo de Permisos](#módulo-de-permisos)
+6. [Módulo de Dashboard](#módulo-de-dashboard)
+7. [Módulo de Permisos](#módulo-de-permisos)
 
 ---
 
@@ -1341,12 +1340,6 @@ class TestPolicy
 - [ ] Políticas de autorización
 - [ ] Roles y permisos asignados
 
-### ✅ Módulo de Tests
-- [ ] TestResource configurado
-- [ ] Gestión de preguntas y opciones
-- [ ] Niveles de competencia
-- [ ] Acciones personalizadas
-- [ ] Validaciones implementadas
 
 ### ✅ Módulo de Asignaciones
 - [ ] TestAssignmentResource configurado
@@ -1369,19 +1362,6 @@ class TestPolicy
 - [ ] Descarga de archivos
 - [ ] Estados de generación
 
-### ✅ Módulo de API
-- [ ] Rutas API configuradas
-- [ ] Autenticación con Sanctum
-- [ ] Controladores implementados
-- [ ] Validación de datos
-- [ ] Respuestas JSON
-
-### ✅ Módulo de Dashboard
-- [ ] Widgets configurados
-- [ ] Estadísticas en tiempo real
-- [ ] Gráficos de progreso
-- [ ] Dashboard por rol
-- [ ] Información personalizada
 
 ### ✅ Módulo de Permisos
 - [ ] Roles definidos
@@ -1395,4 +1375,3 @@ class TestPolicy
 **🎯 ¡Todos los módulos están configurados correctamente!**
 
 *Manual de Módulos - Versión 1.0*
-*Última actualización: {{ date('d/m/Y') }}* 
