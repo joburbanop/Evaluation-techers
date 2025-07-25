@@ -53,4 +53,4 @@
 ---
 
 *Documentación del Sistema - Versión 1.0*
-*Última actualización: Diciembre 2024* 
+
