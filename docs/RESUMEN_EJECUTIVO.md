@@ -282,10 +282,6 @@ php artisan backup:run         # Backup de base de datos
 - **Email**: jonathanc.burbano221@umariana.edu.co
 - **GitHub**: [Usuario GitHub]
 
-### 🆘 Soporte
-- **Email**: soporte@evaluacionprofesores.com
-- **Documentación**: `/docs`
-- **Issues**: GitHub Issues
 
 ---
 
@@ -308,4 +304,4 @@ El proyecto está listo para ser desplegado en producción y utilizado por insti
 
 **🎓 Desarrollado con pasión para mejorar la educación digital**
 
-*Versión 1.0.0 - Entregado el 19 de Diciembre de 2024* 
+*Versión 1.0.0 * 
