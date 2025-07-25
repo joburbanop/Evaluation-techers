@@ -436,4 +436,4 @@ Al contactar soporte, proporcionar:
 ---
 
 *Guía de Usuario - Versión 1.0*
-*Última actualización: {{ date('d/m/Y') }}* 
+*Última actualización* 
