@@ -605,12 +605,15 @@ SESSION_DRIVER=redis
 composer install --optimize-autoloader --no-dev
 ```
 # Cache de configuración
+```bash
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
+```
 # Compilar assets
+```bash
 npm run build
+```
 
 ### Optimizaciones de Rendimiento
 - **Vistas de Base de Datos**: Optimizadas para consultas complejas
