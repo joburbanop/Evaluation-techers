@@ -23,7 +23,6 @@ Este sistema de reportes permite generar análisis profesionales y detallados de
 3. **Gestión de Reportes**
    - Generación asíncrona de reportes
    - Almacenamiento seguro en el servidor
-   - Sistema de expiración automática (30 días)
    - Control de acceso por roles
 
 4. **Interfaz de Usuario**
@@ -100,25 +99,7 @@ crontab -e
    - Hacer clic en el botón "Descargar"
    - El PDF se descargará automáticamente
 
-### Generar Reportes via API
 
-```bash
-# Reporte por Facultad
-POST /reports/facultad
-{
-    "facultad_id": 1,
-    "date_from": "2024-01-01",
-    "date_to": "2024-12-31"
-}
-
-# Reporte por Programa
-POST /reports/programa
-{
-    "programa_id": 1,
-    "date_from": "2024-01-01",
-    "date_to": "2024-12-31"
-}
-```
 
 ## 📊 Estructura de Reportes
 
@@ -150,24 +131,7 @@ POST /reports/programa
 - Ranking de docentes
 - Distribución de niveles por área
 
-## 🔧 Configuración Avanzada
 
-### Personalizar Expiración de Reportes
-
-```php
-// En app/Services/ReportService.php
-'expires_at' => now()->addDays(30), // Cambiar número de días
-```
-
-### Configurar Almacenamiento
-
-```php
-// En config/filesystems.php
-'reports' => [
-    'driver' => 'local',
-    'root' => storage_path('app/reports'),
-],
-```
 
 ### Personalizar Templates PDF
 
@@ -238,26 +202,6 @@ El widget de reportes muestra:
 4. **Limpieza**
    - Reportes expiran automáticamente
    - Comando de limpieza elimina archivos y registros
-
-## 🐛 Solución de Problemas
-
-### Reporte No Se Genera
-
-1. Verificar logs: `tail -f storage/logs/laravel.log`
-2. Comprobar permisos de storage
-3. Verificar configuración de colas
-
-### Error de Descarga
-
-1. Verificar que el archivo existe en storage
-2. Comprobar permisos de usuario
-3. Verificar estado del reporte
-
-### Rendimiento Lento
-
-1. Configurar colas para generación asíncrona
-2. Optimizar consultas en ReportService
-3. Considerar índices en base de datos
 
 ## 📝 Notas de Desarrollo
 
