@@ -634,5 +634,4 @@ esta estructura de datos, para almacenar información dentro de la aplicación y
 
 ---
 
-*Documentación generada el: {{ date('d/m/Y H:i:s') }}*
 *Versión del sistema: 1.0.0*
