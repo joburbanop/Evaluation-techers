@@ -384,11 +384,6 @@ Muestra información personal:
 
 ### Contacto de Soporte
 
-#### Información de Contacto
-- **Email**: soporte@evaluacionprofesores.com
-- **Teléfono**: +57 XXX XXX XXXX
-- **Horario**: Lunes a Viernes 8:00 AM - 6:00 PM
-
 #### Información a Proporcionar
 Al contactar soporte, proporcionar:
 - **Rol de usuario** (Administrador, Coordinador, Docente)
@@ -397,22 +392,6 @@ Al contactar soporte, proporcionar:
 - **Captura de pantalla** (si aplica)
 - **Información del navegador** y sistema operativo
 
-### FAQ (Preguntas Frecuentes)
-
-#### ¿Puedo pausar una evaluación y continuar después?
-**Respuesta**: Sí, el sistema guarda automáticamente tu progreso. Puedes cerrar y volver más tarde.
-
-#### ¿Qué pasa si pierdo conexión durante la evaluación?
-**Respuesta**: Tus respuestas se guardan automáticamente. Al reconectar, continúa donde lo dejaste.
-
-#### ¿Puedo cambiar mis respuestas antes de enviar?
-**Respuesta**: Sí, puedes navegar entre páginas y modificar respuestas hasta enviar.
-
-#### ¿Cómo interpreto mis resultados?
-**Respuesta**: Los resultados incluyen tu nivel de competencia y comparación con otros docentes.
-
-#### ¿Puedo realizar la evaluación múltiples veces?
-**Respuesta**: Solo si te es asignada nuevamente por un administrador o coordinador.
 
 ---
 
@@ -420,18 +399,9 @@ Al contactar soporte, proporcionar:
 
 ### Documentación
 - **Manual técnico**: `/docs/technical`
-- **API documentation**: `/api/docs`
 - **Videos tutoriales**: `/docs/videos`
 
-### Capacitación
-- **Sesiones de entrenamiento** disponibles
-- **Material de capacitación** descargable
-- **Soporte en línea** durante implementación
 
-### Actualizaciones
-- **Notificaciones** de nuevas funcionalidades
-- **Changelog** disponible en el sistema
-- **Comunicaciones** por email
 
 ---
 
