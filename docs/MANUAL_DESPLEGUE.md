@@ -585,62 +585,11 @@ http {
 
 ## 🔒 Configuración de Seguridad
 
-### Configurar Firewall
-```bash
-# Instalar UFW
-sudo apt install -y ufw
-
-# Configurar reglas básicas
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw allow 'Nginx Full'
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-
-# Habilitar firewall
-sudo ufw enable
-
-# Verificar estado
-sudo ufw status verbose
-```
-
-### Configurar SSL con Let's Encrypt
-```bash
-# Instalar Certbot
-sudo apt install -y certbot python3-certbot-nginx
-
-# Obtener certificado SSL
-sudo certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
-
-# Verificar renovación automática
-sudo certbot renew --dry-run
-
-# Configurar renovación automática
-sudo crontab -e
-# Agregar: 0 12 * * * /usr/bin/certbot renew --quiet
-```
 
 ### Configurar Seguridad de PHP
 ```bash
 # Editar configuración de PHP
 sudo nano /etc/php/8.1/fpm/php.ini
-```
-
-Configuraciones de seguridad:
-```ini
-expose_php = Off
-max_execution_time = 60
-max_input_time = 60
-memory_limit = 256M
-post_max_size = 100M
-upload_max_filesize = 100M
-max_file_uploads = 20
-allow_url_fopen = Off
-allow_url_include = Off
-session.cookie_httponly = 1
-session.cookie_secure = 1
-session.use_strict_mode = 1
 ```
 
 ### Configurar Permisos de Archivos
@@ -651,46 +600,6 @@ sudo find /var/www/evaluacion-profesores -type d -exec chmod 755 {} \;
 sudo chmod -R 775 /var/www/evaluacion-profesores/storage
 sudo chmod -R 775 /var/www/evaluacion-profesores/bootstrap/cache
 sudo chown -R www-data:www-data /var/www/evaluacion-profesores
-```
-
-### Configurar Fail2ban
-```bash
-# Instalar Fail2ban
-sudo apt install -y fail2ban
-
-# Crear configuración personalizada
-sudo nano /etc/fail2ban/jail.local
-```
-
-Configuración:
-```ini
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-
-[sshd]
-enabled = true
-port = ssh
-filter = sshd
-logpath = /var/log/auth.log
-maxretry = 3
-
-[nginx-http-auth]
-enabled = true
-filter = nginx-http-auth
-port = http,https
-logpath = /var/log/nginx/error.log
-maxretry = 3
-```
-
-```bash
-# Reiniciar Fail2ban
-sudo systemctl restart fail2ban
-sudo systemctl enable fail2ban
-
-# Verificar estado
-sudo fail2ban-client status
 ```
 
 ---
@@ -724,27 +633,7 @@ df -h
 free -h
 ```
 
-### Configurar Logrotate
-```bash
-# Crear configuración de logrotate
-sudo nano /etc/logrotate.d/evaluacion-profesores
-```
 
-Configuración:
-```
-/var/www/evaluacion-profesores/storage/logs/*.log {
-    daily
-    missingok
-    rotate 30
-    compress
-    delaycompress
-    notifempty
-    create 644 www-data www-data
-    postrotate
-        systemctl reload php8.1-fpm
-    endscript
-}
-```
 
 ---
 
@@ -991,18 +880,6 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-#### Error de Memoria
-```bash
-# Verificar uso de memoria
-free -h
-
-# Aumentar límite de memoria en PHP
-sudo nano /etc/php/8.1/fpm/php.ini
-# memory_limit = 512M
-
-# Reiniciar PHP-FPM
-sudo systemctl restart php8.1-fpm
-```
 
 ### Comandos de Diagnóstico
 ```bash
@@ -1085,18 +962,8 @@ journalctl -u mysql -f
 - [ ] Logrotate configurado
 - [ ] Alertas configuradas
 
-### ✅ Backup y Recuperación
-- [ ] Script de backup creado
-- [ ] Script de recuperación creado
-- [ ] Backup automático configurado
-- [ ] Pruebas de backup realizadas
 
-### ✅ Testing Final
-- [ ] Aplicación accesible
-- [ ] Autenticación funcionando
-- [ ] Reportes generándose
-- [ ] API funcionando
-- [ ] Colas procesándose
+
 
 ---
 
@@ -1129,4 +996,3 @@ tail -20 /var/www/evaluacion-profesores/storage/logs/laravel.log
 **🎯 ¡El sistema está desplegado y listo para producción!**
 
 *Manual de Despliegue - Versión 1.0*
-*Última actualización: {{ date('d/m/Y') }}* 
