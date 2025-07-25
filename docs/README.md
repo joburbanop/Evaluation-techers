@@ -18,7 +18,7 @@
 
 ### 📊 **Documentación Especializada**
 - **[Documentación de Reportes](REPORTES_README.md)** - Especificaciones de reportes
-- **[Resumen de Despliegue Hosting Colombia](RESUMEN_DESPLEGUE_HOSTING_COLOMBIA.md)** - Resumen ejecutivo de despliegue
+
 
 ---
 
