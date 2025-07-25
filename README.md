@@ -353,7 +353,6 @@ Docente:
 
 ### Recursos Adicionales
 - **[Resumen Ejecutivo](docs/RESUMEN_EJECUTIVO.md)**: Resumen del proyecto
-- **[Guía de Hosting Colombia](docs/GUIA_HOSTING_COLOMBIA.md)**: Despliegue en servidores colombianos
 - **[Documentación de Reportes](docs/REPORTES_README.md)**: Especificaciones de reportes
 
 
