@@ -31,8 +31,7 @@
 
 ### Para Administradores de Sistema
 1. **[Manual de Despliegue](MANUAL_DESPLEGUE.md)** - Despliegue en servidores
-2. **[Guía de Hosting Colombia](GUIA_HOSTING_COLOMBIA.md)** - Hosting compartido
-3. **[Resumen de Despliegue](RESUMEN_DESPLEGUE_HOSTING_COLOMBIA.md)** - Resumen ejecutivo
+2. **[Resumen de Despliegue](RESUMEN_DESPLEGUE_HOSTING_COLOMBIA.md)** - Resumen ejecutivo
 
 ### Para Usuarios Finales
 1. **[Guía de Usuario](GUIA_USUARIO.md)** - Manual de uso
