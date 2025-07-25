@@ -12,12 +12,11 @@
 6. [Base de Datos](#base-de-datos)
 7. [Autenticación y Autorización](#autenticación-y-autorización)
 8. [Módulos del Sistema](#módulos-del-sistema)
-9. [API y Endpoints](#api-y-endpoints)
-10. [Reportes y Generación de PDFs](#reportes-y-generación-de-pdfs)
-11. [Despliegue](#despliegue)
-12. [Métricas y Rendimiento](#métricas-y-rendimiento)
-13. [Actualizaciones y Versiones](#actualizaciones-y-versiones)
-14. [Soporte y Contacto](#soporte-y-contacto)
+9. [Reportes y Generación de PDFs](#reportes-y-generación-de-pdfs)
+10. [Despliegue](#despliegue)
+11. [Métricas y Rendimiento](#métricas-y-rendimiento)
+12. [Actualizaciones y Versiones](#actualizaciones-y-versiones)
+13. [Soporte y Contacto](#soporte-y-contacto)
 
 ---
 
@@ -155,7 +154,7 @@ EvaluacionProfesores/
 - **Composer**: 2.0 o superior
 - **MySQL**: 8.0 o superior
 - **Node.js**: 16+ (para compilación de assets)
-- **Redis**: Opcional (para caché y colas)
+- **Redis**: Opcional (para caché)
 
 ### Instalación Paso a Paso
 
@@ -277,12 +276,7 @@ php artisan tinker
 Mail::raw('Test de correo', function($message) { $message->to('tu_correo@ejemplo.com')->subject('Test'); });
 ```
 
-#### 8. Configurar Colas (Opcional)
-```bash
-php artisan queue:work
-```
-
-#### 9. Verificar Instalación
+#### 8. Verificar Instalación
 ```bash
 # Verificar que todo esté funcionando
 php artisan route:list
@@ -290,7 +284,7 @@ php artisan config:cache
 php artisan view:cache
 ```
 
-### Configuración de Filament
+### Descripcion de configuración de Filament
 
 #### Paneles de Usuario
 El sistema utiliza tres paneles separados con middleware personalizado:
@@ -315,23 +309,6 @@ El sistema utiliza tres paneles separados con middleware personalizado:
 ])
 ```
 
-### Comandos Artisan Disponibles
-
-```bash
-# Generar reporte de rendimiento del sistema
-php artisan reports:performance --days=30
-
-# Generar reporte de profesores completados
-php artisan reports:profesores-completados
-
-# Limpiar reportes expirados
-php artisan reports:cleanup-expired
-
-# Actualizar orden de preguntas
-php artisan questions:update-order
-```
-
----
 
 ## 🗄️ Base de Datos
 
@@ -439,16 +416,6 @@ class ReportPolicy
 - Gestionar información personal y académica
 - Activar/desactivar cuentas
 
-#### Código Ejemplo
-```php
-class UserResource extends Resource
-{
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasRole('Administrador');
-    }
-}
-```
 
 ### 2. Gestión de Tests
 **Recurso**: `TestResource`
@@ -462,7 +429,7 @@ class UserResource extends Resource
 
 ### 3. Asignación de Evaluaciones
 **Recurso**: `TestAssignmentResource`
-**Acceso**: Administradores (completo), Coordinadores (solo ver)
+**Acceso**: Administradores (completo), Coordinadores (solo ver y asignar)
 
 #### Funcionalidades
 - Asignar tests a docentes
@@ -478,7 +445,7 @@ class UserResource extends Resource
 - Interfaz de evaluación interactiva
 - Guardado de progreso
 - Validación de respuestas
-- Visualización de resultados
+- Visualización de resultados individuales 
 
 ### 5. Generación de Reportes
 **Recurso**: `ReportResource`
@@ -497,7 +464,6 @@ class UserResource extends Resource
 - **Gráficos y Tablas**: Visualización de datos
 - **Metadatos Completos**: Información de generación
 - **Vista Previa**: Modal antes de generar PDF
-- **Expiración Automática**: Reportes expiran en 30 días
 
 ---
 
@@ -649,7 +615,8 @@ npm run build
 ### Optimizaciones de Rendimiento
 - **Vistas de Base de Datos**: Optimizadas para consultas complejas
 - **Sistema de Caché**: Redis para datos frecuentemente accedidos
-- **Colas Asíncronas**: Procesamiento de reportes en background
+- **Colas Asíncronas**: Procesamiento de reportes en background puesto que para generar el reporte de muchos usuarios excendia la memeria, se implemento
+esta estructura de datos, para almacenar información dentro de la aplicación y optimizar recursos. 
 - **Lazy Loading**: Carga eficiente de relaciones
 
 
