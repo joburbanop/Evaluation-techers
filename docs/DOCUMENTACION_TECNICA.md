@@ -603,7 +603,7 @@ SESSION_DRIVER=redis
 ```bash
 # Optimizar autoloader
 composer install --optimize-autoloader --no-dev
-
+```
 # Cache de configuración
 php artisan config:cache
 php artisan route:cache
