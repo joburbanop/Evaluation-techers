@@ -14,18 +14,11 @@
 ## 🖥️ Requisitos del Sistema
 
 ### Requisitos Mínimos
-- **Sistema Operativo**: Ubuntu 20.04+, CentOS 8+, macOS 10.15+, Windows 10+
 - **PHP**: 8.2 o superior
 - **Composer**: 2.0 o superior
 - **MySQL**: 8.0 o superior
 - **Node.js**: 16+ (para compilación de assets)
-- **Git**: Para control de versiones
 
-### Requisitos Recomendados
-- **RAM**: 4GB mínimo, 8GB recomendado
-- **Almacenamiento**: 10GB mínimo
-- **CPU**: 2 cores mínimo, 4 cores recomendado
-- **Redis**: Para caché y colas (opcional pero recomendado)
 
 ### Extensiones PHP Requeridas
 ```bash
@@ -694,27 +687,6 @@ chmod -R 775 storage/
 - **Issues**: GitHub Issues
 - **Chat**: Slack/Discord (si está disponible)
 
-### Información del Sistema
-```bash
-# Información del sistema
-php artisan about
-
-# Estado de servicios
-systemctl status nginx
-systemctl status mysql
-systemctl status redis
-systemctl status supervisor
-
-# Espacio en disco
-df -h
-
-# Uso de memoria
-free -h
-
-# Logs del sistema
-journalctl -u nginx -f
-journalctl -u mysql -f
-```
 
 ---
 
@@ -744,11 +716,6 @@ journalctl -u mysql -f
 - [ ] Almacenamiento configurado
 - [ ] Generación de PDFs probada
 
-### ✅ API
-- [ ] Sanctum configurado
-- [ ] Rutas API verificadas
-- [ ] CORS configurado
-- [ ] Endpoints probados
 
 ### ✅ Producción
 - [ ] Optimizaciones aplicadas
@@ -756,21 +723,11 @@ journalctl -u mysql -f
 - [ ] SSL configurado
 - [ ] Supervisor configurado
 
-### ✅ Testing
-- [ ] Funcionalidades verificadas
-- [ ] Usuarios de prueba creados
-- [ ] Reportes generados
-- [ ] API probada
 
-### ✅ Mantenimiento
-- [ ] Backup configurado
-- [ ] Logs monitoreados
-- [ ] Seguridad verificada
-- [ ] Documentación actualizada
+
 
 ---
 
 **🎯 ¡El sistema está listo para producción!**
 
 *Manual de Implementación - Versión 1.0*
-*Última actualización: {{ date('d/m/Y') }}* 
