@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Programa - {{ $programa->nombre }}</title>
+    <title>Reporte de Programa - {{ $previewData['entidad']['nombre'] ?? 'N/A' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,235 +13,174 @@
         }
         .header {
             text-align: center;
-            border-bottom: 3px solid #059669;
+            border-bottom: 3px solid #93c5fd;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
         .header h1 {
-            color: #059669;
+            color: #3b82f6;
+            font-size: 2.5rem;
             margin: 0;
-            font-size: 24px;
         }
-        .header p {
-            margin: 5px 0;
-            color: #666;
+        .header h2 {
+            color: #1d4ed8;
+            font-size: 1.5rem;
+            margin: 0;
         }
-        .section {
-            margin-bottom: 30px;
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
         }
-        .section h2 {
-            color: #059669;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 15px;
+        .stat {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            min-width: 220px;
             text-align: center;
+            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
         }
-        .stat-number {
-            font-size: 24px;
+        .stat-title {
+            color: #3b82f6;
             font-weight: bold;
-            color: #059669;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
         }
-        .stat-label {
-            color: #64748b;
-            font-size: 14px;
-            margin-top: 5px;
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #1d4ed8;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
         }
         th, td {
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            text-align: left;
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid #bae6fd;
         }
         th {
-            background: #f1f5f9;
+            background: #f0f9ff;
+            color: #3b82f6;
             font-weight: bold;
-            color: #374151;
         }
-        .nivel-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-        }
-        .nivel-a1 { background: #dc2626; }
-        .nivel-a2 { background: #ea580c; }
-        .nivel-b1 { background: #d97706; }
-        .nivel-b2 { background: #65a30d; }
-        .nivel-c1 { background: #059669; }
-        .nivel-c2 { background: #0891b2; }
-        .top-performer {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
+        tr:last-child td {
+            border-bottom: none;
         }
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
             text-align: center;
-            color: #6b7280;
-            font-size: 12px;
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Reporte de Evaluación por Programa</h1>
-        <p><strong>Programa:</strong> {{ $programa->nombre }}</p>
-        <p><strong>Facultad:</strong> {{ $facultad->nombre }}</p>
-        <p><strong>Institución:</strong> {{ $facultad->institution->name }}</p>
-        <p><strong>Tipo:</strong> {{ $programa->tipo }}</p>
-        <p><strong>Fecha de Generación:</strong> {{ $fecha_generacion }}</p>
-        @if(!empty($parametros))
-            <p><strong>Filtros Aplicados:</strong> 
-                @if(isset($parametros['date_from']))
-                    Desde: {{ \Carbon\Carbon::parse($parametros['date_from'])->format('d/m/Y') }}
-                @endif
-                @if(isset($parametros['date_to']))
-                    Hasta: {{ \Carbon\Carbon::parse($parametros['date_to'])->format('d/m/Y') }}
-                @endif
-            </p>
-        @endif
-    </div>
-
-    <div class="section">
-        <h2>Resumen General</h2>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ $total_evaluaciones }}</div>
-                <div class="stat-label">Total de Evaluaciones</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ $total_usuarios }}</div>
-                <div class="stat-label">Usuarios Evaluados</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ count($area_stats) }}</div>
-                <div class="stat-label">Áreas Evaluadas</div>
-            </div>
+        <h1>Reporte de Programa</h1>
+        <h2>{{ $previewData['entidad']['nombre'] ?? 'N/A' }}</h2>
+        <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+            Facultad: {{ $previewData['facultad']['nombre'] ?? 'N/A' }}<br>
+            Institución: {{ $previewData['facultad']['institution']['name'] ?? 'N/A' }}<br>
+            Fecha de Aplicación: {{ $previewData['fecha_aplicacion'] ?? 'N/A' }}
         </div>
     </div>
 
-    <div class="section">
-        <h2>Resultados por Área de Competencia</h2>
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-title">Total de Profesores</div>
+            <div class="stat-value">{{ $previewData['total_profesores'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Profesores Completados</div>
+            <div class="stat-value" style="color: #059669;">{{ $previewData['total_profesores_completados'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Profesores Pendientes</div>
+            <div class="stat-value" style="color: #dc2626;">{{ $previewData['total_profesores_pendientes'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Promedio del Programa</div>
+            <div class="stat-value">{{ number_format($previewData['promedio_programa'] ?? 0, 2) }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Puntuación Máxima</div>
+            <div class="stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Puntuación Mínima</div>
+            <div class="stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h2 style="color: #3b82f6; text-align: left; margin-bottom: 1rem;">Resultados por Profesor (Ordenados de Mayor a Menor)</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Área</th>
-                    <th>Evaluaciones</th>
-                    <th>Promedio</th>
-                    <th>Máximo</th>
-                    <th>Mínimo</th>
-                    <th>Distribución de Niveles</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($area_stats as $areaName => $stats)
-                <tr>
-                    <td><strong>{{ $areaName }}</strong></td>
-                    <td>{{ $stats['total_evaluaciones'] }}</td>
-                    <td>{{ $stats['promedio_score'] }}</td>
-                    <td>{{ $stats['max_score'] }}</td>
-                    <td>{{ $stats['min_score'] }}</td>
-                    <td>
-                        @foreach($stats['niveles'] as $nivel => $cantidad)
-                            <span class="nivel-badge nivel-{{ strtolower($nivel) }}">{{ $nivel }}: {{ $cantidad }}</span>
+                    <th style="width: 60px;">Pos.</th>
+                    <th style="width: 200px;">Nombre Completo</th>
+                    <th style="width: 120px;">Estado</th>
+                    <th style="width: 120px;">Promedio General</th>
+                    @if(isset($previewData['area_stats']) && count($previewData['area_stats']) > 0)
+                        @foreach($previewData['area_stats'] as $area)
+                            <th style="width: 150px;">{{ is_array($area) ? $area['area_name'] : $area->area_name }}</th>
                         @endforeach
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <div class="section">
-        <h2>Top 10 Mejores Evaluados</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Posición</th>
-                    <th>Docente</th>
-                    <th>Puntaje</th>
-                    <th>Fecha de Evaluación</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
-                @foreach($top_evaluados as $index => $evaluado)
-                <tr class="{{ $index < 3 ? 'top-performer' : '' }}">
-                    <td><strong>{{ $index + 1 }}</strong></td>
-                    <td>{{ $evaluado['user']->full_name }}</td>
-                    <td><strong>{{ $evaluado['score'] }}</strong></td>
-                    <td>{{ $evaluado['fecha']->format('d/m/Y H:i') }}</td>
-                </tr>
+                @foreach($previewData['resultados_por_profesor'] as $index => $resultado)
+                    <tr>
+                        <td style="text-align: center; font-weight: 600; color: #3b82f6;">{{ $index + 1 }}</td>
+                        <td style="font-weight: 600; color: #1d4ed8;">{{ $resultado['nombre_completo'] }}</td>
+                        <td>
+                            @if(isset($resultado['ha_completado_todos']) && $resultado['ha_completado_todos'])
+                                <span style="color: #059669; font-weight: 600;">✓ Completado</span>
+                                <div style="font-size: 0.8rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }} tests</div>
+                            @else
+                                <span style="color: #dc2626; font-weight: 600;">⚠ Pendiente</span>
+                                <div style="font-size: 0.8rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }} tests</div>
+                            @endif
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="font-weight: 700; font-size: 1.1rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}</div>
+                        </td>
+                        @if(isset($previewData['area_stats']) && count($previewData['area_stats']) > 0)
+                            @foreach($previewData['area_stats'] as $area)
+                                @php
+                                    $areaResultado = $resultado['resultados_por_area']->firstWhere('area_name', is_array($area) ? $area['area_name'] : $area->area_name);
+                                @endphp
+                                <td style="text-align: center;">
+                                    @if($areaResultado)
+                                        <div style="font-weight: 700; color: #3b82f6; font-size: 1rem;">{{ number_format($areaResultado['puntaje'], 2) }}/{{ $areaResultado['total_posible'] }}</div>
+                                    @else
+                                        <span style="color: #999; font-style: italic;">0.00/100</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        @endif
+                    </tr>
                 @endforeach
             </tbody>
         </table>
-    </div>
-
-    <div class="section">
-        <h2>Análisis de Rendimiento</h2>
-        @if($total_evaluaciones > 0)
-            @php
-                $promedioGeneral = $top_evaluados->avg('score');
-                $maxScore = $top_evaluados->max('score');
-                $minScore = $top_evaluados->min('score');
-            
-                $promedio = $promedioGeneral ?? 0;
-                $count = $top_evaluados->count();
-            
-                if ($count > 0) {
-                    $variance = $top_evaluados->reduce(function ($carry, $evaluado) use ($promedio) {
-                        return $carry + pow($evaluado['score'] - $promedio, 2);
-                    }, 0) / $count;
-            
-                    $desviacion = sqrt($variance);
-                } else {
-                    $desviacion = 0;
-                }
-            @endphp
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">{{ round($promedioGeneral, 2) }}</div>
-                    <div class="stat-label">Promedio General</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ $maxScore }}</div>
-                    <div class="stat-label">Puntaje Máximo</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ $minScore }}</div>
-                    <div class="stat-label">Puntaje Mínimo</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ round($desviacion, 2) }}</div>
-                    <div class="stat-label">Desviación Estándar</div>
-                </div>
-            </div>
-        @else
-            <p>No hay datos suficientes para realizar el análisis de rendimiento.</p>
-        @endif
     </div>
 
     <div class="footer">
-        <p>Reporte generado automáticamente por el Sistema de Evaluación de Profesores</p>
-        <p>Este documento contiene información confidencial y está destinado únicamente para uso interno</p>
+        Reporte generado el {{ $previewData['fecha_generacion'] ?? now()->format('d/m/Y H:i:s') }}<br>
+        Sistema de Evaluación de Profesores &copy; 2025
     </div>
 </body>
 </html> 

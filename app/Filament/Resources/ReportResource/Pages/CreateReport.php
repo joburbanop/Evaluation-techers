@@ -26,6 +26,7 @@ class CreateReport extends CreateRecord
                 ->color('info')
                 ->modalHeading('Vista Previa del Reporte')
                 ->modalDescription('Revise cómo se verá su reporte antes de generarlo')
+                ->modalWidth('95vw')
                 ->modalContent(function () {
                     // Obtener los datos del formulario actual
                     $formData = $this->form->getState();
@@ -250,14 +251,6 @@ class CreateReport extends CreateRecord
     private function buildParameters(array $data): array
     {
         $parameters = [];
-        
-        if (isset($data['date_from'])) {
-            $parameters['date_from'] = $data['date_from'];
-        }
-        
-        if (isset($data['date_to'])) {
-            $parameters['date_to'] = $data['date_to'];
-        }
         
         if (isset($data['filtro_profesores'])) {
             $parameters['filtro'] = $data['filtro_profesores'];

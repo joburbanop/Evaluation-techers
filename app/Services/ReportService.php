@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Report;
+use App\Models\Test;
 use App\Models\TestAssignment;
 use App\Models\Facultad;
 use App\Models\Programa;
@@ -300,11 +301,6 @@ class ReportService
         // Usar la misma lógica que getFacultadData para obtener datos consistentes
         $query = EvaluacionPorArea::byFacultad($facultad->id);
 
-        // Aplicar filtros de fecha si se especifican
-        if (isset($parameters['date_from'])) {
-            $query->byDateRange($parameters['date_from'], $parameters['date_to'] ?? now());
-        }
-
         $evaluaciones = $query->get();
 
         // Estadísticas generales usando vista optimizada
@@ -338,8 +334,6 @@ class ReportService
             ];
         });
 
-
-
         return [
             'entidad' => $facultad,
             'total_evaluaciones' => $totalEvaluaciones,
@@ -358,69 +352,129 @@ class ReportService
 
     private function getProgramaPreviewData(Programa $programa, array $parameters = [])
     {
-        // Usar la misma lógica que getProgramaData para obtener datos consistentes
-        $query = EvaluacionPorArea::byPrograma($programa->id);
-
-        // Aplicar filtros de fecha si se especifican
-        if (isset($parameters['date_from'])) {
-            $query->byDateRange($parameters['date_from'], $parameters['date_to'] ?? now());
-        }
-
-        $evaluaciones = $query->get();
-
-        // Estadísticas generales usando vista optimizada
-        $totalEvaluaciones = $evaluaciones->count();
-        $totalUsuarios = $evaluaciones->unique('user_id')->count();
-        $promedioGeneral = $evaluaciones->avg('score') ?? 0;
+        // Obtener todas las áreas disponibles del sistema PRIMERO (excluyendo Información Socio-demográfica y Educación Abierta)
+        $todasLasAreas = \App\Models\Area::whereNotIn('name', ['Información Socio-demográfica', 'Educación Abierta'])->get();
         
-        // Calcular estadísticas por área usando vista
-        $areaStats = $evaluaciones->groupBy('area_id')->map(function ($areaEvaluaciones, $areaId) {
-            $area = $areaEvaluaciones->first();
+        // Obtener todos los profesores del programa
+        $profesoresPrograma = User::whereHas('roles', function($q) {
+            $q->where('name', 'Docente');
+        })->where('programa_id', $programa->id)->get();
+        
+        $totalProfesores = $profesoresPrograma->count();
+        
+        // Obtener todos los tests activos
+        $testsActivos = Test::where('is_active', true)->get();
+        $totalTestsActivos = $testsActivos->count();
+        
+        // Obtener asignaciones completadas por profesor en este programa
+        $asignacionesCompletadas = TestAssignment::whereHas('user', function($q) use ($programa) {
+            $q->where('programa_id', $programa->id);
+        })->where('status', 'completed')->get();
+        
+        // Contar profesores que han completado todos los tests
+        $profesoresCompletados = $profesoresPrograma->filter(function($profesor) use ($testsActivos, $asignacionesCompletadas, $totalTestsActivos) {
+            $testsCompletadosPorProfesor = $asignacionesCompletadas
+                ->where('user_id', $profesor->id)
+                ->count();
+            return $testsCompletadosPorProfesor >= $totalTestsActivos;
+        });
+        
+        $totalProfesoresCompletados = $profesoresCompletados->count();
+        $totalProfesoresPendientes = $totalProfesores - $totalProfesoresCompletados;
+        
+        // Obtener evaluaciones por área para el programa
+        $query = EvaluacionPorArea::byPrograma($programa->id);
+        
+        $evaluaciones = $query->get();
+        
+        // Calcular estadísticas generales del programa
+        $promedioPrograma = $evaluaciones->avg('score') ?? 0;
+        $puntuacionMaxima = $evaluaciones->max('score') ?? 0;
+        $puntuacionMinima = $evaluaciones->min('score') ?? 0;
+        $fechaAplicacion = now()->format('d/m/Y');
+        
+        // Obtener resultados por profesor ordenados de mayor a menor - TODOS los profesores
+        $resultadosPorProfesor = $profesoresPrograma->map(function($profesor) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos, $todasLasAreas) {
+            $evaluacionesProfesor = $evaluaciones->where('user_id', $profesor->id);
+            $promedioProfesor = $evaluacionesProfesor->avg('score') ?? 0;
+            
+            // Verificar si el profesor ha completado todos los tests
+            $testsCompletadosPorProfesor = $asignacionesCompletadas
+                ->where('user_id', $profesor->id)
+                ->count();
+            $haCompletadoTodos = $testsCompletadosPorProfesor >= $totalTestsActivos;
+            
             return [
-                'area_name' => $area->area_name,
+                'profesor' => $profesor,
+                'nombre_completo' => "{$profesor->name} {$profesor->apellido1}",
+                'promedio_general' => round($promedioProfesor, 2),
+                'ha_completado_todos' => $haCompletadoTodos,
+                'tests_completados' => $testsCompletadosPorProfesor,
+                'total_tests' => $totalTestsActivos,
+                'resultados_por_area' => $todasLasAreas->map(function($area) use ($evaluacionesProfesor) {
+                    $areaEvaluaciones = $evaluacionesProfesor->where('area_id', $area->id);
+                    
+                    // Calcular puntaje máximo posible para esta área
+                    $puntajeMaximo = \App\Models\Question::where('area_id', $area->id)
+                        ->whereHas('test', function($q) {
+                            $q->where('is_active', true);
+                        })
+                        ->get()
+                        ->sum(function($q) {
+                            return $q->options->max('score') ?? 0;
+                        });
+                    
+                    if ($areaEvaluaciones->count() > 0) {
+                        $puntajeObtenido = $areaEvaluaciones->sum('score');
+                        
+                        return [
+                            'area_name' => $area->name,
+                            'area_id' => $area->id,
+                            'puntaje' => $puntajeObtenido,
+                            'total_posible' => $puntajeMaximo > 0 ? $puntajeMaximo : 100,
+                            'porcentaje' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100, 2) : 0
+                        ];
+                    } else {
+                        return [
+                            'area_name' => $area->name,
+                            'area_id' => $area->id,
+                            'puntaje' => 0,
+                            'total_posible' => $puntajeMaximo > 0 ? $puntajeMaximo : 100,
+                            'porcentaje' => 0
+                        ];
+                    }
+                })->values()
+            ];
+        })->sortByDesc('promedio_general')->values();
+        
+        // Calcular estadísticas por área
+        $areaStats = $todasLasAreas->map(function ($area) use ($evaluaciones) {
+            $areaEvaluaciones = $evaluaciones->where('area_id', $area->id);
+            return [
+                'area_name' => $area->name,
+                'area_id' => $area->id,
                 'total_evaluaciones' => $areaEvaluaciones->count(),
                 'promedio_score' => round($areaEvaluaciones->avg('score'), 2),
                 'max_score' => $areaEvaluaciones->max('score'),
                 'min_score' => $areaEvaluaciones->min('score'),
-                'niveles' => $this->calculateNivelesFromVista($areaEvaluaciones, $areaId),
             ];
         });
-
-        // Top 10 mejores evaluados usando vista
-        $topEvaluados = $evaluaciones->groupBy('user_id')->map(function ($userEvaluaciones, $userId) {
-            $user = $userEvaluaciones->first();
-            $score = $userEvaluaciones->sum('score');
-            
-            return [
-                'user' => (object)[
-                    'name' => $user->user_name,
-                    'apellido1' => $user->apellido1,
-                    'apellido2' => $user->apellido2,
-                    'full_name' => trim($user->user_name . ' ' . $user->apellido1 . ' ' . $user->apellido2),
-                ],
-                'score' => $score,
-                'fecha' => \Carbon\Carbon::parse($userEvaluaciones->first()->created_at),
-            ];
-        })
-        ->sortByDesc('score')
-        ->take(10);
-
-
 
         return [
             'entidad' => $programa,
             'facultad' => $programa->facultad,
-            'total_evaluaciones' => $totalEvaluaciones,
-            'total_usuarios' => $totalUsuarios,
-            'promedio_general' => round($promedioGeneral, 2),
-            'max_score' => $evaluaciones->max('score') ?? 0,
-            'min_score' => $evaluaciones->min('score') ?? 0,
-            'nivel_satisfaccion' => $this->calculateSatisfactionLevel($promedioGeneral),
-            'areas_evaluadas' => $evaluaciones->unique('area_id')->count() ?: 4,
+            'total_profesores' => $totalProfesores,
+            'total_profesores_completados' => $totalProfesoresCompletados,
+            'total_profesores_pendientes' => $totalProfesoresPendientes,
+            'promedio_programa' => round($promedioPrograma, 2),
+            'puntuacion_maxima' => $puntuacionMaxima,
+            'puntuacion_minima' => $puntuacionMinima,
+            'fecha_aplicacion' => $fechaAplicacion,
+            'resultados_por_profesor' => $resultadosPorProfesor,
             'area_stats' => $areaStats,
-            'top_evaluados' => $topEvaluados,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
+            'is_preview' => true,
         ];
     }
 
@@ -434,13 +488,6 @@ class ReportService
             ->where('u.institution_id', $institution->id)
             ->where('ta.status', 'completed')
             ->where('q.area_id', '!=', 8);
-
-        if (isset($parameters['date_from'])) {
-            $query->whereBetween('ta.created_at', [
-                $parameters['date_from'], 
-                $parameters['date_to'] ?? now()
-            ]);
-        }
 
         $stats = $query->select(
             DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
@@ -525,13 +572,6 @@ class ReportService
             ->where('ta.user_id', $profesor->id)
             ->where('ta.status', 'completed')
             ->where('q.area_id', '!=', 8);
-
-        if (isset($parameters['date_from'])) {
-            $query->whereBetween('ta.created_at', [
-                $parameters['date_from'], 
-                $parameters['date_to'] ?? now()
-            ]);
-        }
 
         $stats = $query->select(
             DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
@@ -659,11 +699,6 @@ class ReportService
         // Usar vista optimizada en lugar de consultas complejas
         $query = EvaluacionPorArea::byFacultad($facultad->id);
 
-        // Aplicar filtros de fecha si se especifican
-        if (isset($parameters['date_from'])) {
-            $query->byDateRange($parameters['date_from'], $parameters['date_to'] ?? now());
-        }
-
         $evaluaciones = $query->get();
 
         // Estadísticas generales usando vista optimizada
@@ -709,59 +744,139 @@ class ReportService
 
     private function getProgramaData(Programa $programa, array $parameters = [])
     {
-        // Usar vista optimizada
-        $query = EvaluacionPorArea::byPrograma($programa->id);
-
-        // Aplicar filtros de fecha si se especifican
-        if (isset($parameters['date_from'])) {
-            $query->byDateRange($parameters['date_from'], $parameters['date_to'] ?? now());
-        }
-
-        $evaluaciones = $query->get();
-
-        // Estadísticas generales usando vista optimizada
-        $totalEvaluaciones = $evaluaciones->count();
-        $totalUsuarios = $evaluaciones->unique('user_id')->count();
+        // Obtener todas las áreas disponibles del sistema PRIMERO (excluyendo Información Socio-demográfica y Educación Abierta)
+        $todasLasAreas = \App\Models\Area::whereNotIn('name', ['Información Socio-demográfica', 'Educación Abierta'])->get();
         
-        // Calcular estadísticas por área usando vista
-        $areaStats = $evaluaciones->groupBy('area_id')->map(function ($areaEvaluaciones, $areaId) {
-            $area = $areaEvaluaciones->first();
+        // Obtener todos los profesores del programa
+        $profesoresPrograma = User::whereHas('roles', function($q) {
+            $q->where('name', 'Docente');
+        })->where('programa_id', $programa->id)->get();
+        
+        $totalProfesores = $profesoresPrograma->count();
+        
+        // Obtener todos los tests activos
+        $testsActivos = Test::where('is_active', true)->get();
+        $totalTestsActivos = $testsActivos->count();
+        
+        // Obtener asignaciones completadas por profesor en este programa
+        $asignacionesCompletadas = TestAssignment::whereHas('user', function($q) use ($programa) {
+            $q->where('programa_id', $programa->id);
+        })->where('status', 'completed')->get();
+        
+        // Contar profesores que han completado todos los tests
+        $profesoresCompletados = $profesoresPrograma->filter(function($profesor) use ($testsActivos, $asignacionesCompletadas, $totalTestsActivos) {
+            $testsCompletadosPorProfesor = $asignacionesCompletadas
+                ->where('user_id', $profesor->id)
+                ->count();
+            return $testsCompletadosPorProfesor >= $totalTestsActivos;
+        });
+        
+        $totalProfesoresCompletados = $profesoresCompletados->count();
+        $totalProfesoresPendientes = $totalProfesores - $totalProfesoresCompletados;
+        
+        // Obtener evaluaciones por área para el programa
+        $query = EvaluacionPorArea::byPrograma($programa->id);
+        
+        $evaluaciones = $query->get();
+        
+        // Calcular estadísticas generales del programa
+        $promedioPrograma = $evaluaciones->avg('score') ?? 0;
+        $puntuacionMaxima = $evaluaciones->max('score') ?? 0;
+        $puntuacionMinima = $evaluaciones->min('score') ?? 0;
+        
+        // Obtener fecha de aplicación (fecha actual)
+        $fechaAplicacion = now()->format('d/m/Y H:i:s');
+        
+        // Calcular resultados por área para cada profesor - TODOS los profesores
+        $resultadosPorProfesor = collect();
+        
+        foreach ($profesoresPrograma as $profesor) {
+            $evaluacionesProfesor = $evaluaciones->where('user_id', $profesor->id);
+            
+            // Verificar si el profesor ha completado todos los tests
+            $testsCompletadosPorProfesor = $asignacionesCompletadas
+                ->where('user_id', $profesor->id)
+                ->count();
+            $haCompletadoTodos = $testsCompletadosPorProfesor >= $totalTestsActivos;
+            
+            // Generar resultados para todas las áreas disponibles
+            $resultadosPorArea = $todasLasAreas->map(function ($area) use ($evaluacionesProfesor, $evaluaciones) {
+                $areaEvaluaciones = $evaluacionesProfesor->where('area_id', $area->id);
+                
+                // Calcular puntaje máximo posible para esta área
+                $puntajeMaximo = \App\Models\Question::where('area_id', $area->id)
+                    ->whereHas('test', function($q) {
+                        $q->where('is_active', true);
+                    })
+                    ->get()
+                    ->sum(function($q) {
+                        return $q->options->max('score') ?? 0;
+                    });
+                
+                if ($areaEvaluaciones->count() > 0) {
+                    $puntajeObtenido = $areaEvaluaciones->sum('score');
+                    
+                    return [
+                        'area_name' => $area->name,
+                        'area_id' => $area->id,
+                        'puntaje_obtenido' => $puntajeObtenido,
+                        'puntaje_maximo' => $puntajeMaximo > 0 ? $puntajeMaximo : 100,
+                        'porcentaje' => $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100, 2) : 0
+                    ];
+                } else {
+                    return [
+                        'area_name' => $area->name,
+                        'area_id' => $area->id,
+                        'puntaje_obtenido' => 0,
+                        'puntaje_maximo' => $puntajeMaximo > 0 ? $puntajeMaximo : 100,
+                        'porcentaje' => 0
+                    ];
+                }
+            });
+            
+            $resultadosPorProfesor->push([
+                'profesor' => [
+                    'id' => $profesor->id,
+                    'nombre_completo' => trim($profesor->name . ' ' . $profesor->apellido1 . ' ' . $profesor->apellido2),
+                    'email' => $profesor->email
+                ],
+                'ha_completado_todos' => $haCompletadoTodos,
+                'tests_completados' => $testsCompletadosPorProfesor,
+                'total_tests' => $totalTestsActivos,
+                'resultados_por_area' => $resultadosPorArea,
+                'promedio_general' => $evaluacionesProfesor->avg('score') ?? 0
+            ]);
+        }
+        
+        // Ordenar profesores por promedio general de mayor a menor
+        $resultadosPorProfesor = $resultadosPorProfesor->sortByDesc('promedio_general');
+        
+        // Calcular estadísticas por área del programa
+        $areaStats = $todasLasAreas->map(function ($area) use ($evaluaciones) {
+            $areaEvaluaciones = $evaluaciones->where('area_id', $area->id);
             return [
-                'area_name' => $area->area_name,
+                'area_name' => $area->name,
+                'area_id' => $area->id,
                 'total_evaluaciones' => $areaEvaluaciones->count(),
                 'promedio_score' => round($areaEvaluaciones->avg('score'), 2),
                 'max_score' => $areaEvaluaciones->max('score'),
                 'min_score' => $areaEvaluaciones->min('score'),
-                'niveles' => $this->calculateNivelesFromVista($areaEvaluaciones, $areaId),
+                'niveles' => $this->calculateNivelesFromVista($areaEvaluaciones, $area->id),
             ];
         });
-
-        // Top 10 mejores evaluados usando vista
-        $topEvaluados = $evaluaciones->groupBy('user_id')->map(function ($userEvaluaciones, $userId) {
-            $user = $userEvaluaciones->first();
-            $score = $userEvaluaciones->sum('score');
-            
-            return [
-                'user' => (object)[
-                    'name' => $user->user_name,
-                    'apellido1' => $user->apellido1,
-                    'apellido2' => $user->apellido2,
-                    'full_name' => trim($user->user_name . ' ' . $user->apellido1 . ' ' . $user->apellido2),
-                ],
-                'score' => $score,
-                'fecha' => Carbon::parse($userEvaluaciones->first()->created_at),
-            ];
-        })
-        ->sortByDesc('score')
-        ->take(10);
 
         return [
             'programa' => $programa,
             'facultad' => $programa->facultad,
-            'total_evaluaciones' => $totalEvaluaciones,
-            'total_usuarios' => $totalUsuarios,
+            'total_profesores' => $totalProfesores,
+            'total_profesores_completados' => $totalProfesoresCompletados,
+            'total_profesores_pendientes' => $totalProfesoresPendientes,
+            'promedio_programa' => round($promedioPrograma, 2),
+            'puntuacion_maxima' => $puntuacionMaxima,
+            'puntuacion_minima' => $puntuacionMinima,
+            'fecha_aplicacion' => $fechaAplicacion,
+            'resultados_por_profesor' => $resultadosPorProfesor,
             'area_stats' => $areaStats,
-            'top_evaluados' => $topEvaluados,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];
@@ -843,13 +958,6 @@ class ReportService
             ->where('u.institution_id', $institution->id)
             ->where('ta.status', 'completed')
             ->where('q.area_id', '!=', 8);
-
-        if (isset($parameters['date_from'])) {
-            $query->whereBetween('ta.created_at', [
-                $parameters['date_from'], 
-                $parameters['date_to'] ?? now()
-            ]);
-        }
 
         $stats = $query->select(
             DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
@@ -946,13 +1054,6 @@ class ReportService
             ->where('ta.user_id', $profesor->id)
             ->where('ta.status', 'completed')
             ->where('q.area_id', '!=', 8);
-
-        if (isset($parameters['date_from'])) {
-            $query->whereBetween('ta.created_at', [
-                $parameters['date_from'], 
-                $parameters['date_to'] ?? now()
-            ]);
-        }
 
         $stats = $query->select(
             DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),

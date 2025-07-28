@@ -179,15 +179,15 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($programa_stats as $programaName => $stats)
+                @foreach($programa_stats as $programa)
                 <tr>
-                    <td><strong>{{ $programaName }}</strong></td>
-                    <td>{{ $stats['total_evaluaciones'] }}</td>
-                    <td>{{ $stats['promedio_score'] }}</td>
-                    <td>{{ $stats['max_score'] }}</td>
-                    <td>{{ $stats['min_score'] }}</td>
+                    <td><strong>{{ $programa['programa_nombre'] }}</strong></td>
+                    <td>{{ $programa['total_evaluaciones'] }}</td>
+                    <td>{{ $programa['promedio_score'] }}</td>
+                    <td>{{ $programa['max_score'] }}</td>
+                    <td>{{ $programa['min_score'] }}</td>
                     <td>
-                        @foreach($stats['niveles'] as $nivel => $cantidad)
+                        @foreach($programa['niveles'] as $nivel => $cantidad)
                             <span class="nivel-badge nivel-{{ strtolower($nivel) }}">{{ $nivel }}: {{ $cantidad }}</span>
                         @endforeach
                     </td>

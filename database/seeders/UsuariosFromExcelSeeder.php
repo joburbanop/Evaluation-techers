@@ -1904,7 +1904,7 @@ class UsuariosFromExcelSeeder extends Seeder
                 'ciudad_id'         => null,
                 'institution_id'    => 68,
                 'facultad_id'       => 5,
-                'programa_id'       => 41,
+                'programa_id'       => 40,
                 'apellido1'         => 'CORAL',
                 'apellido2'         => 'CAICEDO',
                 'created_at'        => $now,
@@ -5545,7 +5545,7 @@ class UsuariosFromExcelSeeder extends Seeder
                 'ciudad_id'         => null,
                 'institution_id'    => 68,
                 'facultad_id'       => 5,
-                'programa_id'       => 41,
+                'programa_id'       => 42,
                 'apellido1'         => 'MADROÑERO',
                 'apellido2'         => 'PALACIOS',
                 'created_at'        => $now,
@@ -5585,7 +5585,7 @@ class UsuariosFromExcelSeeder extends Seeder
                 'ciudad_id'         => null,
                 'institution_id'    => 68,
                 'facultad_id'       => 5,
-                'programa_id'       => 41,// civil
+                'programa_id'       => 40,// civil
                 'apellido1'         => 'CONTRERAS',
                 'apellido2'         => 'GRIJALBA',
                 'created_at'        => $now,
@@ -5605,7 +5605,7 @@ class UsuariosFromExcelSeeder extends Seeder
                 'ciudad_id'         => null,
                 'institution_id'    => 68,
                 'facultad_id'       => 5,
-                'programa_id'       => 41,// civil
+                'programa_id'       => 40,// civil
                 'apellido1'         => 'BRAVO',
                 'apellido2'         => 'MONTENEGRO',
                 'created_at'        => $now,
@@ -7667,7 +7667,7 @@ class UsuariosFromExcelSeeder extends Seeder
                 'ciudad_id'         => null,
                 'institution_id'    => 68,
                 'facultad_id'       => 5,
-                'programa_id'       => 42, // Ingeniería Ambiental
+                'programa_id'       => 41, 
                 'apellido1'         => 'ORTIZ',
                 'apellido2'         => 'GUZMAN',
                 'created_at'        => $now,

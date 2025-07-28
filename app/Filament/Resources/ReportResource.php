@@ -20,7 +20,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
+
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Actions;
 use Filament\Notifications\Notification;
@@ -92,10 +92,10 @@ class ReportResource extends Resource
                                     ->label('Tipo de Reporte')
                                     ->placeholder('Seleccione un tipo de reporte')
                                     ->options([
-                                        'universidad' => 'Reporte por Universidad',
-                                        'facultad' => 'Reporte por Facultad',
-                                        'programa' => 'Reporte por Programa',
                                         'profesor' => 'Reporte por Profesor',
+                                        'programa' => 'Reporte por Programa',
+                                        'facultad' => 'Reporte por Facultad',
+                                        'universidad' => 'Reporte por Universidad',
                                         'profesores_completados' => 'Reporte de Participación en Evaluación de Competencias',
                                     ])
                                     ->required()
@@ -255,31 +255,7 @@ class ReportResource extends Resource
                                     ->visible(fn ($get) => $get('tipo_reporte') === 'profesores_completados')
                                     ->columnSpan(1),
 
-                                DatePicker::make('date_from')
-                                    ->label('Fecha Desde')
-                                    ->maxDate(now())
-                                    ->columnSpan(1)
-                                    ->live()
-                                    ->helperText('Seleccione la fecha inicial del período')
-                                    ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                        // Limpiar fecha hasta cuando se cambia fecha desde
-                                        if ($state) {
-                                            $set('date_to', null);
-                                        }
-                                    }),
 
-                                DatePicker::make('date_to')
-                                    ->label('Fecha Hasta')
-                                    ->maxDate(now())
-                                    ->minDate(function ($get) {
-                                        $dateFrom = $get('date_from');
-                                        return $dateFrom ? $dateFrom : null;
-                                    })
-                                    ->disabled(function ($get) {
-                                        return !$get('date_from');
-                                    })
-                                    ->helperText('Seleccione la fecha final del período (debe ser posterior a la fecha inicial)')
-                                    ->columnSpan(1),
                             ]),
                     ])
                     ->collapsible()
@@ -354,10 +330,10 @@ class ReportResource extends Resource
                 Tables\Filters\SelectFilter::make('type')
                     ->label('Tipo de Reporte')
                     ->options([
-                        'universidad' => 'Universidad',
-                        'facultad' => 'Facultad',
-                        'programa' => 'Programa',
                         'profesor' => 'Profesor',
+                        'programa' => 'Programa',
+                        'facultad' => 'Facultad',
+                        'universidad' => 'Universidad',
                         'profesores_completados' => 'Participación en Evaluación',
                     ]),
 
@@ -376,6 +352,7 @@ class ReportResource extends Resource
                     ->icon('heroicon-o-eye')
                     ->color('info')
                     ->modalHeading('Vista Previa del Reporte')
+                    ->modalWidth('95vw')
                     ->visible(fn (Report $record) => Auth::user()->hasAnyRole(['Administrador', 'Coordinador']))
                     ->modalContent(function (Report $record) {
                         try {
