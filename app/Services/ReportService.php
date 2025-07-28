@@ -42,7 +42,7 @@ class ReportService
             // Usar getPreviewData para obtener el formato correcto
             $previewData = $this->getFacultadPreviewData($facultad, $parameters);
             $pdf = PDF::loadView('reports.facultad', compact('previewData'));
-            $pdf->setPaper('A4', 'portrait');
+            $pdf->setPaper('A4', 'landscape');
             $pdf->setOption('isRemoteEnabled', true);
             $pdf->setOption('isHtml5ParserEnabled', true);
             
@@ -86,7 +86,7 @@ class ReportService
             // Usar getPreviewData para obtener el formato correcto
             $previewData = $this->getProgramaPreviewData($programa, $parameters);
             $pdf = PDF::loadView('reports.programa', compact('previewData'));
-            $pdf->setPaper('A4', 'portrait');
+            $pdf->setPaper('A4', 'landscape');
             $pdf->setOption('isRemoteEnabled', true);
             $pdf->setOption('isHtml5ParserEnabled', true);
             
@@ -130,7 +130,7 @@ class ReportService
             // Usar getPreviewData para obtener el formato correcto
             $previewData = $this->getUniversidadPreviewData($institution, $parameters);
             $pdf = PDF::loadView('reports.universidad', compact('previewData'));
-            $pdf->setPaper('A4', 'portrait');
+            $pdf->setPaper('A4', 'landscape');
             $pdf->setOption('isRemoteEnabled', true);
             $pdf->setOption('isHtml5ParserEnabled', true);
             
@@ -320,53 +320,103 @@ class ReportService
 
     private function getFacultadPreviewData(Facultad $facultad, array $parameters = [])
     {
-        // Usar la misma lógica que getFacultadData para obtener datos consistentes
-        $query = EvaluacionPorArea::byFacultad($facultad->id);
-
-        $evaluaciones = $query->get();
-
-        // Estadísticas generales usando vista optimizada
-        $totalEvaluaciones = $evaluaciones->count();
-        $totalUsuarios = $evaluaciones->unique('user_id')->count();
-        $promedioGeneral = $evaluaciones->avg('score') ?? 0;
+        // Obtener todos los programas de la facultad
+        $programasFacultad = Programa::where('facultad_id', $facultad->id)->get();
+        $totalProgramas = $programasFacultad->count();
         
-        // Calcular estadísticas por área usando vista
-        $areaStats = $evaluaciones->groupBy('area_id')->map(function ($areaEvaluaciones, $areaId) {
-            $area = $areaEvaluaciones->first();
-            return [
-                'area_name' => $area->area_name,
-                'total_evaluaciones' => $areaEvaluaciones->count(),
-                'promedio_score' => round($areaEvaluaciones->avg('score'), 2),
-                'max_score' => $areaEvaluaciones->max('score'),
-                'min_score' => $areaEvaluaciones->min('score'),
-                'niveles' => $this->calculateNivelesFromVista($areaEvaluaciones, $areaId),
-            ];
+        // Obtener todos los profesores de la facultad
+        $profesoresFacultad = User::whereHas('roles', function($q) {
+            $q->where('name', 'Docente');
+        })->where('facultad_id', $facultad->id)->get();
+        
+        $totalProfesores = $profesoresFacultad->count();
+        
+        // Obtener todos los tests activos
+        $testsActivos = Test::where('is_active', true)->get();
+        $totalTestsActivos = $testsActivos->count();
+        
+        // Obtener asignaciones completadas por profesor en esta facultad
+        $asignacionesCompletadas = TestAssignment::whereHas('user', function($q) use ($facultad) {
+            $q->where('facultad_id', $facultad->id);
+        })->where('status', 'completed')->get();
+        
+        // Contar profesores que han completado todos los tests
+        $profesoresCompletados = $profesoresFacultad->filter(function($profesor) use ($testsActivos, $asignacionesCompletadas, $totalTestsActivos) {
+            $testsCompletadosPorProfesor = $asignacionesCompletadas
+                ->where('user_id', $profesor->id)
+                ->count();
+            return $testsCompletadosPorProfesor >= $totalTestsActivos;
         });
-
-        // Estadísticas por programa usando vista
-        $programaStats = $evaluaciones->groupBy('programa_id')->map(function ($programaEvaluaciones, $programaId) {
-            $programa = $programaEvaluaciones->first();
+        
+        $totalProfesoresCompletados = $profesoresCompletados->count();
+        $totalProfesoresPendientes = $totalProfesores - $totalProfesoresCompletados;
+        
+        // Obtener evaluaciones por área para la facultad
+        $query = EvaluacionPorArea::byFacultad($facultad->id);
+        $evaluaciones = $query->get();
+        
+        // Calcular estadísticas generales de la facultad
+        $promedioFacultad = $evaluaciones->avg('score') ?? 0;
+        $puntuacionMaxima = $evaluaciones->max('score') ?? 0;
+        $puntuacionMinima = $evaluaciones->min('score') ?? 0;
+        $fechaAplicacion = now()->format('d/m/Y');
+        
+        // Obtener resultados por programa ordenados de mayor a menor
+        $resultadosPorPrograma = $programasFacultad->map(function($programa) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos) {
+            // Obtener profesores de este programa
+            $profesoresPrograma = User::whereHas('roles', function($q) {
+                $q->where('name', 'Docente');
+            })->where('programa_id', $programa->id)->get();
+            
+            $totalProfesoresPrograma = $profesoresPrograma->count();
+            
+            // Contar profesores completados en este programa
+            $profesoresCompletadosPrograma = $profesoresPrograma->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
+                $testsCompletadosPorProfesor = $asignacionesCompletadas
+                    ->where('user_id', $profesor->id)
+                    ->count();
+                return $testsCompletadosPorProfesor >= $totalTestsActivos;
+            });
+            
+            $totalProfesoresCompletadosPrograma = $profesoresCompletadosPrograma->count();
+            $totalProfesoresPendientesPrograma = $totalProfesoresPrograma - $totalProfesoresCompletadosPrograma;
+            
+            // Obtener evaluaciones de este programa
+            $evaluacionesPrograma = $evaluaciones->where('programa_id', $programa->id);
+            $promedioPrograma = $evaluacionesPrograma->avg('score') ?? 0;
+            
             return [
-                'programa_nombre' => $programa->programa_nombre,
-                'total_evaluaciones' => $programaEvaluaciones->count(),
-                'promedio_score' => round($programaEvaluaciones->avg('score'), 2),
-                'max_score' => $programaEvaluaciones->max('score'),
-                'min_score' => $programaEvaluaciones->min('score'),
-                'niveles' => $this->calculateNivelesFromVista($programaEvaluaciones),
+                'programa' => $programa,
+                'nombre_programa' => $programa->nombre,
+                'total_profesores' => $totalProfesoresPrograma,
+                'profesores_completados' => $totalProfesoresCompletadosPrograma,
+                'profesores_pendientes' => $totalProfesoresPendientesPrograma,
+                'promedio_general' => round($promedioPrograma, 2),
+                'ha_completado_todos' => $totalProfesoresCompletadosPrograma > 0,
+                'tests_completados' => $totalProfesoresCompletadosPrograma,
+                'total_tests' => $totalProfesoresPrograma
             ];
-        });
-
+        })->sortByDesc('promedio_general')->values();
+        
         return [
             'entidad' => $facultad,
-            'total_evaluaciones' => $totalEvaluaciones,
-            'total_usuarios' => $totalUsuarios,
-            'promedio_general' => round($promedioGeneral, 2),
-            'max_score' => $evaluaciones->max('score') ?? 0,
-            'min_score' => $evaluaciones->min('score') ?? 0,
-            'nivel_satisfaccion' => $this->calculateSatisfactionLevel($promedioGeneral),
-            'areas_evaluadas' => $evaluaciones->unique('area_id')->count() ?: 4,
-            'area_stats' => $areaStats,
-            'programa_stats' => $programaStats,
+            'facultad' => [
+                'id' => $facultad->id,
+                'nombre' => $facultad->nombre
+            ],
+            'institution' => $facultad->institution ? [
+                'id' => $facultad->institution->id,
+                'name' => $facultad->institution->name
+            ] : null,
+            'total_programas' => $totalProgramas,
+            'total_profesores' => $totalProfesores,
+            'total_profesores_completados' => $totalProfesoresCompletados,
+            'total_profesores_pendientes' => $totalProfesoresPendientes,
+            'promedio_facultad' => round($promedioFacultad, 2),
+            'puntuacion_maxima' => $puntuacionMaxima,
+            'puntuacion_minima' => $puntuacionMinima,
+            'fecha_aplicacion' => $fechaAplicacion,
+            'resultados_por_programa' => $resultadosPorPrograma,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];
@@ -502,83 +552,179 @@ class ReportService
 
     private function getUniversidadPreviewData(Institution $institution, array $parameters = [])
     {
-        // Usar la misma lógica que getUniversidadData para obtener datos consistentes
-        $query = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
-            ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
-            ->join('questions as q', 'tr.question_id', '=', 'q.id')
-            ->where('u.institution_id', $institution->id)
-            ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8);
-
-        $stats = $query->select(
-            DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
-            DB::raw('COUNT(DISTINCT ta.user_id) as total_usuarios'),
-            DB::raw('AVG(tr.score) as promedio_score'),
-            DB::raw('MAX(tr.score) as max_score'),
-            DB::raw('MIN(tr.score) as min_score')
-        )->first();
-
-        // Estadísticas por área
-        $areas = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
-            ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
-            ->join('questions as q', 'tr.question_id', '=', 'q.id')
-            ->join('areas as a', 'q.area_id', '=', 'a.id')
-            ->where('u.institution_id', $institution->id)
-            ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8)
-            ->select(
-                'a.id as area_id',
-                'a.name as area_name',
-                DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
-                DB::raw('AVG(tr.score) as promedio_score'),
-                DB::raw('MAX(tr.score) as max_score'),
-                DB::raw('MIN(tr.score) as min_score')
-            )
-            ->groupBy('a.id', 'a.name')
+        // Obtener solo las facultades reales de la institución (excluir decanaturas y direcciones)
+        $facultadesInstitucion = Facultad::where('institution_id', $institution->id)
+            ->where(function($query) {
+                $query->where('nombre', 'like', '%Facultad%')
+                      ->orWhere('nombre', 'like', '%School%')
+                      ->orWhere('nombre', 'like', '%College%');
+            })
             ->get();
-
-        // Top 10 mejores profesores
-        $topProfesores = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
-            ->join('facultades as f', 'u.facultad_id', '=', 'f.id')
-            ->join('programas as p', 'u.programa_id', '=', 'p.id')
-            ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
-            ->join('questions as q', 'tr.question_id', '=', 'q.id')
-            ->where('u.institution_id', $institution->id)
-            ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8)
-            ->select(
-                'u.id as user_id',
-                'u.name as user_name',
-                'u.apellido1',
-                'u.apellido2',
-                'f.nombre as facultad_nombre',
-                'p.nombre as programa_nombre',
-                DB::raw('AVG(tr.score) as promedio_general'),
-                DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones')
-            )
-            ->groupBy('u.id', 'u.name', 'u.apellido1', 'u.apellido2', 'f.nombre', 'p.nombre')
-            ->orderBy('promedio_general', 'desc')
-            ->limit(10)
-            ->get();
-
-
-
+        $totalFacultades = $facultadesInstitucion->count();
+        
+        // Obtener todos los programas de las facultades reales de la institución
+        $programasInstitucion = Programa::whereHas('facultad', function($q) use ($institution) {
+            $q->where('institution_id', $institution->id)
+              ->where(function($subQuery) {
+                  $subQuery->where('nombre', 'like', '%Facultad%')
+                           ->orWhere('nombre', 'like', '%School%')
+                           ->orWhere('nombre', 'like', '%College%');
+              });
+        })->get();
+        $totalProgramas = $programasInstitucion->count();
+        
+        // Obtener todos los profesores de las facultades reales de la institución
+        $profesoresInstitucion = User::whereHas('roles', function($q) {
+            $q->where('name', 'Docente');
+        })->where('institution_id', $institution->id)
+          ->whereHas('facultad', function($q) {
+              $q->where(function($subQuery) {
+                  $subQuery->where('nombre', 'like', '%Facultad%')
+                           ->orWhere('nombre', 'like', '%School%')
+                           ->orWhere('nombre', 'like', '%College%');
+              });
+          })->get();
+        
+        $totalProfesores = $profesoresInstitucion->count();
+        
+        // Obtener todos los tests activos
+        $testsActivos = Test::where('is_active', true)->get();
+        $totalTestsActivos = $testsActivos->count();
+        
+        // Obtener asignaciones completadas por profesor en las facultades reales de esta institución
+        $asignacionesCompletadas = TestAssignment::whereHas('user', function($q) use ($institution) {
+            $q->where('institution_id', $institution->id)
+              ->whereHas('facultad', function($subQ) {
+                  $subQ->where(function($subSubQ) {
+                      $subSubQ->where('nombre', 'like', '%Facultad%')
+                              ->orWhere('nombre', 'like', '%School%')
+                              ->orWhere('nombre', 'like', '%College%');
+                  });
+              });
+        })->where('status', 'completed')->get();
+        
+        // Contar profesores que han completado todos los tests
+        $profesoresCompletados = $profesoresInstitucion->filter(function($profesor) use ($testsActivos, $asignacionesCompletadas, $totalTestsActivos) {
+            $testsCompletadosPorProfesor = $asignacionesCompletadas
+                ->where('user_id', $profesor->id)
+                ->count();
+            return $testsCompletadosPorProfesor >= $totalTestsActivos;
+        });
+        
+        $totalProfesoresCompletados = $profesoresCompletados->count();
+        $totalProfesoresPendientes = $totalProfesores - $totalProfesoresCompletados;
+        
+        // Obtener evaluaciones por área para las facultades reales de la institución
+        $query = EvaluacionPorArea::byInstitution($institution->id);
+        $evaluaciones = $query->get();
+        
+        // Filtrar solo las evaluaciones de facultades reales
+        $evaluaciones = $evaluaciones->filter(function($evaluacion) {
+            return $evaluacion->facultad && 
+                   (str_contains($evaluacion->facultad->nombre, 'Facultad') ||
+                    str_contains($evaluacion->facultad->nombre, 'School') ||
+                    str_contains($evaluacion->facultad->nombre, 'College'));
+        });
+        
+        // Calcular estadísticas generales de la institución
+        $promedioInstitucion = $evaluaciones->avg('score') ?? 0;
+        $puntuacionMaxima = $evaluaciones->max('score') ?? 0;
+        $puntuacionMinima = $evaluaciones->min('score') ?? 0;
+        $fechaAplicacion = now()->format('d/m/Y');
+        
+        // Obtener resultados por facultad ordenados de mayor a menor
+        $resultadosPorFacultad = $facultadesInstitucion->map(function($facultad) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos) {
+            // Obtener profesores de esta facultad
+            $profesoresFacultad = User::whereHas('roles', function($q) {
+                $q->where('name', 'Docente');
+            })->where('facultad_id', $facultad->id)->get();
+            
+            $totalProfesoresFacultad = $profesoresFacultad->count();
+            
+            // Contar profesores completados en esta facultad
+            $profesoresCompletadosFacultad = $profesoresFacultad->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
+                $testsCompletadosPorProfesor = $asignacionesCompletadas
+                    ->where('user_id', $profesor->id)
+                    ->count();
+                return $testsCompletadosPorProfesor >= $totalTestsActivos;
+            });
+            
+            $totalProfesoresCompletadosFacultad = $profesoresCompletadosFacultad->count();
+            $totalProfesoresPendientesFacultad = $totalProfesoresFacultad - $totalProfesoresCompletadosFacultad;
+            
+            // Obtener evaluaciones de esta facultad
+            $evaluacionesFacultad = $evaluaciones->where('facultad_id', $facultad->id);
+            $promedioFacultad = $evaluacionesFacultad->avg('score') ?? 0;
+            
+            return [
+                'facultad' => $facultad,
+                'nombre_facultad' => $facultad->nombre,
+                'total_profesores' => $totalProfesoresFacultad,
+                'profesores_completados' => $totalProfesoresCompletadosFacultad,
+                'profesores_pendientes' => $totalProfesoresPendientesFacultad,
+                'promedio_general' => round($promedioFacultad, 2),
+                'ha_completado_todos' => $totalProfesoresCompletadosFacultad > 0,
+                'tests_completados' => $totalProfesoresCompletadosFacultad,
+                'total_tests' => $totalProfesoresFacultad
+            ];
+        })->sortByDesc('promedio_general')->values();
+        
+        // Obtener resultados por programa ordenados de mayor a menor
+        $resultadosPorPrograma = $programasInstitucion->map(function($programa) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos) {
+            // Obtener profesores de este programa
+            $profesoresPrograma = User::whereHas('roles', function($q) {
+                $q->where('name', 'Docente');
+            })->where('programa_id', $programa->id)->get();
+            
+            $totalProfesoresPrograma = $profesoresPrograma->count();
+            
+            // Contar profesores completados en este programa
+            $profesoresCompletadosPrograma = $profesoresPrograma->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
+                $testsCompletadosPorProfesor = $asignacionesCompletadas
+                    ->where('user_id', $profesor->id)
+                    ->count();
+                return $testsCompletadosPorProfesor >= $totalTestsActivos;
+            });
+            
+            $totalProfesoresCompletadosPrograma = $profesoresCompletadosPrograma->count();
+            $totalProfesoresPendientesPrograma = $totalProfesoresPrograma - $totalProfesoresCompletadosPrograma;
+            
+            // Obtener evaluaciones de este programa
+            $evaluacionesPrograma = $evaluaciones->where('programa_id', $programa->id);
+            $promedioPrograma = $evaluacionesPrograma->avg('score') ?? 0;
+            
+            return [
+                'programa' => $programa,
+                'nombre_programa' => $programa->nombre,
+                'facultad_nombre' => $programa->facultad->nombre ?? 'N/A',
+                'nivel_academico' => $programa->nivel_academico ?? 'No especificado',
+                'total_profesores' => $totalProfesoresPrograma,
+                'profesores_completados' => $totalProfesoresCompletadosPrograma,
+                'profesores_pendientes' => $totalProfesoresPendientesPrograma,
+                'promedio_general' => round($promedioPrograma, 2),
+                'ha_completado_todos' => $totalProfesoresCompletadosPrograma > 0,
+                'tests_completados' => $totalProfesoresCompletadosPrograma,
+                'total_tests' => $totalProfesoresPrograma
+            ];
+        })->sortByDesc('promedio_general')->values();
+        
         return [
             'entidad' => $institution,
-            'stats' => $stats,
-            'areas' => $areas,
-            'top_profesores' => $topProfesores,
-            'total_evaluaciones' => $stats->total_evaluaciones,
-            'total_usuarios' => $stats->total_usuarios,
-            'promedio_general' => round($stats->promedio_score, 2),
-            'max_score' => $stats->max_score,
-            'min_score' => $stats->min_score,
-            'nivel_satisfaccion' => $this->calculateSatisfactionLevel($stats->promedio_score),
-            'areas_evaluadas' => $areas->count(),
-            'area_stats' => $areas,
+            'institution' => [
+                'id' => $institution->id,
+                'name' => $institution->name
+            ],
+            'total_facultades' => $totalFacultades,
+            'total_programas' => $totalProgramas,
+            'total_profesores' => $totalProfesores,
+            'total_profesores_completados' => $totalProfesoresCompletados,
+            'total_profesores_pendientes' => $totalProfesoresPendientes,
+            'promedio_institucion' => round($promedioInstitucion, 2),
+            'puntuacion_maxima' => $puntuacionMaxima,
+            'puntuacion_minima' => $puntuacionMinima,
+            'fecha_aplicacion' => $fechaAplicacion,
+            'resultados_por_facultad' => $resultadosPorFacultad,
+            'resultados_por_programa' => $resultadosPorPrograma,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];

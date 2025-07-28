@@ -165,15 +165,15 @@ class ReportController extends Controller
                     break;
                 case 'programa':
                     $pdf = \PDF::loadView('reports.programa', compact('previewData'));
-                    $pdf->setPaper('A4', 'portrait');
+                    $pdf->setPaper('A4', 'landscape');
                     break;
                 case 'facultad':
                     $pdf = \PDF::loadView('reports.facultad', compact('previewData'));
-                    $pdf->setPaper('A4', 'portrait');
+                    $pdf->setPaper('A4', 'landscape');
                     break;
                 case 'universidad':
                     $pdf = \PDF::loadView('reports.universidad', compact('previewData'));
-                    $pdf->setPaper('A4', 'portrait');
+                    $pdf->setPaper('A4', 'landscape');
                     break;
                 default:
                     // Fallback: usar el archivo existente

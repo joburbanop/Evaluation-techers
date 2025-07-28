@@ -32,6 +32,11 @@ class ReportPdfController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
         ]);
 
+        // Validar que entidad_id esté presente cuando sea necesario
+        if ($request->tipo_reporte !== 'profesores_completados' && (!$request->entidad_id || $request->entidad_id === '')) {
+            abort(400, 'El ID de la entidad es requerido para este tipo de reporte.');
+        }
+
         try {
             $parameters = [];
             if ($request->date_from) {

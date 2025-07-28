@@ -183,4 +183,4 @@
         window.openFacultadReport = openFacultadReport;
         window.openProgramaReport = openProgramaReport;
     </script>
-@endif
+@endif 
