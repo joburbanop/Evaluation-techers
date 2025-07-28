@@ -59,61 +59,74 @@
                     <div class="flex-shrink-0">
                         <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                             <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold">
-                            @switch($tipo_reporte)
-                                @case('universidad')
-                                    Reporte de Universidad
-                                    @break
-                                @case('facultad')
-                                    Reporte de Facultad
-                                    @break
-                                @case('programa')
-                                    Reporte de Programa
-                                    @break
-                                @case('profesor')
-                                    Reporte de Profesor
-                                    @break
-                                @default
-                                    Reporte de Evaluación
-                            @endswitch
-                        </h2>
-                        <p class="text-blue-100 text-sm">Vista previa del reporte</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-3">
-                    @if(!isset($isViewingExistingReport) || !$isViewingExistingReport)
-                        <a
-                            href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte={{ $tipo_reporte }}&entidad_id={{ $tipo_reporte === 'universidad' ? ($data['universidad_id'] ?? '') : ($tipo_reporte === 'facultad' ? ($data['facultad_id'] ?? '') : ($tipo_reporte === 'programa' ? ($data['programa_id'] ?? '') : ($tipo_reporte === 'profesor' ? ($data['profesor_id'] ?? '') : ''))) }}{{ $tipo_reporte === 'profesores_completados' && isset($data['filtro_profesores']) ? '&filtro=' . $data['filtro_profesores'] : '' }}&redirect=1"
-                            onclick="return confirm('¿Deseas generar el PDF y ser redirigido a la lista de reportes?')"
-                            class="inline-flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl"
-                        >
-                            <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Generar PDF
-                        </a>
-                    @endif
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                 </div>
             </div>
+            <div>
+                        <h2 class="text-2xl font-bold">
+                    @switch($tipo_reporte)
+                        @case('universidad')
+                            Reporte de Universidad
+                            @break
+                        @case('facultad')
+                            Reporte de Facultad
+                            @break
+                        @case('programa')
+                            Reporte de Programa
+                            @break
+                        @case('profesor')
+                            Reporte de Profesor
+                            @break
+                        @default
+                            Reporte de Evaluación
+                    @endswitch
+                </h2>
+                        <p class="text-blue-100 text-sm">Vista previa del reporte</p>
+            </div>
         </div>
+        
+                <div class="flex items-center space-x-3">
+                    <a
+                        href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte={{ $tipo_reporte }}@if($tipo_reporte === 'profesor' && isset($previewData['profesor']['id']))&entidad_id={{ $previewData['profesor']['id'] }}@elseif($tipo_reporte === 'facultad' && isset($previewData['facultad']['id']))&entidad_id={{ $previewData['facultad']['id'] }}@elseif($tipo_reporte === 'programa' && isset($previewData['programa']['id']))&entidad_id={{ $previewData['programa']['id'] }}@elseif($tipo_reporte === 'universidad' && isset($previewData['institution']['id']))&entidad_id={{ $previewData['institution']['id'] }}@elseif($tipo_reporte === 'profesores_completados')&filtro=completados@endif&redirect=1"
+                        target="_blank"
+                        onclick="if(!confirm('¿Está seguro de que desea generar el reporte?')) return false; this.style.pointerEvents='none'; this.innerHTML='🔄 Generando...'; setTimeout(() => { @if(auth()->user()->hasRole('Coordinador')) window.location.href='{{ route('coordinador.reports.index') }}'; @else window.location.href='/admin/reports'; @endif }, 2000);"
+                        style="background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;"
+                    >
+                        ⬇️ Generar Reporte
+                    </a>
+        </div>
+    </div>
 
         {{-- Contenido del reporte con mejor espaciado --}}
         <div class="p-6">
-            @includeIf('reports.' . $tipo_reporte, [
-                'previewData' => $previewData,
-                'entityName' => $entityName ?? null,
-                'data' => $data ?? [],
-                'tipo_reporte' => $tipo_reporte,
-            ])
+            @switch($tipo_reporte)
+                @case('profesor')
+                    @include('reports.profesor', ['previewData' => $previewData])
+                    @break
+                @case('programa')
+                    @include('reports.programa', ['previewData' => $previewData])
+                    @break
+                @case('facultad')
+                    @include('reports.facultad', ['previewData' => $previewData])
+                    @break
+                @case('universidad')
+                    @include('reports.universidad', ['previewData' => $previewData])
+                    @break
+                @case('profesores_completados')
+                    @include('reports.profesores-completados', ['data' => $previewData])
+                    @break
+                @default
+                    {{-- Fallback para tipos no específicos --}}
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Vista Previa del Reporte</h3>
+                        <p class="text-gray-600">Tipo de reporte: <strong>{{ $tipo_reporte }}</strong></p>
+                        <pre class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-auto">{{ json_encode($previewData, JSON_PRETTY_PRINT) }}</pre>
+                    </div>
+            @endswitch
         </div>
-
-        {{-- Footer mejorado --}}
+        
+                {{-- Footer mejorado --}}
         <div class="bg-gradient-to-r from-slate-100 to-blue-100 border-t border-slate-200 p-4 rounded-b-xl">
             <div class="text-center text-slate-600 text-sm">
                 <p class="font-medium">Sistema de Evaluación de Profesores</p>
@@ -121,4 +134,53 @@
             </div>
         </div>
     </div>
-@endif 
+
+        <script>
+        // Función para cerrar el modal actual
+        function closeModal() {
+            // Buscar y cerrar el modal de Filament
+            const modal = document.querySelector('[data-modal]') || document.querySelector('.fi-modal');
+            if (modal) {
+                const closeButton = modal.querySelector('[data-close-modal]') || modal.querySelector('.fi-modal-close');
+                if (closeButton) {
+                    closeButton.click();
+                }
+            }
+        }
+
+        // Función para abrir reporte de facultad
+        function openFacultadReport(facultadId, facultadNombre) {
+            // Cerrar el modal actual
+            closeModal();
+            
+            // Redirigir a la página de creación de reportes con los parámetros pre-llenados
+            setTimeout(() => {
+                const currentUrl = window.location.href;
+                const baseUrl = currentUrl.split('?')[0];
+                const newUrl = `${baseUrl}?tipo_reporte=facultad&facultad_id=${facultadId}`;
+                window.location.href = newUrl;
+            }, 500);
+        }
+
+        // Función para abrir reporte de programa
+        function openProgramaReport(programaId, programaNombre) {
+            // Cerrar el modal actual
+            closeModal();
+            
+            // Redirigir a la página de creación de reportes con los parámetros pre-llenados
+            setTimeout(() => {
+                const currentUrl = window.location.href;
+                const baseUrl = currentUrl.split('?')[0];
+                const newUrl = `${baseUrl}?tipo_reporte=programa&programa_id=${programaId}`;
+                window.location.href = newUrl;
+            }, 500);
+        }
+
+
+
+        // Hacer las funciones disponibles globalmente
+        window.closeModal = closeModal;
+        window.openFacultadReport = openFacultadReport;
+        window.openProgramaReport = openProgramaReport;
+    </script>
+@endif

@@ -17,6 +17,34 @@ class CreateReport extends CreateRecord
 {
     protected static string $resource = ReportResource::class;
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Pre-llenar el formulario con parámetros de URL si existen
+        $request = request();
+        
+        if ($request->has('tipo_reporte')) {
+            $data['tipo_reporte'] = $request->get('tipo_reporte');
+        }
+        
+        if ($request->has('facultad_id')) {
+            $data['facultad_id'] = $request->get('facultad_id');
+        }
+        
+        if ($request->has('programa_id')) {
+            $data['programa_id'] = $request->get('programa_id');
+        }
+        
+        if ($request->has('universidad_id')) {
+            $data['universidad_id'] = $request->get('universidad_id');
+        }
+        
+        if ($request->has('profesor_id')) {
+            $data['profesor_id'] = $request->get('profesor_id');
+        }
+        
+        return $data;
+    }
+
     protected function getFormActions(): array
     {
         return [
@@ -123,13 +151,27 @@ class CreateReport extends CreateRecord
                         
                         $previewData = $reportService->getPreviewData($formData['tipo_reporte'], $parameters);
                         
-                        return view('filament.modals.report-preview', [
-                            'tipo_reporte' => $formData['tipo_reporte'],
-                            'data' => $formData,
-                            'previewData' => $previewData,
-                            'error' => null,
-                            'entityName' => $entityName
-                        ]);
+                        // Usar directamente las vistas específicas según el tipo de reporte
+                        switch ($formData['tipo_reporte']) {
+                            case 'profesor':
+                                return view('reports.profesor', ['previewData' => $previewData]);
+                            case 'programa':
+                                return view('reports.programa', ['previewData' => $previewData]);
+                            case 'facultad':
+                                return view('reports.facultad', ['previewData' => $previewData]);
+                            case 'universidad':
+                                return view('reports.universidad', ['previewData' => $previewData]);
+                            case 'profesores_completados':
+                                return view('reports.profesores-completados', ['data' => $previewData]);
+                            default:
+                                return view('filament.modals.report-preview', [
+                                    'tipo_reporte' => $formData['tipo_reporte'],
+                                    'data' => $formData,
+                                    'previewData' => $previewData,
+                                    'error' => null,
+                                    'entityName' => $entityName
+                                ]);
+                        }
                     } catch (\Exception $e) {
                         \Log::error('Error en vista previa:', ['error' => $e->getMessage(), 'data' => $formData]);
                         
@@ -293,5 +335,29 @@ class CreateReport extends CreateRecord
         }
     }
 
-
+    protected function getHeaderActions(): array
+    {
+        return [
+            // Agregar script para abrir automáticamente la vista previa si hay parámetros de URL
+            \Filament\Actions\Action::make('autoPreview')
+                ->label('')
+                ->visible(false)
+                ->action(function () {
+                    // Esta acción no hace nada, solo se usa para el script
+                })
+                ->extraAttributes([
+                    'x-data' => '{}',
+                    'x-init' => '
+                        if (window.location.search.includes("tipo_reporte=")) {
+                            setTimeout(() => {
+                                const previewButton = document.querySelector("[data-action="preview"]");
+                                if (previewButton) {
+                                    previewButton.click();
+                                }
+                            }, 1000);
+                        }
+                    '
+                ])
+        ];
+    }
 } 

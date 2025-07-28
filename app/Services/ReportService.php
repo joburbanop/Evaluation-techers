@@ -39,8 +39,12 @@ class ReportService
         ]);
 
         try {
-            $data = $this->getFacultadData($facultad, $parameters);
-            $pdf = $this->generateFacultadPDF($facultad, $data);
+            // Usar getPreviewData para obtener el formato correcto
+            $previewData = $this->getFacultadPreviewData($facultad, $parameters);
+            $pdf = PDF::loadView('reports.facultad', compact('previewData'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
             
             $fileName = "reporte_facultad_{$facultad->id}_" . now()->format('Y-m-d_H-i-s') . '.pdf';
             $filePath = "reports/facultades/{$fileName}";
@@ -79,8 +83,12 @@ class ReportService
         ]);
 
         try {
-            $data = $this->getProgramaData($programa, $parameters);
-            $pdf = $this->generateProgramaPDF($programa, $data);
+            // Usar getPreviewData para obtener el formato correcto
+            $previewData = $this->getProgramaPreviewData($programa, $parameters);
+            $pdf = PDF::loadView('reports.programa', compact('previewData'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
             
             $fileName = "reporte_programa_{$programa->id}_" . now()->format('Y-m-d_H-i-s') . '.pdf';
             $filePath = "reports/programas/{$fileName}";
@@ -119,8 +127,12 @@ class ReportService
         ]);
 
         try {
-            $data = $this->getUniversidadData($institution, $parameters);
-            $pdf = $this->generateUniversidadPDF($institution, $data);
+            // Usar getPreviewData para obtener el formato correcto
+            $previewData = $this->getUniversidadPreviewData($institution, $parameters);
+            $pdf = PDF::loadView('reports.universidad', compact('previewData'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
             
             $fileName = "reporte_universidad_{$institution->id}_" . now()->format('Y-m-d_H-i-s') . '.pdf';
             $filePath = "reports/universidades/{$fileName}";
@@ -159,8 +171,12 @@ class ReportService
         ]);
 
         try {
-            $data = $this->getProfesorData($profesor, $parameters);
-            $pdf = $this->generateProfesorPDF($profesor, $data);
+            // Usar getPreviewData para obtener el formato correcto
+            $previewData = $this->getProfesorPreviewData($profesor, $parameters);
+            $pdf = PDF::loadView('reports.profesor', compact('previewData'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
             
             $fileName = "reporte_profesor_{$profesor->id}_" . now()->format('Y-m-d_H-i-s') . '.pdf';
             $filePath = "reports/profesores/{$fileName}";
@@ -199,8 +215,14 @@ class ReportService
         ]);
 
         try {
+            // Usar getPreviewData para obtener el formato correcto
             $data = $this->getProfesoresCompletadosData($parameters);
-            $pdf = $this->generateProfesoresCompletadosPDF($data);
+            $pdf = PDF::loadView('reports.profesores-completados', compact('data'));
+            $pdf->setPaper('A4', 'landscape');
+            $pdf->setOption('isRemoteEnabled', false);
+            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isPhpEnabled', false);
+            $pdf->setOption('memoryLimit', '512M');
             
             $fileName = "reporte_participacion_evaluacion_" . now()->format('Y-m-d_H-i-s') . '.pdf';
             $filePath = "reports/profesores_completados/{$fileName}";
@@ -591,7 +613,7 @@ class ReportService
             ->whereNotIn('q.area_id', [8, 9]) // Excluir Información Socio-demográfica y Educación Abierta
             ->select(
                 DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
-                DB::raw('AVG(tr.score) as promedio_score'),
+                DB::raw('SUM(tr.score) as total_score'),
                 DB::raw('MAX(tr.score) as max_score'),
                 DB::raw('MIN(tr.score) as min_score'),
                 DB::raw('COUNT(tr.id) as total_respuestas')
@@ -637,15 +659,22 @@ class ReportService
         // Obtener información detallada de tests asignados
         $testsAsignadosDetalle = $testsAsignados->map(function ($assignment) {
             $puntaje = DB::table('test_responses as tr')
-                ->where('test_assignment_id', $assignment->id)
+                ->join('test_assignments as ta', 'tr.test_assignment_id', '=', 'ta.id')
+                ->where('ta.id', $assignment->id)
+                ->where('ta.status', 'completed')
                 ->sum('tr.score');
             
+            // Calcular puntaje máximo basado en las preguntas que realmente se respondieron
             $puntajeMaximo = DB::table('test_assignments as ta')
-                ->join('tests as t', 'ta.test_id', '=', 't.id')
-                ->join('questions as q', 't.id', '=', 'q.test_id')
+                ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
+                ->join('questions as q', 'tr.question_id', '=', 'q.id')
                 ->join('options as o', 'q.id', '=', 'o.question_id')
                 ->where('ta.id', $assignment->id)
-                ->sum(DB::raw('GREATEST(o.score, 0)'));
+                ->where('ta.status', 'completed')
+                ->groupBy('q.id')
+                ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                ->get()
+                ->sum('max_score_per_question');
             
             return [
                 'nombre' => $assignment->test->name ?? 'Test sin nombre',
@@ -657,19 +686,33 @@ class ReportService
             ];
         });
         
+        // Calcular promedio general basado en los porcentajes por área
+        $areasConDatos = $resultadosPorArea->filter(function ($area) {
+            return $area['puntaje_maximo'] > 0;
+        });
+        
+        $promedioGeneral = 0;
+        if ($areasConDatos->count() > 0) {
+            $promedioGeneral = $areasConDatos->avg('porcentaje');
+        }
+        
         return [
             'profesor' => [
+                'id' => $profesor->id,
                 'nombre_completo' => $profesor->name . ' ' . $profesor->apellido1 . ' ' . ($profesor->apellido2 ?? ''),
                 'email' => $profesor->email,
                 'created_at' => $profesor->created_at ? $profesor->created_at->format('d/m/Y') : 'N/A'
             ],
             'institution' => $profesor->institution ? [
+                'id' => $profesor->institution->id,
                 'name' => $profesor->institution->name
             ] : null,
             'facultad' => $profesor->facultad ? [
+                'id' => $profesor->facultad->id,
                 'nombre' => $profesor->facultad->nombre
             ] : null,
             'programa' => $profesor->programa ? [
+                'id' => $profesor->programa->id,
                 'nombre' => $profesor->programa->nombre
             ] : null,
             'total_evaluaciones' => $stats->total_evaluaciones ?? 0,
@@ -677,7 +720,7 @@ class ReportService
             'evaluaciones_pendientes' => $evaluacionesPendientes,
             'tests_completados' => $testsCompletados,
             'total_tests' => $totalTests,
-            'promedio_general' => round($stats->promedio_score ?? 0, 2),
+            'promedio_general' => round($promedioGeneral, 2),
             'puntuacion_maxima' => $stats->max_score ?? 0,
             'puntuacion_minima' => $stats->min_score ?? 0,
             'resultados_por_area' => $resultadosPorArea,
@@ -1148,12 +1191,47 @@ class ReportService
             )
             ->first();
 
+        // Obtener información detallada de tests asignados
+        $testsAsignados = TestAssignment::where('user_id', $profesor->id)
+            ->with(['test'])
+            ->get();
+        
+        $testsAsignadosDetalle = $testsAsignados->map(function ($assignment) {
+            $puntaje = DB::table('test_responses as tr')
+                ->join('test_assignments as ta', 'tr.test_assignment_id', '=', 'ta.id')
+                ->where('ta.id', $assignment->id)
+                ->where('ta.status', 'completed')
+                ->sum('tr.score');
+            
+            // Calcular puntaje máximo basado en las preguntas que realmente se respondieron
+            $puntajeMaximo = DB::table('test_assignments as ta')
+                ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
+                ->join('questions as q', 'tr.question_id', '=', 'q.id')
+                ->join('options as o', 'q.id', '=', 'o.question_id')
+                ->where('ta.id', $assignment->id)
+                ->where('ta.status', 'completed')
+                ->groupBy('q.id')
+                ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                ->get()
+                ->sum('max_score_per_question');
+            
+            return [
+                'nombre' => $assignment->test->name ?? 'Test sin nombre',
+                'completado' => $assignment->status === 'completed',
+                'fecha_asignacion' => $assignment->created_at ? $assignment->created_at->format('d/m/Y') : 'N/A',
+                'fecha_completado' => $assignment->completed_at ? $assignment->completed_at->format('d/m/Y') : 'Pendiente',
+                'puntaje' => round($puntaje, 2),
+                'puntaje_maximo' => round($puntajeMaximo, 2)
+            ];
+        });
+
         return [
             'profesor' => $profesor,
             'stats' => $stats,
             'areas' => $areas,
             'historial' => $historial,
             'comparacion' => $comparacion,
+            'tests_asignados' => $testsAsignadosDetalle,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];

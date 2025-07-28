@@ -1,138 +1,129 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Profesor - {{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #93c5fd;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #3b82f6;
-            font-size: 2.5rem;
-            margin: 0 0 10px 0;
-        }
-        .header h2 {
-            color: #1d4ed8;
-            font-size: 1.8rem;
-            margin: 0 0 15px 0;
-        }
-        .professor-info {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        }
-        .professor-info h3 {
-            color: #3b82f6;
-            margin-top: 0;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        .stat {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        }
-        .stat-title {
-            color: #3b82f6;
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 8px;
-        }
-        .stat-value {
-            color: #1d4ed8;
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
-        .section-title {
-            color: #3b82f6;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #bae6fd;
-            padding-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th {
-            background: #f0f9ff;
-            color: #3b82f6;
-            padding: 15px 12px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #bae6fd;
-        }
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            vertical-align: top;
-        }
-        tr:hover {
-            background-color: #f8fafc;
-        }
-        .comparison-box {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        }
-        .progress-bar {
-            width: 100%;
-            background-color: #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 10px 0;
-            height: 20px;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-            transition: width 0.3s ease;
-        }
-        .footer {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.95rem;
-            margin-top: 2rem;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
+<style>
+    .professor-report {
+        font-family: Arial, sans-serif;
+        color: #333;
+        line-height: 1.6;
+    }
+    .professor-header {
+        text-align: center;
+        border-bottom: 3px solid #93c5fd;
+        padding-bottom: 30px;
+        margin-bottom: 40px;
+    }
+    .professor-header h1 {
+        color: #3b82f6;
+        font-size: 2.5rem;
+        margin: 0 0 10px 0;
+    }
+    .professor-header h2 {
+        color: #1d4ed8;
+        font-size: 1.8rem;
+        margin: 0 0 15px 0;
+    }
+    .professor-info {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+    }
+    .professor-info h3 {
+        color: #3b82f6;
+        margin-top: 0;
+    }
+    .professor-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+    .professor-stat {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 30px 25px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+    }
+    .professor-stat-title {
+        color: #3b82f6;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+    .professor-stat-value {
+        color: #1d4ed8;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .professor-table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 35px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+    }
+    .professor-section-title {
+        color: #3b82f6;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #bae6fd;
+        padding-bottom: 15px;
+    }
+    .professor-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+    }
+    .professor-table th {
+        background: #f0f9ff;
+        color: #3b82f6;
+        padding: 20px 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #bae6fd;
+        font-size: 1.1rem;
+    }
+    .professor-table td {
+        padding: 18px 15px;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
+        font-size: 1rem;
+    }
+    .professor-table tr:hover {
+        background-color: #f8fafc;
+    }
+    .progress-bar {
+        width: 100%;
+        background-color: #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 10px 0;
+        height: 20px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        transition: width 0.3s ease;
+    }
+</style>
+
+<div class="professor-report">
+    {{-- Botón de descarga --}}
+    <div style="text-align: right; margin-bottom: 20px;">
+        <a
+            href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte=profesor&entidad_id={{ $previewData['profesor']['id'] ?? '' }}&redirect=1"
+            target="_blank"
+            onclick="if(!confirm('¿Está seguro de que desea generar el reporte?')) return false; this.style.pointerEvents='none'; this.innerHTML='🔄 Generando...'; setTimeout(() => { @if(auth()->user()->hasRole('Coordinador')) window.location.href='{{ route('coordinador.reports.index') }}'; @else window.location.href='/admin/reports'; @endif }, 2000);"
+            style="background-color: #3b82f6; color: white; padding: 12px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px;"
+        >
+            ⬇️ Generar Reporte
+        </a>
+    </div>
+
+    <div class="professor-header">
         <h1>Reporte de Profesor</h1>
         <h2>{{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</h2>
         <div style="font-size: 1.1rem; margin-top: 0.5rem;">
@@ -142,11 +133,11 @@
 
     <div class="professor-info">
         <h3>Información del Profesor</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
             <div>
-                <p><strong>Nombre Completo:</strong> {{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</p>
-                <p><strong>Email:</strong> {{ $previewData['profesor']['email'] ?? 'N/A' }}</p>
-                <p><strong>Estado:</strong> 
+                <p style="margin-bottom: 15px;"><strong>Nombre Completo:</strong> {{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</p>
+                <p style="margin-bottom: 15px;"><strong>Email:</strong> {{ $previewData['profesor']['email'] ?? 'N/A' }}</p>
+                <p style="margin-bottom: 15px;"><strong>Estado:</strong> 
                     @if(isset($previewData['tests_completados']) && isset($previewData['total_tests']))
                         @if($previewData['tests_completados'] == $previewData['total_tests'])
                             <span style="color: #059669; font-weight: 600;">✓ Completado</span>
@@ -160,54 +151,74 @@
             </div>
             <div>
                 @if(isset($previewData['institution']))
-                    <p><strong>Institución:</strong> {{ $previewData['institution']['name'] ?? 'N/A' }}</p>
+                    <p style="margin-bottom: 15px;"><strong>Institución:</strong> {{ $previewData['institution']['name'] ?? 'N/A' }}</p>
                 @endif
                 @if(isset($previewData['facultad']))
-                    <p><strong>Facultad:</strong> {{ $previewData['facultad']['nombre'] ?? 'N/A' }}</p>
+                    <p style="margin-bottom: 15px;">
+                        <strong>Facultad:</strong> 
+                        {{ $previewData['facultad']['nombre'] ?? 'N/A' }}
+                        @if(isset($previewData['facultad']['id']))
+                            <button 
+                                onclick="verReporteFacultad({{ $previewData['facultad']['id'] }}, '{{ $previewData['facultad']['nombre'] }}')"
+                                style="background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
+                                📊 Ver Reporte
+                            </button>
+                        @endif
+                    </p>
                 @endif
                 @if(isset($previewData['programa']))
-                    <p><strong>Programa:</strong> {{ $previewData['programa']['nombre'] ?? 'N/A' }}</p>
+                    <p style="margin-bottom: 15px;">
+                        <strong>Programa:</strong> 
+                        {{ $previewData['programa']['nombre'] ?? 'N/A' }}
+                        @if(isset($previewData['programa']['id']))
+                            <button 
+                                onclick="verReportePrograma({{ $previewData['programa']['id'] }}, '{{ $previewData['programa']['nombre'] }}')"
+                                style="background: #059669; color: white; border: none; border-radius: 8px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
+                                📈 Ver Reporte
+                            </button>
+                        @endif
+                    </p>
                 @endif
-                <p><strong>Fecha de Registro:</strong> {{ $previewData['profesor']['created_at'] ?? 'N/A' }}</p>
+                <p style="margin-bottom: 15px;"><strong>Fecha de Registro:</strong> {{ $previewData['profesor']['created_at'] ?? 'N/A' }}</p>
             </div>
         </div>
     </div>
 
-    <div class="stats">
-        <div class="stat">
-            <div class="stat-title">Total de Evaluaciones</div>
-            <div class="stat-value">{{ $previewData['total_evaluaciones'] ?? 0 }}</div>
+    <div class="professor-stats">
+        <div class="professor-stat">
+            <div class="professor-stat-title">Total de Evaluaciones</div>
+            <div class="professor-stat-value">{{ $previewData['total_evaluaciones'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Evaluaciones Realizadas</div>
-            <div class="stat-value" style="color: #059669;">{{ $previewData['evaluaciones_realizadas'] ?? 0 }}</div>
+        <div class="professor-stat">
+            <div class="professor-stat-title">Evaluaciones Realizadas</div>
+            <div class="professor-stat-value" style="color: #059669;">{{ $previewData['evaluaciones_realizadas'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Evaluaciones Pendientes</div>
-            <div class="stat-value" style="color: #dc2626;">{{ $previewData['evaluaciones_pendientes'] ?? 0 }}</div>
+        <div class="professor-stat">
+            <div class="professor-stat-title">Evaluaciones Pendientes</div>
+            <div class="professor-stat-value" style="color: #dc2626;">{{ $previewData['evaluaciones_pendientes'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Tests Completados</div>
-            <div class="stat-value">{{ $previewData['tests_completados'] ?? 0 }}/{{ $previewData['total_tests'] ?? 0 }}</div>
+        <div class="professor-stat">
+            <div class="professor-stat-title">Tests Completados</div>
+            <div class="professor-stat-value">{{ $previewData['tests_completados'] ?? 0 }}/{{ $previewData['total_tests'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Promedio General</div>
-            <div class="stat-value">{{ number_format($previewData['promedio_general'] ?? 0, 2) }}</div>
+        <div class="professor-stat">
+            <div class="professor-stat-title">Promedio General</div>
+            <div class="professor-stat-value">{{ number_format($previewData['promedio_general'] ?? 0, 2) }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Puntuación Máxima</div>
-            <div class="stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
+        <div class="professor-stat">
+            <div class="professor-stat-title">Puntuación Máxima</div>
+            <div class="professor-stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Puntuación Mínima</div>
-            <div class="stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
+        <div class="professor-stat">
+            <div class="professor-stat-title">Puntuación Mínima</div>
+            <div class="professor-stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
         </div>
     </div>
 
     @if(isset($previewData['tests_asignados']) && count($previewData['tests_asignados']) > 0)
-    <div class="table-container">
-        <h2 class="section-title">Tests Asignados</h2>
-        <table>
+    <div class="professor-table-container">
+        <h2 class="professor-section-title">Tests Asignados</h2>
+        <table class="professor-table">
             <thead>
                 <tr>
                     <th>Test</th>
@@ -241,9 +252,9 @@
     @endif
 
     @if(isset($previewData['resultados_por_area']) && count($previewData['resultados_por_area']) > 0)
-    <div class="table-container">
-        <h2 class="section-title">Rendimiento por Área</h2>
-        <table>
+    <div class="professor-table-container">
+        <h2 class="professor-section-title">Rendimiento por Área</h2>
+        <table class="professor-table">
             <thead>
                 <tr>
                     <th>Área</th>
@@ -270,10 +281,40 @@
         </table>
     </div>
     @endif
+</div>
 
-    <div class="footer">
-        Reporte generado el {{ $previewData['fecha_generacion'] ?? now()->format('d/m/Y H:i:s') }}<br>
-        Sistema de Evaluación de Profesores &copy; 2025
-    </div>
-</body>
-</html> 
+<script>
+    function verReporteFacultad(facultadId, facultadNombre) {
+        // Cerrar el modal actual
+        if (window.parent && window.parent.closeModal) {
+            window.parent.closeModal();
+        }
+        
+        // Esperar un momento y luego abrir el reporte de facultad
+        setTimeout(() => {
+            if (window.parent && window.parent.openFacultadReport) {
+                window.parent.openFacultadReport(facultadId, facultadNombre);
+            } else {
+                // Fallback: redirigir a la página de reportes
+                window.parent.location.href = `/admin/reports?tipo=facultad&facultad_id=${facultadId}`;
+            }
+        }, 300);
+    }
+
+    function verReportePrograma(programaId, programaNombre) {
+        // Cerrar el modal actual
+        if (window.parent && window.parent.closeModal) {
+            window.parent.closeModal();
+        }
+        
+        // Esperar un momento y luego abrir el reporte de programa
+        setTimeout(() => {
+            if (window.parent && window.parent.openProgramaReport) {
+                window.parent.openProgramaReport(programaId, programaNombre);
+            } else {
+                // Fallback: redirigir a la página de reportes
+                window.parent.location.href = `/admin/reports?tipo=programa&programa_id=${programaId}`;
+            }
+        }, 300);
+    }
+</script> 

@@ -429,15 +429,31 @@ class ReportResource extends Resource
                                 $previewData['debug'] = json_encode($debugInfo, JSON_PRETTY_PRINT);
                             }
                             
-                            return view('filament.modals.report-preview', [
-                                'previewData' => $previewData,
-                                'tipo_reporte' => $record->type,
-                                'entityName' => $entityName,
-                                'data' => $parameters,
-                                'error' => null,
-                                'isViewingExistingReport' => true
-                            ]);
+                            // Usar directamente las vistas específicas según el tipo de reporte
+                            switch ($record->type) {
+                                case 'profesor':
+                                    return view('reports.profesor', ['previewData' => $previewData]);
+                                case 'programa':
+                                    return view('reports.programa', ['previewData' => $previewData]);
+                                case 'facultad':
+                                    return view('reports.facultad', ['previewData' => $previewData]);
+                                case 'universidad':
+                                    return view('reports.universidad', ['previewData' => $previewData]);
+                                case 'profesores_completados':
+                                    return view('reports.profesores-completados', ['data' => $previewData]);
+                                default:
+                                    // Fallback para tipos no especificados
+                                    return view('filament.modals.report-preview', [
+                                        'previewData' => $previewData,
+                                        'tipo_reporte' => $record->type,
+                                        'entityName' => $entityName,
+                                        'data' => $parameters,
+                                        'error' => null,
+                                        'isViewingExistingReport' => true
+                                    ]);
+                            }
                         } catch (\Exception $e) {
+                            // En caso de error, mostrar un mensaje de error simple
                             return view('filament.modals.report-preview', [
                                 'previewData' => null,
                                 'tipo_reporte' => $record->type,
@@ -448,7 +464,6 @@ class ReportResource extends Resource
                             ]);
                         }
                     })
-                    ->modalWidth('7xl')
                     ->visible(fn (Report $record) => Auth::user()->hasAnyRole(['Administrador', 'Coordinador']) && $record),
 
                 Action::make('download')

@@ -1,94 +1,93 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Programa - {{ $previewData['entidad']['nombre'] ?? 'N/A' }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #93c5fd;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #3b82f6;
-            font-size: 2.5rem;
-            margin: 0;
-        }
-        .header h2 {
-            color: #1d4ed8;
-            font-size: 1.5rem;
-            margin: 0;
-        }
-        .stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-        .stat {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 10px;
-            padding: 1.5rem 2rem;
-            min-width: 220px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        }
-        .stat-title {
-            color: #3b82f6;
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #1d4ed8;
-        }
-        .table-container {
-            overflow-x: auto;
-            margin-bottom: 2rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        }
-        th, td {
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid #bae6fd;
-        }
-        th {
-            background: #f0f9ff;
-            color: #3b82f6;
-            font-weight: bold;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        .footer {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.95rem;
-            margin-top: 2rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
+<style>
+    .program-report {
+        font-family: Arial, sans-serif;
+        color: #333;
+        line-height: 1.6;
+    }
+    .program-header {
+        text-align: center;
+        border-bottom: 3px solid #93c5fd;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    .program-header h1 {
+        color: #3b82f6;
+        font-size: 2.5rem;
+        margin: 0;
+    }
+    .program-header h2 {
+        color: #1d4ed8;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+    .program-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    .program-stat {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 10px;
+        padding: 1.5rem 2rem;
+        min-width: 220px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+    }
+    .program-stat-title {
+        color: #3b82f6;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    .program-stat-value {
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #1d4ed8;
+    }
+    .program-table-container {
+        overflow-x: auto;
+        margin-bottom: 2rem;
+    }
+    .program-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+    }
+    .program-table th, .program-table td {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid #bae6fd;
+    }
+    .program-table th {
+        background: #f0f9ff;
+        color: #3b82f6;
+        font-weight: bold;
+    }
+    .program-table tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+
+<div class="program-report">
+    {{-- Botón de descarga --}}
+    <div style="text-align: right; margin-bottom: 20px;">
+        <a
+            href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte=programa&entidad_id={{ $previewData['programa']['id'] ?? '' }}&redirect=1"
+            target="_blank"
+            onclick="if(!confirm('¿Está seguro de que desea generar el reporte?')) return false; this.style.pointerEvents='none'; this.innerHTML='🔄 Generando...'; setTimeout(() => { @if(auth()->user()->hasRole('Coordinador')) window.location.href='{{ route('coordinador.reports.index') }}'; @else window.location.href='/admin/reports'; @endif }, 2000);"
+            style="background-color: #3b82f6; color: white; padding: 12px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px;"
+        >
+            ⬇️ Generar Reporte
+        </a>
+    </div>
+
+    <div class="program-header">
         <h1>Reporte de Programa</h1>
         <h2>{{ $previewData['entidad']['nombre'] ?? 'N/A' }}</h2>
         <div style="font-size: 1.1rem; margin-top: 0.5rem;">
@@ -98,36 +97,36 @@
         </div>
     </div>
 
-    <div class="stats">
-        <div class="stat">
-            <div class="stat-title">Total de Profesores</div>
-            <div class="stat-value">{{ $previewData['total_profesores'] ?? 0 }}</div>
+    <div class="program-stats">
+        <div class="program-stat">
+            <div class="program-stat-title">Total de Profesores</div>
+            <div class="program-stat-value">{{ $previewData['total_profesores'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Profesores Completados</div>
-            <div class="stat-value" style="color: #059669;">{{ $previewData['total_profesores_completados'] ?? 0 }}</div>
+        <div class="program-stat">
+            <div class="program-stat-title">Profesores Completados</div>
+            <div class="program-stat-value" style="color: #059669;">{{ $previewData['total_profesores_completados'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Profesores Pendientes</div>
-            <div class="stat-value" style="color: #dc2626;">{{ $previewData['total_profesores_pendientes'] ?? 0 }}</div>
+        <div class="program-stat">
+            <div class="program-stat-title">Profesores Pendientes</div>
+            <div class="program-stat-value" style="color: #dc2626;">{{ $previewData['total_profesores_pendientes'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Promedio del Programa</div>
-            <div class="stat-value">{{ number_format($previewData['promedio_programa'] ?? 0, 2) }}</div>
+        <div class="program-stat">
+            <div class="program-stat-title">Promedio del Programa</div>
+            <div class="program-stat-value">{{ number_format($previewData['promedio_programa'] ?? 0, 2) }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Puntuación Máxima</div>
-            <div class="stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
+        <div class="program-stat">
+            <div class="program-stat-title">Puntuación Máxima</div>
+            <div class="program-stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
         </div>
-        <div class="stat">
-            <div class="stat-title">Puntuación Mínima</div>
-            <div class="stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
+        <div class="program-stat">
+            <div class="program-stat-title">Puntuación Mínima</div>
+            <div class="program-stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
         </div>
     </div>
 
-    <div class="table-container">
+    <div class="program-table-container">
         <h2 style="color: #3b82f6; text-align: left; margin-bottom: 1rem;">Resultados por Profesor (Ordenados de Mayor a Menor)</h2>
-        <table>
+        <table class="program-table">
             <thead>
                 <tr>
                     <th style="width: 60px;">Pos.</th>
@@ -177,10 +176,4 @@
             </tbody>
         </table>
     </div>
-
-    <div class="footer">
-        Reporte generado el {{ $previewData['fecha_generacion'] ?? now()->format('d/m/Y H:i:s') }}<br>
-        Sistema de Evaluación de Profesores &copy; 2025
-    </div>
-</body>
-</html> 
+</div> 

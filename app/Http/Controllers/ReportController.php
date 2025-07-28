@@ -119,13 +119,96 @@ class ReportController extends Controller
             abort(404, 'El reporte no está disponible para descarga');
         }
 
-        if (!$report->file_path || !Storage::exists($report->file_path)) {
-            abort(404, 'El archivo del reporte no se encuentra');
-        }
+        try {
+            // Regenerar el PDF con el formato correcto usando getPreviewData
+            $parameters = $report->parameters ?? [];
+            
+            // Agregar el ID de la entidad a los parámetros si no existe
+            if ($report->entity_id) {
+                switch ($report->type) {
+                    case 'universidad':
+                        if (!isset($parameters['institution_id'])) {
+                            $parameters['institution_id'] = $report->entity_id;
+                        }
+                        break;
+                    case 'facultad':
+                        if (!isset($parameters['facultad_id'])) {
+                            $parameters['facultad_id'] = $report->entity_id;
+                        }
+                        break;
+                    case 'programa':
+                        if (!isset($parameters['programa_id'])) {
+                            $parameters['programa_id'] = $report->entity_id;
+                        }
+                        break;
+                    case 'profesor':
+                        if (!isset($parameters['profesor_id'])) {
+                            $parameters['profesor_id'] = $report->entity_id;
+                        }
+                        break;
+                }
+            }
 
-        $fileName = $report->name . '.pdf';
-        
-        return Storage::download($report->file_path, $fileName);
+            // Obtener datos con el formato correcto
+            $previewData = $this->reportService->getPreviewData($report->type, $parameters);
+            
+            // Generar el PDF usando la vista correcta según el tipo de reporte
+            switch ($report->type) {
+                case 'profesores_completados':
+                    $data = $this->reportService->getProfesoresCompletadosData($parameters);
+                    $pdf = \PDF::loadView('reports.profesores-completados', compact('data'));
+                    $pdf->setPaper('A4', 'landscape');
+                    break;
+                case 'profesor':
+                    $pdf = \PDF::loadView('reports.profesor', compact('previewData'));
+                    $pdf->setPaper('A4', 'portrait');
+                    break;
+                case 'programa':
+                    $pdf = \PDF::loadView('reports.programa', compact('previewData'));
+                    $pdf->setPaper('A4', 'portrait');
+                    break;
+                case 'facultad':
+                    $pdf = \PDF::loadView('reports.facultad', compact('previewData'));
+                    $pdf->setPaper('A4', 'portrait');
+                    break;
+                case 'universidad':
+                    $pdf = \PDF::loadView('reports.universidad', compact('previewData'));
+                    $pdf->setPaper('A4', 'portrait');
+                    break;
+                default:
+                    // Fallback: usar el archivo existente
+                    if (!$report->file_path || !Storage::exists($report->file_path)) {
+                        abort(404, 'El archivo del reporte no se encuentra');
+                    }
+                    $fileName = $report->name . '.pdf';
+                    return Storage::download($report->file_path, $fileName);
+            }
+
+            // Configurar opciones del PDF
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
+
+            // Generar nombre del archivo
+            $fileName = $report->name . '.pdf';
+            
+            // Forzar la descarga del PDF
+            return $pdf->download($fileName);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al descargar reporte: ' . $e->getMessage(), [
+                'report_id' => $report->id,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Fallback: intentar descargar el archivo existente
+            if ($report->file_path && Storage::exists($report->file_path)) {
+                $fileName = $report->name . '.pdf';
+                return Storage::download($report->file_path, $fileName);
+            }
+
+            abort(500, 'Error al generar el PDF: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Report $report)

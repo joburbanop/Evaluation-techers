@@ -1,205 +1,199 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Facultad - {{ $facultad->nombre }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #2563eb;
-            margin: 0;
-            font-size: 24px;
-        }
-        .header p {
-            margin: 5px 0;
-            color: #666;
-        }
-        .section {
-            margin-bottom: 30px;
-        }
-        .section h2 {
-            color: #2563eb;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        .stat-label {
-            color: #64748b;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background: #f1f5f9;
-            font-weight: bold;
-            color: #374151;
-        }
-        .nivel-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-        }
-        .nivel-a1 { background: #dc2626; }
-        .nivel-a2 { background: #ea580c; }
-        .nivel-b1 { background: #d97706; }
-        .nivel-b2 { background: #65a30d; }
-        .nivel-c1 { background: #059669; }
-        .nivel-c2 { background: #0891b2; }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Reporte de Evaluación por Facultad</h1>
-        <p><strong>Facultad:</strong> {{ $facultad->nombre }}</p>
-        <p><strong>Institución:</strong> {{ $facultad->institution->name }}</p>
-        <p><strong>Fecha de Generación:</strong> {{ $fecha_generacion }}</p>
-        @if(!empty($parametros))
-            <p><strong>Filtros Aplicados:</strong> 
-                @if(isset($parametros['date_from']))
-                    Desde: {{ \Carbon\Carbon::parse($parametros['date_from'])->format('d/m/Y') }}
-                @endif
-                @if(isset($parametros['date_to']))
-                    Hasta: {{ \Carbon\Carbon::parse($parametros['date_to'])->format('d/m/Y') }}
-                @endif
-            </p>
-        @endif
+<style>
+    .faculty-report {
+        font-family: Arial, sans-serif;
+        color: #333;
+        line-height: 1.6;
+    }
+    .faculty-header {
+        text-align: center;
+        border-bottom: 3px solid #93c5fd;
+        padding-bottom: 30px;
+        margin-bottom: 40px;
+    }
+    .faculty-header h1 {
+        color: #3b82f6;
+        font-size: 2.5rem;
+        margin: 0 0 10px 0;
+    }
+    .faculty-header h2 {
+        color: #1d4ed8;
+        font-size: 1.8rem;
+        margin: 0 0 15px 0;
+    }
+    .faculty-info {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+    }
+    .faculty-info h3 {
+        color: #3b82f6;
+        margin-top: 0;
+    }
+    .faculty-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+    .faculty-stat {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 30px 25px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+    }
+    .faculty-stat-title {
+        color: #3b82f6;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+    .faculty-stat-value {
+        color: #1d4ed8;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .faculty-table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 35px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+    }
+    .faculty-section-title {
+        color: #3b82f6;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #bae6fd;
+        padding-bottom: 15px;
+    }
+    .faculty-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+    }
+    .faculty-table th {
+        background: #f0f9ff;
+        color: #3b82f6;
+        padding: 20px 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #bae6fd;
+        font-size: 1.1rem;
+    }
+    .faculty-table td {
+        padding: 18px 15px;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
+        font-size: 1rem;
+    }
+    .faculty-table tr:hover {
+        background-color: #f8fafc;
+    }
+</style>
+
+<div class="faculty-report">
+    {{-- Botón de descarga --}}
+    <div style="text-align: right; margin-bottom: 20px;">
+        <a
+            href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte=facultad&entidad_id={{ $previewData['facultad']['id'] ?? '' }}&redirect=1"
+            target="_blank"
+            onclick="if(!confirm('¿Está seguro de que desea generar el reporte?')) return false; this.style.pointerEvents='none'; this.innerHTML='🔄 Generando...'; setTimeout(() => { @if(auth()->user()->hasRole('Coordinador')) window.location.href='{{ route('coordinador.reports.index') }}'; @else window.location.href='/admin/reports'; @endif }, 2000);"
+            style="background-color: #3b82f6; color: white; padding: 12px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px;"
+        >
+            ⬇️ Generar Reporte
+        </a>
     </div>
 
-    <div class="section">
-        <h2>Resumen General</h2>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ $total_evaluaciones }}</div>
-                <div class="stat-label">Total de Evaluaciones</div>
+    <div class="faculty-header">
+        <h1>Reporte de Facultad</h1>
+        <h2>{{ $previewData['facultad']['nombre'] ?? 'N/A' }}</h2>
+        <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+            Fecha de Generación: {{ $previewData['fecha_generacion'] ?? now()->format('d/m/Y H:i:s') }}
+        </div>
+    </div>
+
+    <div class="faculty-info">
+        <h3>Información de la Facultad</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+            <div>
+                <p style="margin-bottom: 15px;"><strong>Nombre:</strong> {{ $previewData['facultad']['nombre'] ?? 'N/A' }}</p>
+                @if(isset($previewData['institution']))
+                    <p style="margin-bottom: 15px;"><strong>Institución:</strong> {{ $previewData['institution']['name'] ?? 'N/A' }}</p>
+                @endif
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ $total_usuarios }}</div>
-                <div class="stat-label">Usuarios Evaluados</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ count($programa_stats) }}</div>
-                <div class="stat-label">Programas Activos</div>
+            <div>
+                <p style="margin-bottom: 15px;"><strong>Total de Programas:</strong> {{ $previewData['total_programas'] ?? 0 }}</p>
+                <p style="margin-bottom: 15px;"><strong>Total de Profesores:</strong> {{ $previewData['total_profesores'] ?? 0 }}</p>
             </div>
         </div>
     </div>
 
-    <div class="section">
-        <h2>Resultados por Área de Competencia</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Área</th>
-                    <th>Evaluaciones</th>
-                    <th>Promedio</th>
-                    <th>Máximo</th>
-                    <th>Mínimo</th>
-                    <th>Distribución de Niveles</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($area_stats as $areaName => $stats)
-                <tr>
-                    <td><strong>{{ $areaName }}</strong></td>
-                    <td>{{ $stats['total_evaluaciones'] }}</td>
-                    <td>{{ $stats['promedio_score'] }}</td>
-                    <td>{{ $stats['max_score'] }}</td>
-                    <td>{{ $stats['min_score'] }}</td>
-                    <td>
-                        @foreach($stats['niveles'] as $nivel => $cantidad)
-                            <span class="nivel-badge nivel-{{ strtolower($nivel) }}">{{ $nivel }}: {{ $cantidad }}</span>
-                        @endforeach
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="faculty-stats">
+        <div class="faculty-stat">
+            <div class="faculty-stat-title">Total de Profesores</div>
+            <div class="faculty-stat-value">{{ $previewData['total_profesores'] ?? 0 }}</div>
+        </div>
+        <div class="faculty-stat">
+            <div class="faculty-stat-title">Profesores Evaluados</div>
+            <div class="faculty-stat-value" style="color: #059669;">{{ $previewData['profesores_evaluados'] ?? 0 }}</div>
+        </div>
+        <div class="faculty-stat">
+            <div class="faculty-stat-title">Profesores Pendientes</div>
+            <div class="faculty-stat-value" style="color: #dc2626;">{{ $previewData['profesores_pendientes'] ?? 0 }}</div>
+        </div>
+        <div class="faculty-stat">
+            <div class="faculty-stat-title">Promedio General</div>
+            <div class="faculty-stat-value">{{ number_format($previewData['promedio_general'] ?? 0, 2) }}</div>
+        </div>
+        <div class="faculty-stat">
+            <div class="faculty-stat-title">Puntuación Máxima</div>
+            <div class="faculty-stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
+        </div>
+        <div class="faculty-stat">
+            <div class="faculty-stat-title">Puntuación Mínima</div>
+            <div class="faculty-stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>Resultados por Programa</h2>
-        <table>
+    @if(isset($previewData['programas']) && count($previewData['programas']) > 0)
+    <div class="faculty-table-container">
+        <h2 class="faculty-section-title">Programas de la Facultad</h2>
+        <table class="faculty-table">
             <thead>
                 <tr>
                     <th>Programa</th>
-                    <th>Evaluaciones</th>
+                    <th>Total Profesores</th>
+                    <th>Profesores Evaluados</th>
+                    <th>Profesores Pendientes</th>
                     <th>Promedio</th>
-                    <th>Máximo</th>
-                    <th>Mínimo</th>
-                    <th>Distribución de Niveles</th>
+                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($programa_stats as $programa)
+                @foreach($previewData['programas'] as $programa)
                 <tr>
-                    <td><strong>{{ $programa['programa_nombre'] }}</strong></td>
-                    <td>{{ $programa['total_evaluaciones'] }}</td>
-                    <td>{{ $programa['promedio_score'] }}</td>
-                    <td>{{ $programa['max_score'] }}</td>
-                    <td>{{ $programa['min_score'] }}</td>
-                    <td>
-                        @foreach($programa['niveles'] as $nivel => $cantidad)
-                            <span class="nivel-badge nivel-{{ strtolower($nivel) }}">{{ $nivel }}: {{ $cantidad }}</span>
-                        @endforeach
+                    <td style="font-weight: 600; color: #1d4ed8;">{{ $programa['nombre'] ?? 'N/A' }}</td>
+                    <td style="text-align: center;">{{ $programa['total_profesores'] ?? 0 }}</td>
+                    <td style="text-align: center; color: #059669;">{{ $programa['profesores_evaluados'] ?? 0 }}</td>
+                    <td style="text-align: center; color: #dc2626;">{{ $programa['profesores_pendientes'] ?? 0 }}</td>
+                    <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ number_format($programa['promedio'] ?? 0, 2) }}</td>
+                    <td style="text-align: center;">
+                        @if(isset($programa['completado']) && $programa['completado'])
+                            <span style="color: #059669; font-weight: 600;">✓ Completado</span>
+                        @else
+                            <span style="color: #dc2626; font-weight: 600;">⚠ Pendiente</span>
+                        @endif
                     </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
-
-    <div class="footer">
-        <p>Reporte generado automáticamente por el Sistema de Evaluación de Profesores</p>
-        <p>Este documento contiene información confidencial y está destinado únicamente para uso interno</p>
-    </div>
-</body>
-</html> 
+    @endif
+</div> 

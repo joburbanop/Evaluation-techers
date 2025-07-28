@@ -108,19 +108,36 @@ class ReportPdfController extends Controller
             }
 
             // Generar el PDF usando la vista correcta según el tipo de reporte
-            if ($request->tipo_reporte === 'profesores_completados') {
-                // Usar la vista específica para profesores completados
-                $data = $this->reportService->getProfesoresCompletadosData($previewParameters);
-                $pdf = PDF::loadView('reports.profesores-completados', compact('data'));
-            } else {
-                // Usar la vista del modal para otros reportes
-                $pdf = PDF::loadView('filament.modals.report-preview', [
-                    'tipo_reporte' => $request->tipo_reporte,
-                    'entityName' => $entityName,
-                    'data' => $request->all(),
-                    'previewData' => $this->reportService->getPreviewData($request->tipo_reporte, $previewParameters),
-                    'error' => null
-                ]);
+            $previewData = $this->reportService->getPreviewData($request->tipo_reporte, $previewParameters);
+            
+            switch ($request->tipo_reporte) {
+                case 'profesores_completados':
+                    // Usar la vista específica para profesores completados
+                    $data = $this->reportService->getProfesoresCompletadosData($previewParameters);
+                    $pdf = PDF::loadView('reports.profesores-completados', compact('data'));
+                    break;
+                case 'profesor':
+                    $pdf = PDF::loadView('reports.profesor', compact('previewData'));
+                    break;
+                case 'programa':
+                    $pdf = PDF::loadView('reports.programa', compact('previewData'));
+                    break;
+                case 'facultad':
+                    $pdf = PDF::loadView('reports.facultad', compact('previewData'));
+                    break;
+                case 'universidad':
+                    $pdf = PDF::loadView('reports.universidad', compact('previewData'));
+                    break;
+                default:
+                    // Fallback a la vista del modal
+                    $pdf = PDF::loadView('filament.modals.report-preview', [
+                        'tipo_reporte' => $request->tipo_reporte,
+                        'entityName' => $entityName,
+                        'data' => $request->all(),
+                        'previewData' => $previewData,
+                        'error' => null
+                    ]);
+                    break;
             }
 
             // Configurar el PDF según el tipo de reporte
