@@ -564,112 +564,124 @@ class ReportService
 
     private function getProfesorPreviewData(User $profesor, array $parameters = [])
     {
-        // Usar la misma lógica que getProfesorData para obtener datos consistentes
-        $query = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
+        // Obtener información básica del profesor
+        $profesor->load(['institution', 'facultad', 'programa']);
+        
+        // Obtener todos los tests asignados al profesor
+        $testsAsignados = TestAssignment::where('user_id', $profesor->id)
+            ->with(['test'])
+            ->get();
+        
+        $totalTests = $testsAsignados->count();
+        $testsCompletados = $testsAsignados->where('status', 'completed')->count();
+        
+        // Obtener evaluaciones completadas
+        $evaluacionesCompletadas = TestAssignment::where('user_id', $profesor->id)
+            ->where('status', 'completed')
+            ->count();
+        
+        $evaluacionesPendientes = $totalTests - $evaluacionesCompletadas;
+        
+        // Obtener estadísticas de puntuación
+        $stats = DB::table('test_assignments as ta')
             ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
             ->join('questions as q', 'tr.question_id', '=', 'q.id')
             ->where('ta.user_id', $profesor->id)
             ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8);
-
-        $stats = $query->select(
-            DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
-            DB::raw('AVG(tr.score) as promedio_score'),
-            DB::raw('MAX(tr.score) as max_score'),
-            DB::raw('MIN(tr.score) as min_score'),
-            DB::raw('COUNT(tr.id) as total_respuestas')
-        )->first();
-
-        // Estadísticas por área
-        $areas = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
-            ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
-            ->join('questions as q', 'tr.question_id', '=', 'q.id')
-            ->join('areas as a', 'q.area_id', '=', 'a.id')
-            ->where('ta.user_id', $profesor->id)
-            ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8)
+            ->whereNotIn('q.area_id', [8, 9]) // Excluir Información Socio-demográfica y Educación Abierta
             ->select(
-                'a.id as area_id',
-                'a.name as area_name',
                 DB::raw('COUNT(DISTINCT ta.id) as total_evaluaciones'),
                 DB::raw('AVG(tr.score) as promedio_score'),
                 DB::raw('MAX(tr.score) as max_score'),
                 DB::raw('MIN(tr.score) as min_score'),
                 DB::raw('COUNT(tr.id) as total_respuestas')
-            )
-            ->groupBy('a.id', 'a.name')
-            ->get()
-            ->map(function ($area) {
-                return [
-                    'area_name' => $area->area_name,
-                    'total_evaluaciones' => $area->total_evaluaciones,
-                    'promedio_score' => round($area->promedio_score, 2),
-                    'max_score' => $area->max_score,
-                    'min_score' => $area->min_score,
-                    'total_respuestas' => $area->total_respuestas,
-                ];
-            });
-
-        // Historial de evaluaciones
-        $historial = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
-            ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
-            ->join('questions as q', 'tr.question_id', '=', 'q.id')
-            ->join('areas as a', 'q.area_id', '=', 'a.id')
-            ->where('ta.user_id', $profesor->id)
-            ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8)
-            ->select(
-                'ta.created_at',
-                'a.name as area_name',
-                DB::raw('AVG(tr.score) as promedio_score'),
-                DB::raw('COUNT(tr.id) as total_respuestas')
-            )
-            ->groupBy('ta.created_at', 'a.name')
-            ->orderBy('ta.created_at')
-            ->get()
-            ->map(function ($evaluacion) {
-                return [
-                    'fecha' => \Carbon\Carbon::parse($evaluacion->created_at)->format('d/m/Y'),
-                    'area' => $evaluacion->area_name,
-                    'score' => $evaluacion->promedio_score,
-                    'total_respuestas' => $evaluacion->total_respuestas,
-                ];
-            });
-
-        // Comparación con otros profesores del mismo programa
-        $comparacion = DB::table('test_assignments as ta')
-            ->join('users as u', 'ta.user_id', '=', 'u.id')
-            ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
-            ->join('questions as q', 'tr.question_id', '=', 'q.id')
-            ->where('u.programa_id', $profesor->programa_id)
-            ->where('ta.status', 'completed')
-            ->where('q.area_id', '!=', 8)
-            ->select(
-                DB::raw('AVG(tr.score) as promedio_programa'),
-                DB::raw('MAX(tr.score) as max_programa'),
-                DB::raw('MIN(tr.score) as min_programa')
-            )
-            ->first();
-
-
-
+            )->first();
+        
+        // Obtener todas las áreas (excluyendo las especificadas)
+        $todasLasAreas = \App\Models\Area::whereNotIn('name', ['Información Socio-demográfica', 'Educación Abierta'])->get();
+        
+        // Calcular resultados por área
+        $resultadosPorArea = $todasLasAreas->map(function ($area) use ($profesor) {
+            // Obtener puntaje obtenido en esta área
+            $puntajeObtenido = DB::table('test_assignments as ta')
+                ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
+                ->join('questions as q', 'tr.question_id', '=', 'q.id')
+                ->where('ta.user_id', $profesor->id)
+                ->where('ta.status', 'completed')
+                ->where('q.area_id', $area->id)
+                ->sum('tr.score');
+            
+            // Calcular puntaje máximo posible para las preguntas que realmente se respondieron en esta área
+            $puntajeMaximo = DB::table('test_assignments as ta')
+                ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
+                ->join('questions as q', 'tr.question_id', '=', 'q.id')
+                ->join('options as o', 'q.id', '=', 'o.question_id')
+                ->where('ta.user_id', $profesor->id)
+                ->where('ta.status', 'completed')
+                ->where('q.area_id', $area->id)
+                ->groupBy('q.id')
+                ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                ->get()
+                ->sum('max_score_per_question');
+            
+            $porcentaje = $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100, 1) : 0;
+            
+            return [
+                'area_name' => $area->name,
+                'puntaje_obtenido' => round($puntajeObtenido, 2),
+                'puntaje_maximo' => round($puntajeMaximo, 2),
+                'porcentaje' => $porcentaje
+            ];
+        });
+        
+        // Obtener información detallada de tests asignados
+        $testsAsignadosDetalle = $testsAsignados->map(function ($assignment) {
+            $puntaje = DB::table('test_responses as tr')
+                ->where('test_assignment_id', $assignment->id)
+                ->sum('tr.score');
+            
+            $puntajeMaximo = DB::table('test_assignments as ta')
+                ->join('tests as t', 'ta.test_id', '=', 't.id')
+                ->join('questions as q', 't.id', '=', 'q.test_id')
+                ->join('options as o', 'q.id', '=', 'o.question_id')
+                ->where('ta.id', $assignment->id)
+                ->sum(DB::raw('GREATEST(o.score, 0)'));
+            
+            return [
+                'nombre' => $assignment->test->name ?? 'Test sin nombre',
+                'completado' => $assignment->status === 'completed',
+                'fecha_asignacion' => $assignment->created_at ? $assignment->created_at->format('d/m/Y') : 'N/A',
+                'fecha_completado' => $assignment->completed_at ? $assignment->completed_at->format('d/m/Y') : 'Pendiente',
+                'puntaje' => round($puntaje, 2),
+                'puntaje_maximo' => round($puntajeMaximo, 2)
+            ];
+        });
+        
         return [
-            'entidad' => $profesor,
-            'stats' => $stats,
-            'areas' => $areas,
-            'historial' => $historial,
-            'comparacion' => $comparacion,
-            'total_evaluaciones' => $stats->total_evaluaciones,
-            'promedio_general' => round($stats->promedio_score, 2),
-            'max_score' => $stats->max_score,
-            'min_score' => $stats->min_score,
-            'total_respuestas' => $stats->total_respuestas,
-            'nivel_satisfaccion' => $this->calculateSatisfactionLevel($stats->promedio_score),
-            'areas_evaluadas' => $areas->count(),
-            'area_stats' => $areas,
+            'profesor' => [
+                'nombre_completo' => $profesor->name . ' ' . $profesor->apellido1 . ' ' . ($profesor->apellido2 ?? ''),
+                'email' => $profesor->email,
+                'created_at' => $profesor->created_at ? $profesor->created_at->format('d/m/Y') : 'N/A'
+            ],
+            'institution' => $profesor->institution ? [
+                'name' => $profesor->institution->name
+            ] : null,
+            'facultad' => $profesor->facultad ? [
+                'nombre' => $profesor->facultad->nombre
+            ] : null,
+            'programa' => $profesor->programa ? [
+                'nombre' => $profesor->programa->nombre
+            ] : null,
+            'total_evaluaciones' => $stats->total_evaluaciones ?? 0,
+            'evaluaciones_realizadas' => $evaluacionesCompletadas,
+            'evaluaciones_pendientes' => $evaluacionesPendientes,
+            'tests_completados' => $testsCompletados,
+            'total_tests' => $totalTests,
+            'promedio_general' => round($stats->promedio_score ?? 0, 2),
+            'puntuacion_maxima' => $stats->max_score ?? 0,
+            'puntuacion_minima' => $stats->min_score ?? 0,
+            'resultados_por_area' => $resultadosPorArea,
+            'tests_asignados' => $testsAsignadosDetalle,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];

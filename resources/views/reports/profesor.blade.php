@@ -3,97 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Profesor - {{ $profesor->name }} {{ $profesor->apellido1 }}</title>
+    <title>Reporte de Profesor - {{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 20px;
             color: #333;
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #333;
+            border-bottom: 3px solid #93c5fd;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
-        .professor-info {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .header h1 {
+            color: #3b82f6;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
         }
-        .stats-grid {
+        .header h2 {
+            color: #1d4ed8;
+            font-size: 1.8rem;
+            margin: 0 0 15px 0;
+        }
+        .professor-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+        }
+        .professor-info h3 {
+            color: #3b82f6;
+            margin-top: 0;
+        }
+        .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-        .stat-card {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
+        .stat {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
+            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
         }
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #007bff;
+        .stat-title {
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
         }
-        .stat-label {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+        .stat-value {
+            color: #1d4ed8;
+            font-size: 1.8rem;
+            font-weight: 700;
         }
-        .section {
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
         .section-title {
-            font-size: 18px;
+            color: #3b82f6;
+            font-size: 1.5rem;
             font-weight: bold;
-            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #bae6fd;
             padding-bottom: 10px;
-            margin-bottom: 15px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+            margin-top: 15px;
         }
         th {
-            background-color: #f5f5f5;
-            font-weight: bold;
+            background: #f0f9ff;
+            color: #3b82f6;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #bae6fd;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+        tr:hover {
+            background-color: #f8fafc;
         }
         .comparison-box {
-            background-color: #e8f4fd;
-            border: 1px solid #bee5eb;
-            border-radius: 5px;
-            padding: 15px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
         }
         .progress-bar {
             width: 100%;
-            background-color: #e9ecef;
-            border-radius: 5px;
+            background-color: #e5e7eb;
+            border-radius: 8px;
             overflow: hidden;
-            margin: 5px 0;
+            margin: 10px 0;
+            height: 20px;
         }
         .progress-fill {
-            height: 20px;
-            background-color: #007bff;
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
             transition: width 0.3s ease;
         }
         .footer {
-            margin-top: 40px;
             text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #ddd;
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e5e7eb;
             padding-top: 20px;
         }
     </style>
@@ -101,174 +134,146 @@
 <body>
     <div class="header">
         <h1>Reporte de Profesor</h1>
-        <h2>{{ $profesor->name }} {{ $profesor->apellido1 }} {{ $profesor->apellido2 }}</h2>
-        <p>Generado el: {{ $fecha_generacion }}</p>
+        <h2>{{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</h2>
+        <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+            Fecha de Generación: {{ $previewData['fecha_generacion'] ?? now()->format('d/m/Y H:i:s') }}
+        </div>
     </div>
 
     <div class="professor-info">
         <h3>Información del Profesor</h3>
-        <p><strong>Nombre:</strong> {{ $profesor->name }} {{ $profesor->apellido1 }} {{ $profesor->apellido2 }}</p>
-        <p><strong>Email:</strong> {{ $profesor->email }}</p>
-        @if($profesor->institution)
-            <p><strong>Institución:</strong> {{ $profesor->institution->name }}</p>
-        @endif
-        @if($profesor->facultad)
-            <p><strong>Facultad:</strong> {{ $profesor->facultad->nombre }}</p>
-        @endif
-        @if($profesor->programa)
-            <p><strong>Programa:</strong> {{ $profesor->programa->nombre }}</p>
-        @endif
-    </div>
-
-    @if($stats)
-    <div class="section">
-        <h3 class="section-title">Estadísticas Generales</h3>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ $stats->total_evaluaciones ?? 0 }}</div>
-                <div class="stat-label">Total Evaluaciones</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ number_format($stats->promedio_score ?? 0, 2) }}</div>
-                <div class="stat-label">Promedio General</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ $stats->max_score ?? 0 }}</div>
-                <div class="stat-label">Puntuación Máxima</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ $stats->min_score ?? 0 }}</div>
-                <div class="stat-label">Puntuación Mínima</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ $stats->total_respuestas ?? 0 }}</div>
-                <div class="stat-label">Total Respuestas</div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if($areas && $areas->count() > 0)
-    <div class="section">
-        <h3 class="section-title">Rendimiento por Área</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Área</th>
-                    <th>Evaluaciones</th>
-                    <th>Promedio</th>
-                    <th>Máximo</th>
-                    <th>Mínimo</th>
-                    <th>Total Respuestas</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($areas as $area)
-                <tr>
-                    <td>{{ $area['area_name'] }}</td>
-                    <td>{{ $area['total_evaluaciones'] }}</td>
-                    <td>{{ number_format($area['promedio_score'], 2) }}</td>
-                    <td>{{ $area['max_score'] }}</td>
-                    <td>{{ $area['min_score'] }}</td>
-                    <td>{{ $area['total_respuestas'] }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    @endif
-
-    @if($historial && $historial->count() > 0)
-    <div class="section">
-        <h3 class="section-title">Historial de Evaluaciones</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Área</th>
-                    <th>Puntuación</th>
-                    <th>Total Respuestas</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($historial as $evaluacion)
-                <tr>
-                    <td>{{ $evaluacion['fecha'] }}</td>
-                    <td>{{ $evaluacion['area'] }}</td>
-                    <td>{{ number_format($evaluacion['score'], 2) }}</td>
-                    <td>{{ $evaluacion['total_respuestas'] }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    @endif
-
-    @if($comparacion)
-    <div class="section">
-        <h3 class="section-title">Comparación con el Programa</h3>
-        <div class="comparison-box">
-            <h4>Estadísticas del Programa</h4>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">{{ number_format($comparacion->promedio_programa ?? 0, 2) }}</div>
-                    <div class="stat-label">Promedio del Programa</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ number_format($comparacion->max_programa ?? 0, 2) }}</div>
-                    <div class="stat-label">Máximo del Programa</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ number_format($comparacion->min_programa ?? 0, 2) }}</div>
-                    <div class="stat-label">Mínimo del Programa</div>
-                </div>
-            </div>
-            
-            @if($stats && $comparacion)
-            <div style="margin-top: 20px;">
-                <h4>Comparación de Rendimiento</h4>
-                @php
-                    $profesorPromedio = $stats->promedio_score ?? 0;
-                    $programaPromedio = $comparacion->promedio_programa ?? 0;
-                    $diferencia = $profesorPromedio - $programaPromedio;
-                    $porcentaje = $programaPromedio > 0 ? ($profesorPromedio / $programaPromedio) * 100 : 0;
-                @endphp
-                
-                <p><strong>Promedio del Profesor:</strong> {{ number_format($profesorPromedio, 2) }}</p>
-                <p><strong>Promedio del Programa:</strong> {{ number_format($programaPromedio, 2) }}</p>
-                <p><strong>Diferencia:</strong> 
-                    <span style="color: {{ $diferencia >= 0 ? 'green' : 'red' }};">
-                        {{ $diferencia >= 0 ? '+' : '' }}{{ number_format($diferencia, 2) }}
-                    </span>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+            <div>
+                <p><strong>Nombre Completo:</strong> {{ $previewData['profesor']['nombre_completo'] ?? 'N/A' }}</p>
+                <p><strong>Email:</strong> {{ $previewData['profesor']['email'] ?? 'N/A' }}</p>
+                <p><strong>Estado:</strong> 
+                    @if(isset($previewData['tests_completados']) && isset($previewData['total_tests']))
+                        @if($previewData['tests_completados'] == $previewData['total_tests'])
+                            <span style="color: #059669; font-weight: 600;">✓ Completado</span>
+                        @else
+                            <span style="color: #dc2626; font-weight: 600;">⚠ Pendiente</span>
+                        @endif
+                    @else
+                        <span style="color: #dc2626; font-weight: 600;">⚠ Pendiente</span>
+                    @endif
                 </p>
-                <p><strong>Porcentaje del promedio del programa:</strong> {{ number_format($porcentaje, 1) }}%</p>
-                
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ min($porcentaje, 100) }}%;"></div>
-                </div>
             </div>
-            @endif
+            <div>
+                @if(isset($previewData['institution']))
+                    <p><strong>Institución:</strong> {{ $previewData['institution']['name'] ?? 'N/A' }}</p>
+                @endif
+                @if(isset($previewData['facultad']))
+                    <p><strong>Facultad:</strong> {{ $previewData['facultad']['nombre'] ?? 'N/A' }}</p>
+                @endif
+                @if(isset($previewData['programa']))
+                    <p><strong>Programa:</strong> {{ $previewData['programa']['nombre'] ?? 'N/A' }}</p>
+                @endif
+                <p><strong>Fecha de Registro:</strong> {{ $previewData['profesor']['created_at'] ?? 'N/A' }}</p>
+            </div>
         </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-title">Total de Evaluaciones</div>
+            <div class="stat-value">{{ $previewData['total_evaluaciones'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Evaluaciones Realizadas</div>
+            <div class="stat-value" style="color: #059669;">{{ $previewData['evaluaciones_realizadas'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Evaluaciones Pendientes</div>
+            <div class="stat-value" style="color: #dc2626;">{{ $previewData['evaluaciones_pendientes'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Tests Completados</div>
+            <div class="stat-value">{{ $previewData['tests_completados'] ?? 0 }}/{{ $previewData['total_tests'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Promedio General</div>
+            <div class="stat-value">{{ number_format($previewData['promedio_general'] ?? 0, 2) }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Puntuación Máxima</div>
+            <div class="stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Puntuación Mínima</div>
+            <div class="stat-value" style="color: #dc2626;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
+        </div>
+    </div>
+
+    @if(isset($previewData['tests_asignados']) && count($previewData['tests_asignados']) > 0)
+    <div class="table-container">
+        <h2 class="section-title">Tests Asignados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Test</th>
+                    <th>Estado</th>
+                    <th>Fecha de Asignación</th>
+                    <th>Fecha de Completado</th>
+                    <th>Puntaje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($previewData['tests_asignados'] as $test)
+                <tr>
+                    <td style="font-weight: 600; color: #1d4ed8;">{{ $test['nombre'] ?? 'N/A' }}</td>
+                    <td style="text-align: center;">
+                        @if($test['completado'] ?? false)
+                            <span style="color: #059669; font-weight: 600;">✓ Completado</span>
+                        @else
+                            <span style="color: #dc2626; font-weight: 600;">⚠ Pendiente</span>
+                        @endif
+                    </td>
+                    <td style="text-align: center;">{{ $test['fecha_asignacion'] ?? 'N/A' }}</td>
+                    <td style="text-align: center;">{{ $test['fecha_completado'] ?? 'Pendiente' }}</td>
+                    <td style="text-align: center; font-weight: 700; color: #3b82f6;">
+                        {{ $test['puntaje'] ?? '0.00' }}/{{ $test['puntaje_maximo'] ?? '100.00' }}
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
     @endif
 
-    @if(isset($parametros['date_from']) || isset($parametros['date_to']))
-    <div class="section">
-        <h3 class="section-title">Filtros Aplicados</h3>
-        <p><strong>Período:</strong> 
-            @if(isset($parametros['date_from']))
-                Desde: {{ \Carbon\Carbon::parse($parametros['date_from'])->format('d/m/Y') }}
-            @endif
-            @if(isset($parametros['date_to']))
-                Hasta: {{ \Carbon\Carbon::parse($parametros['date_to'])->format('d/m/Y') }}
-            @endif
-        </p>
+    @if(isset($previewData['resultados_por_area']) && count($previewData['resultados_por_area']) > 0)
+    <div class="table-container">
+        <h2 class="section-title">Rendimiento por Área</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Área</th>
+                    <th>Puntaje Obtenido</th>
+                    <th>Puntaje Máximo</th>
+                    <th>Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($previewData['resultados_por_area'] as $area)
+                <tr>
+                    <td style="font-weight: 600; color: #1d4ed8;">{{ $area['area_name'] }}</td>
+                    <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ number_format($area['puntaje_obtenido'], 2) }}</td>
+                    <td style="text-align: center;">{{ number_format($area['puntaje_maximo'], 2) }}</td>
+                    <td style="text-align: center;">
+                        <div style="font-weight: 700; color: #3b82f6;">{{ $area['porcentaje'] }}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ $area['porcentaje'] }}%;"></div>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
     @endif
 
     <div class="footer">
-        <p>Este reporte fue generado automáticamente por el sistema de evaluación de profesores.</p>
-        <p>© {{ date('Y') }} Sistema de Evaluación de Profesores</p>
+        Reporte generado el {{ $previewData['fecha_generacion'] ?? now()->format('d/m/Y H:i:s') }}<br>
+        Sistema de Evaluación de Profesores &copy; 2025
     </div>
 </body>
 </html> 
