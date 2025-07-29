@@ -1,4 +1,144 @@
 <style>
+    /* Estilos para modal (vista previa) */
+    .faculty-report {
+        font-family: Arial, sans-serif;
+        color: #333;
+        line-height: 1.4;
+        font-size: 14px;
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .faculty-header {
+        text-align: center;
+        border-bottom: 2px solid #93c5fd;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .faculty-header h1 {
+        color: #3b82f6;
+        font-size: 24px;
+        margin: 0 0 8px 0;
+        font-weight: bold;
+    }
+    
+    .faculty-header h2 {
+        color: #1d4ed8;
+        font-size: 18px;
+        margin: 0 0 10px 0;
+        font-weight: bold;
+    }
+    
+    .faculty-header div {
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    
+    .faculty-info {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .faculty-info h3 {
+        color: #3b82f6;
+        margin: 0 0 15px 0;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .faculty-info p {
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    
+    .faculty-stats {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .faculty-stat {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 15px 12px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        flex: 1;
+        min-width: 120px;
+        max-width: 200px;
+    }
+    
+    .faculty-stat-title {
+        color: #3b82f6;
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+    
+    .faculty-stat-value {
+        color: #1d4ed8;
+        font-size: 20px;
+        font-weight: bold;
+        line-height: 1.2;
+    }
+    
+    .faculty-table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+    }
+    
+    .faculty-section-title {
+        color: #3b82f6;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #bae6fd;
+        padding-bottom: 10px;
+    }
+    
+    .faculty-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 12px;
+    }
+    
+    .faculty-table th, .faculty-table td {
+        padding: 12px 8px;
+        text-align: center;
+        border-bottom: 1px solid #bae6fd;
+    }
+    
+    .faculty-table th {
+        background: #f0f9ff;
+        color: #3b82f6;
+        font-weight: bold;
+        font-size: 13px;
+    }
+    
+    .faculty-table td {
+        font-size: 12px;
+        vertical-align: middle;
+    }
+    
+    .faculty-table tr:last-child td {
+        border-bottom: none;
+    }
+    
     /* Estilos específicos para PDF */
     @media print {
         * {
@@ -288,34 +428,34 @@
         </div>
     </div>
 
-    <div class="faculty-stats" style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 6px; margin-bottom: 15px; justify-content: space-between; width: 100%;">
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Total de Programas</div>
-            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 9px; font-weight: bold; line-height: 1;">{{ $previewData['total_programas'] ?? 0 }}</div>
+    <div class="faculty-stats" style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; margin-bottom: 20px; justify-content: space-between; width: 100%;">
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Total de Programas</div>
+            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_programas'] ?? 0 }}</div>
         </div>
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Total de Profesores</div>
-            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 9px; font-weight: bold; line-height: 1;">{{ $previewData['total_profesores'] ?? 0 }}</div>
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Total de Profesores</div>
+            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_profesores'] ?? 0 }}</div>
         </div>
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Profesores Completados</div>
-            <div class="faculty-stat-value" style="color: #059669; font-size: 9px; font-weight: bold; line-height: 1;">{{ $previewData['total_profesores_completados'] ?? 0 }}</div>
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Profesores Completados</div>
+            <div class="faculty-stat-value" style="color: #059669; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_profesores_completados'] ?? 0 }}</div>
         </div>
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Profesores Pendientes</div>
-            <div class="faculty-stat-value" style="color: #dc2626; font-size: 9px; font-weight: bold; line-height: 1;">{{ $previewData['total_profesores_pendientes'] ?? 0 }}</div>
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Profesores Pendientes</div>
+            <div class="faculty-stat-value" style="color: #dc2626; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_profesores_pendientes'] ?? 0 }}</div>
         </div>
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Promedio de la Facultad</div>
-            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 9px; font-weight: bold; line-height: 1;">{{ number_format($previewData['promedio_facultad'] ?? 0, 2) }}</div>
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio de la Facultad</div>
+            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_facultad'] ?? 0, 2) }}</div>
         </div>
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Puntuación Máxima</div>
-            <div class="faculty-stat-value" style="color: #059669; font-size: 9px; font-weight: bold; line-height: 1;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Puntuación Máxima</div>
+            <div class="faculty-stat-value" style="color: #059669; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
         </div>
-        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 6px 4px; text-align: center; flex: 1; min-width: 60px; max-width: none;">
-            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 6px; margin-bottom: 1px; line-height: 1;">Puntuación Mínima</div>
-            <div class="faculty-stat-value" style="color: #dc2626; font-size: 9px; font-weight: bold; line-height: 1;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
+        <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+            <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Puntuación Mínima</div>
+            <div class="faculty-stat-value" style="color: #dc2626; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
         </div>
     </div>
 

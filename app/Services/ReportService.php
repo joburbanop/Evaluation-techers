@@ -202,51 +202,7 @@ class ReportService
         }
     }
 
-    public function generateProfesoresCompletadosReport(array $parameters = [])
-    {
-        $report = Report::create([
-            'name' => "Reporte de Participación en Evaluación de Competencias",
-            'type' => 'profesores_completados',
-            'entity_id' => null,
-            'entity_type' => null,
-            'generated_by' => auth()->id(),
-            'parameters' => $parameters,
-            'status' => 'generating',
-        ]);
 
-        try {
-            // Usar getPreviewData para obtener el formato correcto
-            $data = $this->getProfesoresCompletadosData($parameters);
-            $pdf = PDF::loadView('reports.profesores-completados', compact('data'));
-            $pdf->setPaper('A4', 'landscape');
-            $pdf->setOption('isRemoteEnabled', false);
-            $pdf->setOption('isHtml5ParserEnabled', true);
-            $pdf->setOption('isPhpEnabled', false);
-            $pdf->setOption('memoryLimit', '512M');
-            
-            $fileName = "reporte_participacion_evaluacion_" . now()->format('Y-m-d_H-i-s') . '.pdf';
-            $filePath = "reports/profesores_completados/{$fileName}";
-            
-            Storage::put($filePath, $pdf->output());
-            
-            $report->update([
-                'file_path' => $filePath,
-                'file_size' => Storage::size($filePath),
-                'status' => 'completed',
-                'generated_at' => now(),
-                'expires_at' => now()->addDays(30),
-            ]);
-
-            return $report;
-        } catch (\Exception $e) {
-            $report->update([
-                'status' => 'failed',
-                'generated_at' => now(),
-            ]);
-            
-            throw $e;
-        }
-    }
 
     public function getPreviewData(string $tipoReporte, array $parameters = [])
     {
@@ -296,8 +252,7 @@ class ReportService
                 }
                 return $this->getProfesorPreviewData($profesor, $parameters);
 
-            case 'profesores_completados':
-                return $this->getProfesoresCompletadosPreviewData($parameters);
+
 
             default:
                 return $this->getGeneralPreviewData($parameters);
@@ -1393,183 +1348,8 @@ class ReportService
         return PDF::loadView('reports.profesor', $data);
     }
 
-    public function getProfesoresCompletadosData(array $parameters = [])
-    {
-        $user = auth()->user();
-        $filtro = $parameters['filtro'] ?? 'todos';
-        
-        \Log::info('getProfesoresCompletadosData iniciado', [
-            'user_id' => $user->id,
-            'user_role' => $user->roles->pluck('name'),
-            'filtro' => $filtro,
-            'parameters' => $parameters
-        ]);
-        
-        // Query base para obtener profesores con paginación para optimizar memoria
-        $query = User::whereHas('roles', function($q) {
-            $q->where('name', 'Docente');
-        })->with(['institution', 'facultad', 'programa', 'testAssignments']);
-        
-        // Aplicar filtros según el rol del usuario
-        if ($user->hasRole('Coordinador')) {
-            if ($user->institution_id) {
-                $query->where('institution_id', $user->institution_id);
-            }
-            if ($user->facultad_id) {
-                $query->where('facultad_id', $user->facultad_id);
-            }
-            // El coordinador puede ver todos los docentes de su facultad, no solo de su programa específico
-        }
-        
-        // Obtener total de profesores para estadísticas
-        $totalProfesores = $query->count();
-        
-        \Log::info('Profesores encontrados', [
-            'total_profesores' => $totalProfesores
-        ]);
-        
-        // Procesar profesores en lotes para optimizar memoria
-        $datosReporte = collect();
-        $profesoresCompletados = 0;
-        $profesoresPendientes = 0;
-        $totalTestsCompletados = 0;
-        
-        $query->chunk(50, function($profesores) use (&$datosReporte, &$profesoresCompletados, &$profesoresPendientes, &$totalTestsCompletados, $parameters, $filtro) {
-            foreach ($profesores as $profesor) {
-                // Filtrar test assignments por fecha si se especifican
-                $testAssignments = $profesor->testAssignments;
-                if (isset($parameters['date_from']) || isset($parameters['date_to'])) {
-                    $testAssignments = $testAssignments->filter(function($assignment) use ($parameters) {
-                        $createdAt = $assignment->created_at;
-                        
 
-                        
-                        if (isset($parameters['date_from'])) {
-                            $dateFrom = \Carbon\Carbon::parse($parameters['date_from'])->startOfDay();
-                            if ($createdAt < $dateFrom) {
-                                return false;
-                            }
-                        }
-                        if (isset($parameters['date_to'])) {
-                            $dateTo = \Carbon\Carbon::parse($parameters['date_to'])->endOfDay();
-                            if ($createdAt > $dateTo) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    });
-                }
-                
-                $testCompletados = $testAssignments->where('status', 'completed');
-                $testPendientes = $testAssignments->where('status', 'pending');
-                $testEnProgreso = $testAssignments->where('status', 'in_progress');
-                
-                $profesorData = [
-                    'id' => $profesor->id,
-                    'identificacion' => $profesor->document_number ?? 'N/A',
-                    'email' => $profesor->email,
-                    'nombres_completos' => $profesor->full_name,
-                    'programa' => $profesor->programa ? $profesor->programa->nombre : 'N/A',
-                    'facultad' => $profesor->facultad ? $profesor->facultad->nombre : 'N/A',
-                    'institucion' => $profesor->institution ? $profesor->institution->name : 'N/A',
-                    'total_tests' => $testAssignments->count(),
-                    'tests_completados' => $testCompletados->count(),
-                    'tests_pendientes' => $testPendientes->count(),
-                    'tests_en_progreso' => $testEnProgreso->count(),
-                    'ultimo_test' => $testCompletados->sortByDesc('created_at')->first()?->created_at?->format('d/m/Y H:i'),
-                    'estado' => $testCompletados->count() > 0 ? 'Completado' : 'Pendiente'
-                ];
-                
-                // Aplicar filtro
-                $incluir = true;
-                if ($filtro !== 'todos') {
-                    switch ($filtro) {
-                        case 'completados':
-                            $incluir = $profesorData['tests_completados'] > 0;
-                            break;
-                        case 'pendientes':
-                            $incluir = $profesorData['tests_completados'] === 0;
-                            break;
-                    }
-                }
-                
 
-                
-                if ($incluir) {
-                    $datosReporte->push($profesorData);
-                    
-                    // Actualizar contadores
-                    if ($profesorData['tests_completados'] > 0) {
-                        $profesoresCompletados++;
-                    } else {
-                        $profesoresPendientes++;
-                    }
-                    $totalTestsCompletados += $profesorData['tests_completados'];
-                }
-                
-                // Liberar memoria
-                unset($profesor->testAssignments);
-                unset($profesor->institution);
-                unset($profesor->facultad);
-                unset($profesor->programa);
-            }
-        });
-        
-                        // Si no hay datos que cumplan el filtro específico, mantener la colección vacía
-                // pero agregar una bandera para indicar que no hay datos
-                if ($datosReporte->count() === 0 && $filtro !== 'todos') {
-                    \Log::info('No hay datos que cumplan el filtro seleccionado');
-                }
-        
-        $resultado = [
-            'profesores' => $datosReporte,
-            'total_profesores' => $datosReporte->count(),
-            'profesores_completados' => $profesoresCompletados,
-            'profesores_pendientes' => $profesoresPendientes,
-            'total_tests_completados' => $totalTestsCompletados,
-            'filtro_aplicado' => $filtro,
-            'fecha_generacion' => now()->format('d/m/Y H:i:s'),
-            'parametros' => $parameters,
-        ];
-        
-        \Log::info('Resultado final', [
-            'total_profesores' => $resultado['total_profesores'],
-            'profesores_completados' => $resultado['profesores_completados'],
-            'profesores_pendientes' => $resultado['profesores_pendientes'],
-            'total_tests_completados' => $resultado['total_tests_completados']
-        ]);
-        
-        return $resultado;
-    }
 
-    private function getProfesoresCompletadosPreviewData(array $parameters = [])
-    {
-        $data = $this->getProfesoresCompletadosData($parameters);
-        
-        return [
-            'profesores' => $data['profesores']->take(5), // Solo mostrar los primeros 5 para la vista previa
-            'total_profesores' => $data['total_profesores'],
-            'profesores_completados' => $data['profesores_completados'],
-            'profesores_pendientes' => $data['profesores_pendientes'],
-            'total_tests_completados' => $data['total_tests_completados'],
-            'filtro_aplicado' => $data['filtro_aplicado'],
-            'fecha_generacion' => $data['fecha_generacion'],
-            'parametros' => $data['parametros'],
-            'es_vista_previa' => true,
-        ];
-    }
 
-    public function generateProfesoresCompletadosPDF(array $data)
-    {
-        // Configurar PDF para usar menos memoria
-        $pdf = PDF::loadView('reports.profesores-completados', compact('data'));
-        
-        // Configuraciones para optimizar memoria
-        $pdf->setOption('isRemoteEnabled', false);
-        $pdf->setOption('isHtml5ParserEnabled', true);
-        $pdf->setOption('isPhpEnabled', false);
-        $pdf->setOption('memoryLimit', '256M');
-        
-        return $pdf;
-    }
 } 

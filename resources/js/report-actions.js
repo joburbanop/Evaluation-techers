@@ -54,13 +54,7 @@ function generatePDFFromModal() {
             formData.append('date_to', fechaHastaElement.getAttribute('data-fecha-hasta'));
         }
         
-        // Obtener filtro para profesores_completados
-        if (tipoReporte === 'profesores_completados') {
-            const filtroElement = document.querySelector('[data-filtro-profesores]');
-            if (filtroElement) {
-                formData.append('filtro', filtroElement.getAttribute('data-filtro-profesores'));
-            }
-        }
+
         
         // Log de los datos que se van a enviar
         console.log('Datos del formulario:');

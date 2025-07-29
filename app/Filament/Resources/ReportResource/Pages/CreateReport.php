@@ -102,10 +102,7 @@ class CreateReport extends CreateRecord
                                 $entityName = $profesor ? $profesor->name . ' ' . $profesor->apellido1 : '';
                             }
                             break;
-                        case 'profesores_completados':
-                            $entitySelected = true; // No necesita entidad específica
-                            $entityName = 'Reporte de Participación en Evaluación de Competencias';
-                            break;
+
                     }
 
                     if (!$entitySelected) {
@@ -144,9 +141,7 @@ class CreateReport extends CreateRecord
                                                     case 'profesor':
                             $parameters['profesor_id'] = $formData['profesor_id'];
                             break;
-                        case 'profesores_completados':
-                            $parameters['filtro'] = $formData['filtro_profesores'] ?? 'completados';
-                            break;
+
                         }
                         
                         $previewData = $reportService->getPreviewData($formData['tipo_reporte'], $parameters);
@@ -161,8 +156,7 @@ class CreateReport extends CreateRecord
                                 return view('reports.facultad', ['previewData' => $previewData]);
                             case 'universidad':
                                 return view('reports.universidad', ['previewData' => $previewData]);
-                            case 'profesores_completados':
-                                return view('reports.profesores-completados', ['data' => $previewData]);
+
                             default:
                                 return view('filament.modals.report-preview', [
                                     'tipo_reporte' => $formData['tipo_reporte'],
@@ -264,17 +258,6 @@ class CreateReport extends CreateRecord
                 Notification::make()
                     ->title('Reporte generado exitosamente')
                     ->body("El reporte del profesor {$profesor->name} {$profesor->apellido1} ha sido generado y está listo para descargar.")
-                    ->success()
-                    ->send();
-            } elseif (isset($data['tipo_reporte']) && $data['tipo_reporte'] === 'profesores_completados') {
-                $parameters = $this->buildParameters($data);
-                $parameters['filtro'] = $data['filtro_profesores'] ?? 'completados';
-                
-                $report = $reportService->generateProfesoresCompletadosReport($parameters);
-                
-                Notification::make()
-                    ->title('Reporte generado exitosamente')
-                    ->body("El reporte de participación en evaluación de competencias ha sido generado y está listo para descargar.")
                     ->success()
                     ->send();
             }

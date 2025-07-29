@@ -96,7 +96,7 @@ class ReportResource extends Resource
                                         'programa' => 'Reporte por Programa',
                                         'facultad' => 'Reporte por Facultad',
                                         'universidad' => 'Reporte por Universidad',
-                                        'profesores_completados' => 'Reporte de Participación en Evaluación de Competencias',
+                            
                                     ])
                                     ->required()
                                     ->reactive()
@@ -252,7 +252,7 @@ class ReportResource extends Resource
                                         'pendientes' => 'Solo pendientes',
                                     ])
                                     ->default('todos')
-                                    ->visible(fn ($get) => $get('tipo_reporte') === 'profesores_completados')
+                    
                                     ->columnSpan(1),
 
 
@@ -280,14 +280,13 @@ class ReportResource extends Resource
                         'primary' => 'facultad',
                         'success' => 'programa',
                         'warning' => 'profesor',
-                        'info' => 'profesores_completados',
+            
                     ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'universidad' => 'Universidad',
                         'facultad' => 'Facultad',
                         'programa' => 'Programa',
                         'profesor' => 'Profesor',
-                        'profesores_completados' => 'Participación en Evaluación',
                         default => $state,
                     }),
 
@@ -334,7 +333,6 @@ class ReportResource extends Resource
                         'programa' => 'Programa',
                         'facultad' => 'Facultad',
                         'universidad' => 'Universidad',
-                        'profesores_completados' => 'Participación en Evaluación',
                     ]),
 
                 Tables\Filters\SelectFilter::make('status')
@@ -417,9 +415,7 @@ class ReportResource extends Resource
                                         $entity = User::find($record->entity_id);
                                         $entityName = $entity ? $entity->name : null;
                                         break;
-                                    case 'profesores_completados':
-                                        $entityName = 'Reporte de Participación en Evaluación de Competencias';
-                                        break;
+
                                 }
                             }
                             
@@ -439,8 +435,7 @@ class ReportResource extends Resource
                                     return view('reports.facultad', ['previewData' => $previewData]);
                                 case 'universidad':
                                     return view('reports.universidad', ['previewData' => $previewData]);
-                                case 'profesores_completados':
-                                    return view('reports.profesores-completados', ['data' => $previewData]);
+
                                 default:
                                     // Fallback para tipos no especificados
                                     return view('filament.modals.report-preview', [

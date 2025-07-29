@@ -26,14 +26,14 @@ class ReportPdfController extends Controller
         }
 
         $request->validate([
-            'tipo_reporte' => 'required|in:universidad,facultad,programa,profesor,profesores_completados',
+            'tipo_reporte' => 'required|in:universidad,facultad,programa,profesor',
             'entidad_id' => 'nullable|integer',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
         ]);
 
         // Validar que entidad_id esté presente cuando sea necesario
-        if ($request->tipo_reporte !== 'profesores_completados' && (!$request->entidad_id || $request->entidad_id === '')) {
+        if (!$request->entidad_id || $request->entidad_id === '') {
             abort(400, 'El ID de la entidad es requerido para este tipo de reporte.');
         }
 
@@ -70,12 +70,7 @@ class ReportPdfController extends Controller
                     $report = $this->reportService->generateProfesorReport($profesor, $parameters);
                     $entityName = $profesor->full_name;
                     break;
-                case 'profesores_completados':
-                    // Crear el reporte directamente usando el servicio optimizado
-                    $parameters['filtro'] = $request->get('filtro', 'todos');
-                    $report = $this->reportService->generateProfesoresCompletadosReport($parameters);
-                    $entityName = 'Reporte de Participación en Evaluación de Competencias';
-                    break;
+
             }
 
             if (!$report) {
@@ -106,21 +101,14 @@ class ReportPdfController extends Controller
                     $previewParameters['profesor_id'] = $request->entidad_id;
                     $parameters['profesor_id'] = $request->entidad_id;
                     break;
-                case 'profesores_completados':
-                    $previewParameters['filtro'] = $request->get('filtro', 'todos');
-                    $parameters['filtro'] = $request->get('filtro', 'todos');
-                    break;
+
             }
 
             // Generar el PDF usando la vista correcta según el tipo de reporte
             $previewData = $this->reportService->getPreviewData($request->tipo_reporte, $previewParameters);
             
             switch ($request->tipo_reporte) {
-                case 'profesores_completados':
-                    // Usar la vista específica para profesores completados
-                    $data = $this->reportService->getProfesoresCompletadosData($previewParameters);
-                    $pdf = PDF::loadView('reports.profesores-completados', compact('data'));
-                    break;
+
                 case 'profesor':
                     $pdf = PDF::loadView('reports.profesor', compact('previewData'));
                     break;
@@ -146,26 +134,12 @@ class ReportPdfController extends Controller
             }
 
             // Configurar el PDF según el tipo de reporte
-            if ($request->tipo_reporte === 'profesores_completados') {
-                // Configuraciones optimizadas para reportes grandes
-                $pdf->setPaper('A4', 'landscape'); // Usar orientación horizontal para más columnas
-                $pdf->setOption('isRemoteEnabled', false);
-                $pdf->setOption('isHtml5ParserEnabled', true);
-                $pdf->setOption('isPhpEnabled', false);
-                $pdf->setOption('memoryLimit', '512M');
-            } else {
-                // Configuraciones estándar para otros reportes
-                $pdf->setPaper('A4', 'portrait');
-                $pdf->setOption('isRemoteEnabled', true);
-                $pdf->setOption('isHtml5ParserEnabled', true);
-            }
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
 
             // Generar nombre del archivo
-            if ($request->tipo_reporte === 'profesores_completados') {
-                $fileName = 'reporte_participacion_evaluacion_' . date('Y-m-d_H-i-s') . '.pdf';
-            } else {
-                $fileName = 'reporte_' . $request->tipo_reporte . '_' . date('Y-m-d_H-i-s') . '.pdf';
-            }
+            $fileName = 'reporte_' . $request->tipo_reporte . '_' . date('Y-m-d_H-i-s') . '.pdf';
 
             // Si la petición tiene el parámetro redirect, redirigir a la lista de reportes según el rol
             if ($request->has('redirect')) {

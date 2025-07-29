@@ -154,11 +154,7 @@ class ReportController extends Controller
             
             // Generar el PDF usando la vista correcta según el tipo de reporte
             switch ($report->type) {
-                case 'profesores_completados':
-                    $data = $this->reportService->getProfesoresCompletadosData($parameters);
-                    $pdf = \PDF::loadView('reports.profesores-completados', compact('data'));
-                    $pdf->setPaper('A4', 'landscape');
-                    break;
+
                 case 'profesor':
                     $pdf = \PDF::loadView('reports.profesor', compact('previewData'));
                     $pdf->setPaper('A4', 'portrait');
@@ -258,7 +254,7 @@ class ReportController extends Controller
         }
 
         $request->validate([
-            'tipo_reporte' => 'required|in:universidad,facultad,programa,profesor,profesores_completados',
+            'tipo_reporte' => 'required|in:universidad,facultad,programa,profesor',
             'entidad_id' => 'nullable|integer',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
@@ -295,9 +291,7 @@ class ReportController extends Controller
                     $profesor = \App\Models\User::findOrFail($request->entidad_id);
                     $report = $this->reportService->generateProfesorReport($profesor, $parameters);
                     break;
-                case 'profesores_completados':
-                    $report = $this->reportService->generateProfesoresCompletadosReport($parameters);
-                    break;
+
             }
 
             if (!$report) {
