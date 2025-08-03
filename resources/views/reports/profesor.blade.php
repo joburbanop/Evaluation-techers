@@ -33,11 +33,10 @@
         margin-top: 0;
     }
     .professor-stats {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         gap: 15px;
         margin-bottom: 30px;
-        justify-content: space-between;
     }
     
     .professor-stat {
@@ -47,9 +46,7 @@
         padding: 15px 12px;
         text-align: center;
         box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        flex: 1;
         min-width: 120px;
-        max-width: 200px;
     }
 
     .professor-stat-title {
@@ -120,17 +117,14 @@
     /* Estilos específicos para PDF */
     @media print {
         .professor-stats {
-            display: flex !important;
-            flex-wrap: wrap !important;
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
             gap: 10px !important;
             margin-bottom: 20px !important;
-            justify-content: space-between !important;
         }
         
         .professor-stat {
-            flex: 1 !important;
             min-width: 100px !important;
-            max-width: 150px !important;
             padding: 10px 8px !important;
             break-inside: avoid;
             page-break-inside: avoid;
