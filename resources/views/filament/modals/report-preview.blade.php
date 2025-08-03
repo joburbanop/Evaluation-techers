@@ -86,16 +86,19 @@
             </div>
         </div>
         
-                <div class="flex items-center space-x-3">
-                    <a
-                        href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte={{ $tipo_reporte }}@if($tipo_reporte === 'profesor' && isset($previewData['profesor']['id']))&entidad_id={{ $previewData['profesor']['id'] }}@elseif($tipo_reporte === 'facultad' && isset($previewData['facultad']['id']))&entidad_id={{ $previewData['facultad']['id'] }}@elseif($tipo_reporte === 'programa' && isset($previewData['programa']['id']))&entidad_id={{ $previewData['programa']['id'] }}@elseif($tipo_reporte === 'universidad' && isset($previewData['institution']['id']))&entidad_id={{ $previewData['institution']['id'] }}@endif&redirect=1"
-                        target="_blank"
-                        onclick="if(!confirm('¿Está seguro de que desea generar el reporte?')) return false; this.style.pointerEvents='none'; this.innerHTML='🔄 Generando...'; setTimeout(() => { @if(auth()->user()->hasRole('Coordinador')) window.location.href='{{ route('coordinador.reports.index') }}'; @else window.location.href='/admin/reports'; @endif }, 2000);"
-                        style="background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;"
-                    >
-                        ⬇️ Generar Reporte
-                    </a>
+        @if(!isset($isViewingExistingReport) || !$isViewingExistingReport)
+        <div class="flex items-center space-x-3">
+            <a
+                href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte={{ $tipo_reporte }}@if($tipo_reporte === 'profesor' && isset($previewData['profesor']['id']))&entidad_id={{ $previewData['profesor']['id'] }}@elseif($tipo_reporte === 'facultad' && isset($previewData['facultad']['id']))&entidad_id={{ $previewData['facultad']['id'] }}@elseif($tipo_reporte === 'programa' && isset($previewData['programa']['id']))&entidad_id={{ $previewData['programa']['id'] }}@elseif($tipo_reporte === 'universidad' && isset($previewData['institution']['id']))&entidad_id={{ $previewData['institution']['id'] }}@endif&redirect=1"
+                target="_blank"
+                onclick="if(!confirm('¿Está seguro de que desea generar el reporte?')) return false; this.style.pointerEvents='none'; this.innerHTML='🔄 Generando...'; setTimeout(() => { @if(auth()->user()->hasRole('Coordinador')) window.location.href='{{ route('coordinador.reports.index') }}'; @else window.location.href='/admin/reports'; @endif }, 2000);"
+                style="background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;"
+            >
+                ⬇️ Generar Reporte
+            </a>
         </div>
+        @endif
+
     </div>
 
         {{-- Contenido del reporte con mejor espaciado --}}

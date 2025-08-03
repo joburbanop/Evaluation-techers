@@ -281,11 +281,7 @@ class ReportResource extends Resource
                         default => $state,
                     }),
 
-                TextColumn::make('entity.nombre')
-                    ->label('Entidad')
-                    ->searchable()
-                    ->sortable()
-                    ->default('Sin entidad'),
+
 
                 BadgeColumn::make('status')
                     ->label('Estado')
@@ -419,13 +415,13 @@ class ReportResource extends Resource
                             // Usar directamente las vistas específicas según el tipo de reporte
                             switch ($record->type) {
                                 case 'profesor':
-                                    return view('reports.profesor', ['previewData' => $previewData]);
+                                    return view('reports.profesor', ['previewData' => $previewData, 'isViewingExistingReport' => true]);
                                 case 'programa':
-                                    return view('reports.programa', ['previewData' => $previewData]);
+                                    return view('reports.programa', ['previewData' => $previewData, 'isViewingExistingReport' => true]);
                                 case 'facultad':
-                                    return view('reports.facultad', ['previewData' => $previewData]);
+                                    return view('reports.facultad', ['previewData' => $previewData, 'isViewingExistingReport' => true]);
                                 case 'universidad':
-                                    return view('reports.universidad', ['previewData' => $previewData]);
+                                    return view('reports.universidad', ['previewData' => $previewData, 'isViewingExistingReport' => true]);
 
                                 default:
                                     // Fallback para tipos no especificados
@@ -460,36 +456,7 @@ class ReportResource extends Resource
                     ->openUrlInNewTab()
                     ->visible(fn (Report $record) => Auth::user()->hasAnyRole(['Administrador', 'Coordinador']) && $record && $record->status === 'completed'),
 
-                Action::make('regenerate')
-                    ->label('Regenerar')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('warning')
-                    ->visible(fn (Report $record) => Auth::user()->hasRole('Administrador'))
-                    ->action(function (Report $record) {
-                        try {
-                            $reportService = app(ReportService::class);
-                            
-                            if ($record->type === 'facultad') {
-                                $facultad = Facultad::find($record->entity_id);
-                                $reportService->generateFacultadReport($facultad, $record->parameters ?? []);
-                            } elseif ($record->type === 'programa') {
-                                $programa = Programa::find($record->entity_id);
-                                $reportService->generateProgramaReport($programa, $record->parameters ?? []);
-                            }
 
-                            Notification::make()
-                                ->title('Reporte regenerado exitosamente')
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Error al regenerar el reporte')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    })
-                    ->visible(fn (Report $record) => Auth::user()->hasRole('Administrador') && $record && in_array($record->status, ['completed', 'failed'])),
 
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn (Report $record) => Auth::user()->hasRole('Administrador') || (Auth::user()->hasRole('Coordinador') && $record->generated_by === Auth::user()->id)),

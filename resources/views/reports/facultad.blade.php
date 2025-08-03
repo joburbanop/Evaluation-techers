@@ -393,6 +393,7 @@
 
 <div class="faculty-report">
     {{-- Botón de descarga --}}
+    @if(!isset($isViewingExistingReport) || !$isViewingExistingReport)
     <div style="text-align: right; margin-bottom: 20px;">
         <a
             href="{{ auth()->user()->hasRole('Coordinador') ? route('coordinador.reports.pdf') : route('admin.reports.pdf') }}?tipo_reporte=facultad&entidad_id={{ $previewData['entidad']['id'] ?? '' }}&redirect=1"
@@ -403,6 +404,7 @@
             ⬇️ Generar Reporte
         </a>
     </div>
+    @endif
 
     <div class="faculty-header">
         <h1>Reporte de Facultad</h1>
