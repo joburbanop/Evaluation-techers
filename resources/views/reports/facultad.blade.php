@@ -58,10 +58,9 @@
     
     .faculty-stats {
         display: flex;
-        flex-direction: row;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 20px;
+        gap: 15px;
+        margin-bottom: 30px;
         justify-content: space-between;
         width: 100%;
     }
@@ -73,22 +72,21 @@
         padding: 15px 12px;
         text-align: center;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        flex: 1;
+        flex: 0 0 calc(14.28% - 13px);
         min-width: 120px;
-        max-width: 200px;
     }
     
     .faculty-stat-title {
         color: #3b82f6;
         font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 8px;
+        font-size: 10px;
+        margin-bottom: 5px;
         line-height: 1.2;
     }
     
     .faculty-stat-value {
         color: #1d4ed8;
-        font-size: 20px;
+        font-size: 16px;
         font-weight: bold;
         line-height: 1.2;
     }
@@ -203,10 +201,9 @@
         
         .faculty-stats {
             display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            gap: 6px !important;
-            margin-bottom: 15px !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            margin-bottom: 20px !important;
             justify-content: space-between !important;
             width: 100% !important;
         }
@@ -215,27 +212,28 @@
             background: #f0f9ff !important;
             border: 1px solid #bae6fd !important;
             border-radius: 6px !important;
-            padding: 6px 4px !important;
+            padding: 10px 8px !important;
             text-align: center !important;
             box-shadow: none !important;
-            flex: 1 !important;
-            min-width: 60px !important;
-            max-width: none !important;
+            flex: 0 0 calc(14.28% - 9px) !important;
+            min-width: 100px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
         
         .faculty-stat-title {
             color: #3b82f6 !important;
             font-weight: bold !important;
-            font-size: 6px !important;
-            margin-bottom: 1px !important;
-            line-height: 1 !important;
+            font-size: 8px !important;
+            margin-bottom: 3px !important;
+            line-height: 1.2 !important;
         }
         
         .faculty-stat-value {
             color: #1d4ed8 !important;
-            font-size: 9px !important;
+            font-size: 12px !important;
             font-weight: bold !important;
-            line-height: 1 !important;
+            line-height: 1.2 !important;
         }
         
         .faculty-table-container {

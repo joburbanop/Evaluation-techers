@@ -33,29 +33,36 @@
         margin-top: 0;
     }
     .professor-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 30px;
-        margin-bottom: 50px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+        justify-content: space-between;
     }
+    
     .professor-stat {
         background: #f0f9ff;
         border: 1px solid #bae6fd;
-        border-radius: 12px;
-        padding: 30px 25px;
+        border-radius: 8px;
+        padding: 15px 12px;
         text-align: center;
         box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
+        flex: 0 0 calc(14.28% - 13px);
+        min-width: 120px;
     }
+
     .professor-stat-title {
         color: #3b82f6;
         font-weight: 600;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
+        font-size: 10px;
+        margin-bottom: 5px;
+        line-height: 1.2;
     }
     .professor-stat-value {
         color: #1d4ed8;
-        font-size: 1.8rem;
+        font-size: 16px;
         font-weight: 700;
+        line-height: 1.2;
     }
     .professor-table-container {
         background: white;
@@ -107,6 +114,33 @@
         height: 100%;
         background: linear-gradient(90deg, #3b82f6, #1d4ed8);
         transition: width 0.3s ease;
+    }
+    
+    /* Estilos específicos para PDF */
+    @media print {
+        .professor-stats {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            margin-bottom: 20px !important;
+            justify-content: space-between !important;
+        }
+        
+        .professor-stat {
+            flex: 0 0 calc(14.28% - 9px) !important;
+            min-width: 100px !important;
+            padding: 10px 8px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        .professor-stat-title {
+            font-size: 8px !important;
+        }
+        
+        .professor-stat-value {
+            font-size: 14px !important;
+        }
     }
 </style>
 
