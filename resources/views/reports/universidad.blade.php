@@ -57,11 +57,10 @@
     }
     
     .university-stats {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 15px;
         margin-bottom: 30px;
-        justify-content: space-between;
         width: 100%;
     }
     
@@ -72,7 +71,6 @@
         padding: 15px 12px;
         text-align: center;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        flex: 0 0 calc(14.28% - 13px);
         min-width: 120px;
     }
     
@@ -200,11 +198,10 @@
         }
         
         .university-stats {
-            display: flex !important;
-            flex-wrap: wrap !important;
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
             gap: 10px !important;
             margin-bottom: 20px !important;
-            justify-content: space-between !important;
             width: 100% !important;
         }
         
@@ -215,7 +212,6 @@
             padding: 10px 8px !important;
             text-align: center !important;
             box-shadow: none !important;
-            flex: 0 0 calc(14.28% - 9px) !important;
             min-width: 100px !important;
             break-inside: avoid;
             page-break-inside: avoid;
@@ -426,43 +422,63 @@
         </div>
     </div>
 
-    <div class="university-stats" style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; margin-bottom: 20px; justify-content: space-between; width: 100%;">
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+    <div class="university-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; width: 100%;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Total de Facultades</div>
             <div class="university-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_facultades'] ?? 0 }}</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Total de Programas</div>
             <div class="university-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_programas'] ?? 0 }}</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Total de Profesores</div>
             <div class="university-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_profesores'] ?? 0 }}</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Profesores Completados</div>
             <div class="university-stat-value" style="color: #059669; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_profesores_completados'] ?? 0 }}</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Profesores Pendientes</div>
             <div class="university-stat-value" style="color: #dc2626; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['total_profesores_pendientes'] ?? 0 }}</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio de la Institución</div>
-            <div class="university-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_institucion'] ?? 0, 2) }}</div>
+            <div class="university-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_institucion'] ?? 0, 2) }}%</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        @if(isset($previewData['promedios_por_test']) && count($previewData['promedios_por_test']) > 0)
+            @foreach($previewData['promedios_por_test'] as $testPromedio)
+                <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
+                    <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio {{ $testPromedio['test_name'] }}</div>
+                    <div class="university-stat-value" style="color: #7c3aed; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($testPromedio['promedio'], 2) }}%</div>
+                </div>
+            @endforeach
+        @endif
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Puntuación Máxima</div>
             <div class="university-stat-value" style="color: #059669; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
         </div>
-        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+        <div class="university-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; min-width: 120px;">
             <div class="university-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Puntuación Mínima</div>
             <div class="university-stat-value" style="color: #dc2626; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['puntuacion_minima'] ?? 0 }}</div>
         </div>
     </div>
 
+    <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 0.8rem; color: #1d4ed8;">
+        <strong>Información sobre los Promedios:</strong><br>
+        • <strong>Promedio de la Institución:</strong> Calculado considerando todos los tests asignados a todos los profesores de la institución.<br>
+        • <strong>Promedio por Test:</strong> Promedio específico de cada evaluación individual.<br>
+        • <strong>Promedio General de Facultades:</strong> Cada facultad tiene su propio promedio basado en sus profesores y tests asignados.
+    </div>
+
     <div class="university-table-container">
         <h2 class="university-section-title">Facultades de la Institución</h2>
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: #1d4ed8;">
+            <strong>Nota:</strong> El "Promedio General" de cada facultad se calcula considerando todos los tests asignados a sus profesores. 
+            El "Promedio General" total de la institución (6.03%) no es un promedio simple de los promedios de las facultades, 
+            sino un promedio ponderado que considera el número de profesores y tests de cada facultad.
+        </div>
         <table class="university-table">
             <thead>
                 <tr>
@@ -483,15 +499,15 @@
                         <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ $resultado['total_profesores'] }}</td>
                         <td>
                             @if(isset($resultado['ha_completado_todos']) && $resultado['ha_completado_todos'])
-                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">✓ Completado</span>
+                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">Completado</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @else
-                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">⚠ Pendiente</span>
+                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">Pendiente</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}</div>
+                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}%</div>
                         </td>
                         <td style="text-align: center; color: #059669; font-weight: 700; font-size: 0.7rem;">
                             {{ $resultado['profesores_completados'] }}
@@ -501,24 +517,45 @@
                         </td>
                     </tr>
                 @endforeach
+                <!-- Fila de Totales para Facultades -->
+                <tr style="background: #f8fafc; border-top: 2px solid #3b82f6;">
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">TOTAL</td>
+                    <td style="font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">{{ $previewData['resultados_por_facultad']->count() }} Facultades</td>
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">{{ $previewData['resultados_por_facultad']->sum('total_profesores') }}</td>
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">
+                        {{ $previewData['resultados_por_facultad']->sum('tests_completados') }}/{{ $previewData['resultados_por_facultad']->sum('total_tests') }}
+                    </td>
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">
+                        {{ number_format($previewData['promedio_institucion'] ?? 0, 2) }}%
+                    </td>
+                    <td style="text-align: center; font-weight: 700; color: #059669; font-size: 0.8rem;">
+                        {{ $previewData['resultados_por_facultad']->sum('profesores_completados') }}
+                    </td>
+                    <td style="text-align: center; font-weight: 700; color: #dc2626; font-size: 0.8rem;">
+                        {{ $previewData['resultados_por_facultad']->sum('profesores_pendientes') }}
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
 
     <div class="university-table-container">
         <h2 class="university-section-title">Programas de la Institución</h2>
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: #1d4ed8;">
+            <strong>Nota:</strong> El "Promedio General" de cada programa se calcula considerando todos los tests asignados a sus profesores. 
+            Al igual que con las facultades, el promedio total no es un promedio simple de los promedios de los programas.
+        </div>
         <table class="university-table">
             <thead>
                 <tr>
                     <th style="width: 6%;">Pos.</th>
-                    <th style="width: 20%;">Nombre del Programa</th>
-                    <th style="width: 15%;">Facultad</th>
-                    <th style="width: 10%;">Nivel Académico</th>
-                    <th style="width: 10%;">Total Profesores</th>
-                    <th style="width: 10%;">Estado</th>
-                    <th style="width: 10%;">Promedio General</th>
-                    <th style="width: 10%;">Profesores Completados</th>
-                    <th style="width: 10%;">Profesores Pendientes</th>
+                    <th style="width: 25%;">Nombre del Programa</th>
+                    <th style="width: 20%;">Facultad</th>
+                    <th style="width: 12%;">Total Profesores</th>
+                    <th style="width: 12%;">Estado</th>
+                    <th style="width: 12%;">Promedio General</th>
+                    <th style="width: 12%;">Profesores Completados</th>
+                    <th style="width: 12%;">Profesores Pendientes</th>
                 </tr>
             </thead>
             <tbody>
@@ -527,21 +564,18 @@
                         <td style="text-align: center; font-weight: 600; color: #3b82f6;">{{ $index + 1 }}</td>
                         <td style="font-weight: 600; color: #1d4ed8;">{{ $resultado['nombre_programa'] }}</td>
                         <td style="font-size: 0.6rem; color: #666;">{{ $resultado['facultad_nombre'] }}</td>
-                        <td style="text-align: center; font-size: 0.6rem; color: #8b5cf6; font-weight: 600;">
-                            {{ $resultado['nivel_academico'] }}
-                        </td>
                         <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ $resultado['total_profesores'] }}</td>
                         <td>
                             @if(isset($resultado['ha_completado_todos']) && $resultado['ha_completado_todos'])
-                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">✓ Completado</span>
+                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">Completado</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @else
-                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">⚠ Pendiente</span>
+                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">Pendiente</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}</div>
+                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}%</div>
                         </td>
                         <td style="text-align: center; color: #059669; font-weight: 700; font-size: 0.7rem;">
                             {{ $resultado['profesores_completados'] }}
@@ -551,6 +585,25 @@
                         </td>
                     </tr>
                 @endforeach
+                <!-- Fila de Totales para Programas -->
+                <tr style="background: #f8fafc; border-top: 2px solid #3b82f6;">
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">TOTAL</td>
+                    <td style="font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">{{ $previewData['resultados_por_programa']->count() }} Programas</td>
+                    <td style="font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">-</td>
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">{{ $previewData['resultados_por_programa']->sum('total_profesores') }}</td>
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">
+                        {{ $previewData['resultados_por_programa']->sum('tests_completados') }}/{{ $previewData['resultados_por_programa']->sum('total_tests') }}
+                    </td>
+                    <td style="text-align: center; font-weight: 700; color: #1d4ed8; font-size: 0.8rem;">
+                        {{ number_format($previewData['promedio_institucion'] ?? 0, 2) }}%
+                    </td>
+                    <td style="text-align: center; font-weight: 700; color: #059669; font-size: 0.8rem;">
+                        {{ $previewData['resultados_por_programa']->sum('profesores_completados') }}
+                    </td>
+                    <td style="text-align: center; font-weight: 700; color: #dc2626; font-size: 0.8rem;">
+                        {{ $previewData['resultados_por_programa']->sum('profesores_pendientes') }}
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
