@@ -823,17 +823,51 @@ class ReportService
             ];
         });
         
-        // Calcular promedio general basado en los porcentajes de cada test completado
+        // Calcular promedio general basado en TODOS los tests asignados (completados y pendientes)
         $testsCompletadosCollection = $testsAsignadosDetalle->filter(function ($test) {
             return $test['completado'];
         });
         
         $promedioGeneral = 0;
+        $promediosPorTest = [];
+        
+        // Calcular promedio general considerando TODOS los tests asignados (completados y pendientes)
+        $totalPuntajeObtenido = 0;
+        $totalPuntajeMaximo = 0;
+        
+        // Sumar puntajes de tests completados
+        foreach ($testsAsignadosDetalle as $test) {
+            $totalPuntajeObtenido += $test['puntaje'];
+            $totalPuntajeMaximo += $test['puntaje_maximo'];
+        }
+        
+        // Sumar puntajes máximos de tests pendientes
+        foreach ($testsAsignados as $assignment) {
+            if ($assignment->status !== 'completed') {
+                $puntajeMaximoPendiente = DB::table('test_assignments as ta')
+                    ->join('questions as q', 'ta.test_id', '=', 'q.test_id')
+                    ->join('options as o', 'q.id', '=', 'o.question_id')
+                    ->where('ta.id', $assignment->id)
+                    ->groupBy('q.id')
+                    ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                    ->get()
+                    ->sum('max_score_per_question');
+                
+                $totalPuntajeMaximo += $puntajeMaximoPendiente;
+            }
+        }
+        
+        $promedioGeneral = $totalPuntajeMaximo > 0 ? round(($totalPuntajeObtenido / $totalPuntajeMaximo) * 100, 2) : 0;
+        
+        // Calcular promedio individual de cada test completado
         if ($testsCompletadosCollection->count() > 0) {
-            $porcentajesTests = $testsCompletadosCollection->map(function ($test) {
-                return $test['puntaje_maximo'] > 0 ? round(($test['puntaje'] / $test['puntaje_maximo']) * 100, 1) : 0;
-            });
-            $promedioGeneral = $porcentajesTests->avg();
+            foreach ($testsCompletadosCollection as $index => $test) {
+                $porcentajeTest = $test['puntaje_maximo'] > 0 ? round(($test['puntaje'] / $test['puntaje_maximo']) * 100, 2) : 0;
+                $promediosPorTest[] = [
+                    'nombre' => $test['nombre'],
+                    'promedio' => $porcentajeTest
+                ];
+            }
         }
         
         return [
@@ -861,6 +895,7 @@ class ReportService
             'tests_completados' => $testsCompletadosCollection->count(),
             'total_tests' => $totalTests,
             'promedio_general' => round($promedioGeneral, 2),
+            'promedios_por_test' => $promediosPorTest,
             'puntuacion_maxima' => $stats->max_score ?? 0,
             'puntuacion_minima' => $stats->min_score ?? 0,
             'resultados_por_area' => $resultadosPorArea->toArray(),

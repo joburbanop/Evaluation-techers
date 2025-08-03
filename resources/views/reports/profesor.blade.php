@@ -47,8 +47,9 @@
         padding: 15px 12px;
         text-align: center;
         box-shadow: 0 1px 3px rgba(147, 197, 253, 0.2);
-        flex: 0 0 calc(14.28% - 13px);
+        flex: 1;
         min-width: 120px;
+        max-width: 200px;
     }
 
     .professor-stat-title {
@@ -127,8 +128,9 @@
         }
         
         .professor-stat {
-            flex: 0 0 calc(14.28% - 9px) !important;
+            flex: 1 !important;
             min-width: 100px !important;
+            max-width: 150px !important;
             padding: 10px 8px !important;
             break-inside: avoid;
             page-break-inside: avoid;
@@ -227,6 +229,14 @@
             <div class="professor-stat-title">Promedio General</div>
             <div class="professor-stat-value">{{ number_format($previewData['promedio_general'] ?? 0, 2) }}</div>
         </div>
+        @if(isset($previewData['promedios_por_test']) && count($previewData['promedios_por_test']) > 0)
+            @foreach($previewData['promedios_por_test'] as $testPromedio)
+                <div class="professor-stat">
+                    <div class="professor-stat-title">Promedio {{ $testPromedio['nombre'] }}</div>
+                    <div class="professor-stat-value" style="color: #7c3aed;">{{ number_format($testPromedio['promedio'], 2) }}%</div>
+                </div>
+            @endforeach
+        @endif
         <div class="professor-stat">
             <div class="professor-stat-title">Puntuación Máxima</div>
             <div class="professor-stat-value" style="color: #059669;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
