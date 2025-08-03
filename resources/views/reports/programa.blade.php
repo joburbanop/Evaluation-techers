@@ -417,8 +417,16 @@
         </div>
         <div class="program-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
             <div class="program-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio del Programa</div>
-            <div class="program-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_programa'] ?? 0, 2) }}</div>
+            <div class="program-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_programa'] ?? 0, 2) }}%</div>
         </div>
+        @if(isset($previewData['promedios_por_test']) && count($previewData['promedios_por_test']) > 0)
+            @foreach($previewData['promedios_por_test'] as $testPromedio)
+                <div class="program-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+                    <div class="program-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio {{ $testPromedio['test_name'] }}</div>
+                    <div class="program-stat-value" style="color: #7c3aed; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($testPromedio['promedio'], 2) }}%</div>
+                </div>
+            @endforeach
+        @endif
         <div class="program-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
             <div class="program-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Puntuación Máxima</div>
             <div class="program-stat-value" style="color: #059669; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
@@ -434,15 +442,11 @@
         <table class="program-table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">Pos.</th>
-                    <th style="width: 20%;">Nombre Completo</th>
-                    <th style="width: 12%;">Estado</th>
-                    <th style="width: 12%;">Promedio General</th>
-                    @if(isset($previewData['area_stats']) && count($previewData['area_stats']) > 0)
-                        @foreach($previewData['area_stats'] as $area)
-                            <th style="width: 12%;">{{ is_array($area) ? $area['area_name'] : $area->area_name }}</th>
-                        @endforeach
-                    @endif
+                    <th style="width: 6%;">Pos.</th>
+                    <th style="width: 18%;">Nombre Completo</th>
+                    <th style="width: 10%;">Estado</th>
+                    <th style="width: 10%;">Promedio General</th>
+                    <th style="width: 56%;">Rendimiento por Área y Tests</th>
                 </tr>
             </thead>
             <tbody>
@@ -452,30 +456,55 @@
                         <td style="font-weight: 600; color: #1d4ed8;">{{ $resultado['nombre_completo'] }}</td>
                         <td>
                             @if(isset($resultado['ha_completado_todos']) && $resultado['ha_completado_todos'])
-                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">✓ Completado</span>
+                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">Completado</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @else
-                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">⚠ Pendiente</span>
+                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">Pendiente</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}</div>
+                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}%</div>
                         </td>
-                        @if(isset($previewData['area_stats']) && count($previewData['area_stats']) > 0)
-                            @foreach($previewData['area_stats'] as $area)
-                                @php
-                                    $areaResultado = $resultado['resultados_por_area']->firstWhere('area_name', is_array($area) ? $area['area_name'] : $area->area_name);
-                                @endphp
-                                <td style="text-align: center;">
-                                    @if($areaResultado)
-                                        <div style="font-weight: 700; color: #3b82f6; font-size: 0.65rem;">{{ number_format($areaResultado['puntaje'], 1) }}/{{ $areaResultado['total_posible'] }}</div>
+                        <td style="text-align: left; padding: 8px;">
+                            <div style="display: flex; gap: 15px;">
+                                <!-- Tests Individuales -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; color: #3b82f6; font-size: 0.65rem; margin-bottom: 4px; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px;">
+                                        Tests Completados:
+                                    </div>
+                                    @if(isset($resultado['tests_individuales']) && count($resultado['tests_individuales']) > 0)
+                                        @foreach($resultado['tests_individuales'] as $test)
+                                            <div style="margin-bottom: 3px; padding: 2px 4px; background: #f0f9ff; border-radius: 3px; border-left: 2px solid #3b82f6;">
+                                                <div style="font-weight: 600; color: #1d4ed8; font-size: 0.6rem;">
+                                                    {{ $test['test_name'] }}: {{ $test['puntaje'] }}/{{ $test['puntaje_maximo'] }} ({{ $test['porcentaje'] }}%)
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     @else
-                                        <span style="color: #999; font-style: italic; font-size: 0.6rem;">0.0/100</span>
+                                        <span style="color: #999; font-style: italic; font-size: 0.55rem;">Sin tests completados</span>
                                     @endif
-                                </td>
-                            @endforeach
-                        @endif
+                                </div>
+                                
+                                <!-- Resultados por Área -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; color: #3b82f6; font-size: 0.65rem; margin-bottom: 4px; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px;">
+                                        Rendimiento por Área:
+                                    </div>
+                                    @if(isset($resultado['resultados_por_area']) && count($resultado['resultados_por_area']) > 0)
+                                        @foreach($resultado['resultados_por_area'] as $area)
+                                            <div style="margin-bottom: 3px; padding: 2px 4px; background: #f0f9ff; border-radius: 3px; border-left: 2px solid #10b981;">
+                                                <div style="font-weight: 600; color: #059669; font-size: 0.6rem;">
+                                                    {{ $area['area_name'] }}: {{ $area['puntaje'] }}/{{ $area['total_posible'] }} ({{ $area['porcentaje'] }}%)
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <span style="color: #999; font-style: italic; font-size: 0.55rem;">Sin datos de áreas</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
