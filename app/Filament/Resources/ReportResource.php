@@ -244,16 +244,7 @@ class ReportResource extends Resource
                                     ->visible(fn ($get) => $get('tipo_reporte') === 'profesor')
                                     ->columnSpan(1),
 
-                                Select::make('filtro_profesores')
-                                    ->label('Filtrar por')
-                                    ->options([
-                                        'todos' => 'Todos los profesores',
-                                        'completados' => 'Solo completados',
-                                        'pendientes' => 'Solo pendientes',
-                                    ])
-                                    ->default('todos')
-                    
-                                    ->columnSpan(1),
+
 
 
                             ]),

@@ -757,8 +757,8 @@ class ReportService
             ];
         });
         
-        // Obtener información detallada de tests asignados
-        $testsAsignadosDetalle = $testsAsignados->map(function ($assignment) {
+        // Obtener información detallada de tests asignados con resultados por área
+        $testsAsignadosDetalle = $testsAsignados->map(function ($assignment) use ($todasLasAreas) {
             $puntaje = DB::table('test_responses as tr')
                 ->join('test_assignments as ta', 'tr.test_assignment_id', '=', 'ta.id')
                 ->where('ta.id', $assignment->id)
@@ -777,24 +777,63 @@ class ReportService
                 ->get()
                 ->sum('max_score_per_question');
             
+            // Calcular resultados por área específicamente para este test
+            $resultadosPorAreaTest = $todasLasAreas->map(function ($area) use ($assignment) {
+                // Obtener puntaje obtenido en esta área para este test específico
+                $puntajeObtenido = DB::table('test_assignments as ta')
+                    ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
+                    ->join('questions as q', 'tr.question_id', '=', 'q.id')
+                    ->where('ta.id', $assignment->id)
+                    ->where('ta.status', 'completed')
+                    ->where('q.area_id', $area->id)
+                    ->sum('tr.score');
+                
+                // Calcular puntaje máximo posible para las preguntas que realmente se respondieron en esta área para este test
+                $puntajeMaximo = DB::table('test_assignments as ta')
+                    ->join('test_responses as tr', 'ta.id', '=', 'tr.test_assignment_id')
+                    ->join('questions as q', 'tr.question_id', '=', 'q.id')
+                    ->join('options as o', 'q.id', '=', 'o.question_id')
+                    ->where('ta.id', $assignment->id)
+                    ->where('ta.status', 'completed')
+                    ->where('q.area_id', $area->id)
+                    ->groupBy('q.id')
+                    ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                    ->get()
+                    ->sum('max_score_per_question');
+                
+                $porcentaje = $puntajeMaximo > 0 ? round(($puntajeObtenido / $puntajeMaximo) * 100, 1) : 0;
+                
+                return [
+                    'area_name' => $area->name,
+                    'puntaje_obtenido' => round($puntajeObtenido, 2),
+                    'puntaje_maximo' => round($puntajeMaximo, 2),
+                    'porcentaje' => $porcentaje
+                ];
+            })->toArray();
+            
             return [
+                'id' => $assignment->id,
                 'nombre' => $assignment->test->name ?? 'Test sin nombre',
                 'completado' => $assignment->status === 'completed',
                 'fecha_asignacion' => $assignment->created_at ? $assignment->created_at->format('d/m/Y') : 'N/A',
                 'fecha_completado' => $assignment->completed_at ? $assignment->completed_at->format('d/m/Y') : 'Pendiente',
                 'puntaje' => round($puntaje, 2),
-                'puntaje_maximo' => round($puntajeMaximo, 2)
+                'puntaje_maximo' => round($puntajeMaximo, 2),
+                'resultados_por_area' => $resultadosPorAreaTest
             ];
         });
         
-        // Calcular promedio general basado en los porcentajes por área
-        $areasConDatos = $resultadosPorArea->filter(function ($area) {
-            return $area['puntaje_maximo'] > 0;
+        // Calcular promedio general basado en los porcentajes de cada test completado
+        $testsCompletadosCollection = $testsAsignadosDetalle->filter(function ($test) {
+            return $test['completado'];
         });
         
         $promedioGeneral = 0;
-        if ($areasConDatos->count() > 0) {
-            $promedioGeneral = $areasConDatos->avg('porcentaje');
+        if ($testsCompletadosCollection->count() > 0) {
+            $porcentajesTests = $testsCompletadosCollection->map(function ($test) {
+                return $test['puntaje_maximo'] > 0 ? round(($test['puntaje'] / $test['puntaje_maximo']) * 100, 1) : 0;
+            });
+            $promedioGeneral = $porcentajesTests->avg();
         }
         
         return [
@@ -819,13 +858,13 @@ class ReportService
             'total_evaluaciones' => $stats->total_evaluaciones ?? 0,
             'evaluaciones_realizadas' => $evaluacionesCompletadas,
             'evaluaciones_pendientes' => $evaluacionesPendientes,
-            'tests_completados' => $testsCompletados,
+            'tests_completados' => $testsCompletadosCollection->count(),
             'total_tests' => $totalTests,
             'promedio_general' => round($promedioGeneral, 2),
             'puntuacion_maxima' => $stats->max_score ?? 0,
             'puntuacion_minima' => $stats->min_score ?? 0,
-            'resultados_por_area' => $resultadosPorArea,
-            'tests_asignados' => $testsAsignadosDetalle,
+            'resultados_por_area' => $resultadosPorArea->toArray(),
+            'tests_asignados' => $testsAsignadosDetalle->toArray(),
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];
