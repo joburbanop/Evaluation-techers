@@ -447,8 +447,16 @@
         </div>
         <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
             <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio de la Facultad</div>
-            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_facultad'] ?? 0, 2) }}</div>
+            <div class="faculty-stat-value" style="color: #1d4ed8; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($previewData['promedio_facultad'] ?? 0, 2) }}%</div>
         </div>
+        @if(isset($previewData['promedios_por_test']) && count($previewData['promedios_por_test']) > 0)
+            @foreach($previewData['promedios_por_test'] as $testPromedio)
+                <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
+                    <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Promedio {{ $testPromedio['test_name'] }}</div>
+                    <div class="faculty-stat-value" style="color: #7c3aed; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ number_format($testPromedio['promedio'], 2) }}%</div>
+                </div>
+            @endforeach
+        @endif
         <div class="faculty-stat" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 8px; text-align: center; flex: 1; min-width: 80px; max-width: none;">
             <div class="faculty-stat-title" style="color: #3b82f6; font-weight: bold; font-size: 10px; margin-bottom: 4px; line-height: 1.2;">Puntuación Máxima</div>
             <div class="faculty-stat-value" style="color: #059669; font-size: 16px; font-weight: bold; line-height: 1.2;">{{ $previewData['puntuacion_maxima'] ?? 0 }}</div>
@@ -464,13 +472,12 @@
         <table class="faculty-table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">Pos.</th>
-                    <th style="width: 25%;">Nombre del Programa</th>
-                    <th style="width: 12%;">Total Profesores</th>
-                    <th style="width: 12%;">Estado</th>
-                    <th style="width: 12%;">Promedio General</th>
-                    <th style="width: 12%;">Profesores Completados</th>
-                    <th style="width: 12%;">Profesores Pendientes</th>
+                    <th style="width: 6%;">Pos.</th>
+                    <th style="width: 20%;">Nombre del Programa</th>
+                    <th style="width: 8%;">Total Profesores</th>
+                    <th style="width: 8%;">Estado</th>
+                    <th style="width: 8%;">Promedio General</th>
+                    <th style="width: 50%;">Promedios por Test</th>
                 </tr>
             </thead>
             <tbody>
@@ -481,21 +488,30 @@
                         <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ $resultado['total_profesores'] }}</td>
                         <td>
                             @if(isset($resultado['ha_completado_todos']) && $resultado['ha_completado_todos'])
-                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">✓ Completado</span>
+                                <span style="color: #059669; font-weight: 600; font-size: 0.6rem;">Completado</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @else
-                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">⚠ Pendiente</span>
+                                <span style="color: #dc2626; font-weight: 600; font-size: 0.6rem;">Pendiente</span>
                                 <div style="font-size: 0.55rem; color: #666;">{{ $resultado['tests_completados'] }}/{{ $resultado['total_tests'] }}</div>
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}</div>
+                            <div style="font-weight: 700; font-size: 0.7rem; color: #3b82f6;">{{ number_format($resultado['promedio_general'], 2) }}%</div>
                         </td>
-                        <td style="text-align: center; color: #059669; font-weight: 700; font-size: 0.7rem;">
-                            {{ $resultado['profesores_completados'] }}
-                        </td>
-                        <td style="text-align: center; color: #dc2626; font-weight: 700; font-size: 0.7rem;">
-                            {{ $resultado['profesores_pendientes'] }}
+                        <td style="text-align: left; padding: 8px;">
+                            <div style="display: flex; gap: 15px;">
+                                @if(isset($resultado['promedios_por_test']) && count($resultado['promedios_por_test']) > 0)
+                                    @foreach($resultado['promedios_por_test'] as $testPromedio)
+                                        <div style="margin-bottom: 3px; padding: 2px 4px; background: #f0f9ff; border-radius: 3px; border-left: 2px solid #7c3aed;">
+                                            <div style="font-weight: 600; color: #7c3aed; font-size: 0.6rem;">
+                                                {{ $testPromedio['test_name'] }}: {{ number_format($testPromedio['promedio'], 2) }}%
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <span style="color: #999; font-style: italic; font-size: 0.55rem;">Sin datos de tests</span>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @endforeach

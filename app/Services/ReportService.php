@@ -316,8 +316,62 @@ class ReportService
         $puntuacionMinima = $evaluaciones->min('score') ?? 0;
         $fechaAplicacion = now()->format('d/m/Y');
         
+        // Calcular promedio de la facultad basado en TODOS los tests asignados a TODOS los profesores
+        $totalPuntajeObtenidoFacultad = 0;
+        $totalPuntajeMaximoFacultad = 0;
+        $promediosPorTest = [];
+        
+        // Calcular promedios por test individual para la facultad
+        foreach ($testsActivos as $test) {
+            $puntajeObtenidoTest = 0;
+            $puntajeMaximoTest = 0;
+            $profesoresConTest = 0;
+            
+            foreach ($profesoresFacultad as $profesor) {
+                $assignment = TestAssignment::where('user_id', $profesor->id)
+                    ->where('test_id', $test->id)
+                    ->first();
+                
+                if ($assignment) {
+                    $profesoresConTest++;
+                    
+                    if ($assignment->status === 'completed') {
+                        $puntaje = DB::table('test_responses as tr')
+                            ->where('test_assignment_id', $assignment->id)
+                            ->sum('tr.score');
+                        $puntajeObtenidoTest += $puntaje;
+                    }
+                    
+                    // Calcular puntaje máximo para este test
+                    $puntajeMaximo = DB::table('questions as q')
+                        ->join('options as o', 'q.id', '=', 'o.question_id')
+                        ->where('q.test_id', $test->id)
+                        ->groupBy('q.id')
+                        ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                        ->get()
+                        ->sum('max_score_per_question');
+                    
+                    $puntajeMaximoTest += $puntajeMaximo;
+                }
+            }
+            
+            // Agregar a totales de la facultad
+            $totalPuntajeObtenidoFacultad += $puntajeObtenidoTest;
+            $totalPuntajeMaximoFacultad += $puntajeMaximoTest;
+            
+            // Calcular promedio para este test
+            $promedioTest = $puntajeMaximoTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTest) * 100, 2) : 0;
+            $promediosPorTest[] = [
+                'test_name' => $test->name,
+                'promedio' => $promedioTest
+            ];
+        }
+        
+        // Calcular promedio general de la facultad
+        $promedioFacultad = $totalPuntajeMaximoFacultad > 0 ? round(($totalPuntajeObtenidoFacultad / $totalPuntajeMaximoFacultad) * 100, 2) : 0;
+        
         // Obtener resultados por programa ordenados de mayor a menor
-        $resultadosPorPrograma = $programasFacultad->map(function($programa) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos) {
+        $resultadosPorPrograma = $programasFacultad->map(function($programa) use ($asignacionesCompletadas, $totalTestsActivos, $testsActivos) {
             // Obtener profesores de este programa
             $profesoresPrograma = User::whereHas('roles', function($q) {
                 $q->where('name', 'Docente');
@@ -336,9 +390,78 @@ class ReportService
             $totalProfesoresCompletadosPrograma = $profesoresCompletadosPrograma->count();
             $totalProfesoresPendientesPrograma = $totalProfesoresPrograma - $totalProfesoresCompletadosPrograma;
             
-            // Obtener evaluaciones de este programa
-            $evaluacionesPrograma = $evaluaciones->where('programa_id', $programa->id);
-            $promedioPrograma = $evaluacionesPrograma->avg('score') ?? 0;
+            // Calcular promedio general del programa basado en TODOS los tests asignados
+            $totalPuntajeObtenidoPrograma = 0;
+            $totalPuntajeMaximoPrograma = 0;
+            
+            foreach ($testsActivos as $test) {
+                foreach ($profesoresPrograma as $profesor) {
+                    $assignment = TestAssignment::where('user_id', $profesor->id)
+                        ->where('test_id', $test->id)
+                        ->first();
+                    
+                    if ($assignment) {
+                        if ($assignment->status === 'completed') {
+                            $puntaje = DB::table('test_responses as tr')
+                                ->where('test_assignment_id', $assignment->id)
+                                ->sum('tr.score');
+                            $totalPuntajeObtenidoPrograma += $puntaje;
+                        }
+                        
+                        // Calcular puntaje máximo para este test
+                        $puntajeMaximo = DB::table('questions as q')
+                            ->join('options as o', 'q.id', '=', 'o.question_id')
+                            ->where('q.test_id', $test->id)
+                            ->groupBy('q.id')
+                            ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                            ->get()
+                            ->sum('max_score_per_question');
+                        
+                        $totalPuntajeMaximoPrograma += $puntajeMaximo;
+                    }
+                }
+            }
+            
+            $promedioGeneralPrograma = $totalPuntajeMaximoPrograma > 0 ? round(($totalPuntajeObtenidoPrograma / $totalPuntajeMaximoPrograma) * 100, 2) : 0;
+            
+            // Calcular promedios por test para este programa
+            $promediosPorTestPrograma = [];
+            foreach ($testsActivos as $test) {
+                $puntajeObtenidoTest = 0;
+                $puntajeMaximoTest = 0;
+                
+                foreach ($profesoresPrograma as $profesor) {
+                    $assignment = TestAssignment::where('user_id', $profesor->id)
+                        ->where('test_id', $test->id)
+                        ->first();
+                    
+                    if ($assignment) {
+                        if ($assignment->status === 'completed') {
+                            $puntaje = DB::table('test_responses as tr')
+                                ->where('test_assignment_id', $assignment->id)
+                                ->sum('tr.score');
+                            $puntajeObtenidoTest += $puntaje;
+                        }
+                        
+                        // Calcular puntaje máximo para este test
+                        $puntajeMaximo = DB::table('questions as q')
+                            ->join('options as o', 'q.id', '=', 'o.question_id')
+                            ->where('q.test_id', $test->id)
+                            ->groupBy('q.id')
+                            ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                            ->get()
+                            ->sum('max_score_per_question');
+                        
+                        $puntajeMaximoTest += $puntajeMaximo;
+                    }
+                }
+                
+                $promedioTest = $puntajeMaximoTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTest) * 100, 2) : 0;
+                $promediosPorTestPrograma[] = [
+                    'test_name' => $test->name,
+                    'promedio' => $promedioTest
+                ];
+            }
             
             return [
                 'programa' => $programa,
@@ -346,7 +469,8 @@ class ReportService
                 'total_profesores' => $totalProfesoresPrograma,
                 'profesores_completados' => $totalProfesoresCompletadosPrograma,
                 'profesores_pendientes' => $totalProfesoresPendientesPrograma,
-                'promedio_general' => round($promedioPrograma, 2),
+                'promedio_general' => $promedioGeneralPrograma,
+                'promedios_por_test' => $promediosPorTestPrograma,
                 'ha_completado_todos' => $totalProfesoresCompletadosPrograma > 0,
                 'tests_completados' => $totalProfesoresCompletadosPrograma,
                 'total_tests' => $totalProfesoresPrograma
@@ -368,6 +492,7 @@ class ReportService
             'total_profesores_completados' => $totalProfesoresCompletados,
             'total_profesores_pendientes' => $totalProfesoresPendientes,
             'promedio_facultad' => round($promedioFacultad, 2),
+            'promedios_por_test' => $promediosPorTest,
             'puntuacion_maxima' => $puntuacionMaxima,
             'puntuacion_minima' => $puntuacionMinima,
             'fecha_aplicacion' => $fechaAplicacion,
