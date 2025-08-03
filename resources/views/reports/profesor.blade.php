@@ -157,26 +157,12 @@
                     <p style="margin-bottom: 15px;">
                         <strong>Facultad:</strong> 
                         {{ $previewData['facultad']['nombre'] ?? 'N/A' }}
-                        @if(isset($previewData['facultad']['id']))
-                            <button 
-                                onclick="verReporteFacultad({{ $previewData['facultad']['id'] }}, '{{ $previewData['facultad']['nombre'] }}')"
-                                style="background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
-                                📊 Ver Reporte
-                            </button>
-                        @endif
                     </p>
                 @endif
                 @if(isset($previewData['programa']))
                     <p style="margin-bottom: 15px;">
                         <strong>Programa:</strong> 
                         {{ $previewData['programa']['nombre'] ?? 'N/A' }}
-                        @if(isset($previewData['programa']['id']))
-                            <button 
-                                onclick="verReportePrograma({{ $previewData['programa']['id'] }}, '{{ $previewData['programa']['nombre'] }}')"
-                                style="background: #059669; color: white; border: none; border-radius: 8px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
-                                📈 Ver Reporte
-                            </button>
-                        @endif
                     </p>
                 @endif
                 <p style="margin-bottom: 15px;"><strong>Fecha de Registro:</strong> {{ $previewData['profesor']['created_at'] ?? 'N/A' }}</p>
@@ -253,32 +239,105 @@
 
     @if(isset($previewData['resultados_por_area']) && count($previewData['resultados_por_area']) > 0)
     <div class="professor-table-container">
-        <h2 class="professor-section-title">Rendimiento por Área</h2>
-        <table class="professor-table">
-            <thead>
-                <tr>
-                    <th>Área</th>
-                    <th>Puntaje Obtenido</th>
-                    <th>Puntaje Máximo</th>
-                    <th>Porcentaje</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($previewData['resultados_por_area'] as $area)
-                <tr>
-                    <td style="font-weight: 600; color: #1d4ed8;">{{ $area['area_name'] }}</td>
-                    <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ number_format($area['puntaje_obtenido'], 2) }}</td>
-                    <td style="text-align: center;">{{ number_format($area['puntaje_maximo'], 2) }}</td>
-                    <td style="text-align: center;">
-                        <div style="font-weight: 700; color: #3b82f6;">{{ $area['porcentaje'] }}%</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {{ $area['porcentaje'] }}%;"></div>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <h2 class="professor-section-title">Rendimiento por Área y Test</h2>
+        
+        @if(isset($previewData['tests_asignados']) && count($previewData['tests_asignados']) > 0)
+            @foreach($previewData['tests_asignados'] as $test)
+                @if($test['completado'] ?? false)
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #1d4ed8; font-size: 18px; font-weight: 600; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb;">
+                        {{ $test['nombre'] ?? 'N/A' }}
+                    </h3>
+                    <table class="professor-table" style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Área</th>
+                                <th>Puntaje Obtenido</th>
+                                <th>Puntaje Máximo</th>
+                                <th>Porcentaje</th>
+                                <th>Nivel</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($previewData['resultados_por_area'] as $area)
+                                @if(isset($area['test_id']) && $area['test_id'] == $test['id'])
+                                <tr>
+                                    <td style="font-weight: 600; color: #374151;">{{ $area['area_name'] }}</td>
+                                    <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ number_format($area['puntaje_obtenido'], 2) }}</td>
+                                    <td style="text-align: center;">{{ number_format($area['puntaje_maximo'], 2) }}</td>
+                                    <td style="text-align: center;">
+                                        <div style="font-weight: 700; color: #3b82f6;">{{ $area['porcentaje'] }}%</div>
+                                        <div class="progress-bar" style="margin-top: 5px;">
+                                            <div class="progress-fill" style="width: {{ $area['porcentaje'] }}%; background: linear-gradient(90deg, #3b82f6, #1d4ed8);"></div>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600;">
+                                        @if($area['porcentaje'] >= 90)
+                                            <span style="color: #059669;">A1</span>
+                                        @elseif($area['porcentaje'] >= 80)
+                                            <span style="color: #059669;">A2</span>
+                                        @elseif($area['porcentaje'] >= 70)
+                                            <span style="color: #d97706;">B1</span>
+                                        @elseif($area['porcentaje'] >= 60)
+                                            <span style="color: #d97706;">B2</span>
+                                        @elseif($area['porcentaje'] >= 50)
+                                            <span style="color: #dc2626;">C1</span>
+                                        @else
+                                            <span style="color: #dc2626;">C2</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+            @endforeach
+        @else
+            <!-- Fallback: mostrar rendimiento general por área -->
+            <table class="professor-table">
+                <thead>
+                    <tr>
+                        <th>Área</th>
+                        <th>Puntaje Obtenido</th>
+                        <th>Puntaje Máximo</th>
+                        <th>Porcentaje</th>
+                        <th>Nivel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($previewData['resultados_por_area'] as $area)
+                    <tr>
+                        <td style="font-weight: 600; color: #1d4ed8;">{{ $area['area_name'] }}</td>
+                        <td style="text-align: center; font-weight: 700; color: #3b82f6;">{{ number_format($area['puntaje_obtenido'], 2) }}</td>
+                        <td style="text-align: center;">{{ number_format($area['puntaje_maximo'], 2) }}</td>
+                        <td style="text-align: center;">
+                            <div style="font-weight: 700; color: #3b82f6;">{{ $area['porcentaje'] }}%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ $area['porcentaje'] }}%; background: linear-gradient(90deg, #3b82f6, #1d4ed8);"></div>
+                            </div>
+                        </td>
+                        <td style="text-align: center; font-weight: 600;">
+                            @if($area['porcentaje'] >= 90)
+                                <span style="color: #059669;">A1</span>
+                            @elseif($area['porcentaje'] >= 80)
+                                <span style="color: #059669;">A2</span>
+                            @elseif($area['porcentaje'] >= 70)
+                                <span style="color: #d97706;">B1</span>
+                            @elseif($area['porcentaje'] >= 60)
+                                <span style="color: #d97706;">B2</span>
+                            @elseif($area['porcentaje'] >= 50)
+                                <span style="color: #dc2626;">C1</span>
+                            @else
+                                <span style="color: #dc2626;">C2</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
     </div>
     @endif
 </div>
