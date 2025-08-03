@@ -186,50 +186,150 @@
                 </div>
 
                 <!-- Tarjetas de Resultados y Porcentaje -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     @if($percentileInfo)
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Resultados globales
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-indigo-200 dark:border-indigo-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <div class="text-lg font-bold text-indigo-900 dark:text-indigo-100">
+                                    Posición Global
+                                </div>
+                                <p class="text-sm text-indigo-600 dark:text-indigo-300">
+                                    @if($percentileRankGlobal >= 90)
+                                        Top 10% del sistema de evaluación
+                                    @elseif($percentileRankGlobal >= 75)
+                                        Top 25% del sistema de evaluación
+                                    @elseif($percentileRankGlobal >= 50)
+                                        Por encima del promedio del sistema
+                                    @elseif($percentileRankGlobal >= 25)
+                                        Por debajo del promedio del sistema
+                                    @else
+                                        25% inferior del sistema de evaluación
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ $percentileRankGlobal }}%</div>
+                                <div class="text-xs text-indigo-500 dark:text-indigo-300 mt-1">Percentil</div>
+                            </div>
                         </div>
-                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a todos los docentes</p>
-                        <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400" style="width: {{ $percentileRankGlobal }}%"></div>
-                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankGlobal }}%</span>
+                        <div class="relative w-full h-3 bg-indigo-200 dark:bg-indigo-800 rounded-full overflow-hidden">
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-700 bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg" style="width: {{ $percentileRankGlobal }}%"></div>
+                        </div>
+                        <div class="mt-3 text-xs text-indigo-600 dark:text-indigo-400">
+                            @if($percentileRankGlobal >= 90)
+                                ¡Felicitaciones! Tu rendimiento es excepcional
+                            @elseif($percentileRankGlobal >= 75)
+                                ¡Muy bien! Continúa así
+                            @elseif($percentileRankGlobal >= 50)
+                                Buen trabajo, hay espacio para mejorar
+                            @elseif($percentileRankGlobal >= 25)
+                                Considera revisar las áreas de oportunidad
+                            @else
+                                Te recomendamos reforzar tus competencias digitales
+                            @endif
                         </div>
                     </div>
                     
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Resultados por facultad
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <div class="text-lg font-bold text-blue-900 dark:text-blue-100">
+                                    Posición en Facultad
+                                </div>
+                                <p class="text-sm text-blue-600 dark:text-blue-300">
+                                    @if($percentileRankFacultad >= 90)
+                                        Top 10% de la facultad
+                                    @elseif($percentileRankFacultad >= 75)
+                                        Top 25% de la facultad
+                                    @elseif($percentileRankFacultad >= 50)
+                                        Por encima del promedio de la facultad
+                                    @elseif($percentileRankFacultad >= 25)
+                                        Por debajo del promedio de la facultad
+                                    @else
+                                        25% inferior de la facultad
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ $percentileRankFacultad }}%</div>
+                                <div class="text-xs text-blue-500 dark:text-blue-300 mt-1">Percentil</div>
+                            </div>
                         </div>
-                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto a la facultad {{ $facultad }}</p>
-                        <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-400 dark:to-cyan-400" style="width: {{ $percentileRankFacultad }}%"></div>
-                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankFacultad }}%</span>
+                        <div class="relative w-full h-3 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-700 bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg" style="width: {{ $percentileRankFacultad }}%"></div>
+                        </div>
+                        <div class="mt-3 text-xs text-blue-600 dark:text-blue-400">
+                            Comparado con docentes de: {{ $facultad }}
                         </div>
                     </div>
                     
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Resultados por programa
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-200 dark:border-emerald-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <div class="text-lg font-bold text-emerald-900 dark:text-emerald-100">
+                                    Posición en Programa
+                                </div>
+                                <p class="text-sm text-emerald-600 dark:text-emerald-300">
+                                    @if($percentileRankPrograma >= 90)
+                                        Top 10% del programa
+                                    @elseif($percentileRankPrograma >= 75)
+                                        Top 25% del programa
+                                    @elseif($percentileRankPrograma >= 50)
+                                        Por encima del promedio del programa
+                                    @elseif($percentileRankPrograma >= 25)
+                                        Por debajo del promedio del programa
+                                    @else
+                                        25% inferior del programa
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ $percentileRankPrograma }}%</div>
+                                <div class="text-xs text-emerald-500 dark:text-emerald-300 mt-1">Percentil</div>
+                            </div>
                         </div>
-                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Respecto al programa {{ $program }}</p>
-                        <div class="relative w-full h-6 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-400" style="width: {{ $percentileRankPrograma }}%"></div>
-                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentileRankPrograma }}%</span>
+                        <div class="relative w-full h-3 bg-emerald-200 dark:bg-emerald-800 rounded-full overflow-hidden">
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-700 bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg" style="width: {{ $percentileRankPrograma }}%"></div>
+                        </div>
+                        <div class="mt-3 text-xs text-emerald-600 dark:text-emerald-400">
+                            Comparado con docentes de: {{ $program }}
                         </div>
                     </div>
                     @endif
                     
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <div class="flex justify-between items-center text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
-                            <span>Porcentaje obtenido</span>
-                            <span class="text-lg">{{ $percentage }}%</span>
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6 border border-green-200 dark:border-green-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <div class="text-lg font-bold text-green-900 dark:text-green-100">
+                                    Puntuación General
+                                </div>
+                                <p class="text-sm text-green-600 dark:text-green-300">
+                                    @if($percentage >= 90)
+                                        Competencia digital excepcional
+                                    @elseif($percentage >= 80)
+                                        Competencia digital avanzada
+                                    @elseif($percentage >= 70)
+                                        Competencia digital intermedia-alta
+                                    @elseif($percentage >= 60)
+                                        Competencia digital intermedia
+                                    @elseif($percentage >= 50)
+                                        Competencia digital básica
+                                    @else
+                                        Competencia digital inicial
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ $percentage }}%</div>
+                                <div class="text-xs text-green-500 dark:text-green-300 mt-1">Puntuación</div>
+                            </div>
                         </div>
-                        <div class="relative w-full h-6 bg-gray-200 dark:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
-                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r from-green-400 to-emerald-500 dark:from-green-300 dark:to-emerald-400" style="width: {{ $percentage }}%"></div>
-                            <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white tracking-wider">{{ $percentage }}%</span>
+                        <div class="relative w-full h-3 bg-green-200 dark:bg-green-800 rounded-full overflow-hidden">
+                            <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-700 bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg" style="width: {{ $percentage }}%"></div>
+                        </div>
+                        <div class="mt-3 text-xs text-green-600 dark:text-green-400">
+                            {{ $score }} de {{ $maxScore }} puntos posibles
                         </div>
                     </div>
                 </div>
