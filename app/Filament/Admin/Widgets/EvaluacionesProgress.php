@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\TestAssignment;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
@@ -13,35 +14,50 @@ class EvaluacionesProgress extends BaseWidget
 
     protected function getStats(): array
     {
-        $stats = [
-            'total' => TestAssignment::count(),
-            'completadas' => TestAssignment::where('status', 'completed')->count(),
-            'en_progreso' => TestAssignment::where('status', 'in_progress')->count(),
-            'pendientes' => TestAssignment::where('status', 'pending')->count(),
-        ];
+        // Total de usuarios/docentes en el sistema
+        $totalUsuarios = User::whereHas('roles', function($query) {
+            $query->where('name', 'Docente');
+        })->count();
 
-        $porcentajeCompletadas = $stats['total'] > 0 
-            ? round(($stats['completadas'] / $stats['total']) * 100) 
+        // Usuarios que han completado ambas evaluaciones
+        $usuariosCompletados = User::whereHas('roles', function($query) {
+            $query->where('name', 'Docente');
+        })->whereHas('testAssignments', function($query) {
+            $query->where('status', 'completed');
+        }, '>=', 2)->count();
+
+        // Usuarios que han completado al menos una evaluación
+        $usuariosConUnaEvaluacion = User::whereHas('roles', function($query) {
+            $query->where('name', 'Docente');
+        })->whereHas('testAssignments', function($query) {
+            $query->where('status', 'completed');
+        }, '>=', 1)->count();
+
+        // Usuarios sin evaluaciones completadas
+        $usuariosSinEvaluaciones = $totalUsuarios - $usuariosConUnaEvaluacion;
+
+        $porcentajeCompletados = $totalUsuarios > 0 
+            ? round(($usuariosCompletados / $totalUsuarios) * 100) 
             : 0;
 
         return [
-            Stat::make('Total de Evaluaciones', $stats['total'])
-                ->description('Total de evaluaciones asignadas')
-                ->descriptionIcon('heroicon-m-academic-cap')
-                ->color('gray'),
+            Stat::make('Total de Docentes', $totalUsuarios)
+                ->description('Usuarios docentes en el sistema')
+                ->descriptionIcon('heroicon-m-users')
+                ->color('blue'),
 
-            Stat::make('Evaluaciones Completadas', $stats['completadas'])
-                ->description("{$porcentajeCompletadas}% del total")
+            Stat::make('Docentes Completados', $usuariosCompletados)
+                ->description("{$porcentajeCompletados}% han completado ambas evaluaciones")
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success'),
 
-            Stat::make('En Progreso', $stats['en_progreso'])
-                ->description('Evaluaciones en curso')
+            Stat::make('Con Una Evaluación', $usuariosConUnaEvaluacion - $usuariosCompletados)
+                ->description('Han completado al menos una evaluación')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
 
-            Stat::make('Pendientes', $stats['pendientes'])
-                ->description('Evaluaciones por iniciar')
+            Stat::make('Sin Evaluaciones', $usuariosSinEvaluaciones)
+                ->description('No han completado ninguna evaluación')
                 ->descriptionIcon('heroicon-m-calendar')
                 ->color('danger'),
         ];

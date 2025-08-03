@@ -19,8 +19,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Filament\Admin\Widgets\EvaluacionesProgress;
-use App\Filament\Admin\Widgets\EvaluacionesRecientes;
-use App\Filament\Admin\Widgets\ProgresoPorArea;
+use App\Filament\Admin\Widgets\ProgresoPorEvaluacion;
+use App\Filament\Admin\Widgets\EstadisticasAvanzadas;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -39,8 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 EvaluacionesProgress::class,
-                EvaluacionesRecientes::class,
-                ProgresoPorArea::class,
+                ProgresoPorEvaluacion::class,
+                EstadisticasAvanzadas::class,
             ])
             ->middleware([
                 EncryptCookies::class,
