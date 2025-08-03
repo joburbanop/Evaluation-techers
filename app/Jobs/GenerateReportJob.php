@@ -51,15 +51,24 @@ class GenerateReportJob implements ShouldQueue
             // Actualizar estado a generando
             $report->update(['status' => 'generating']);
 
-            // Generar el reporte según el tipo
-            if ($this->type === 'facultad') {
-                $entity = $this->entityType::find($this->entityId);
-                $reportService->generateFacultadReport($entity, $this->parameters);
-            } elseif ($this->type === 'programa') {
-                $entity = $this->entityType::find($this->entityId);
-                $reportService->generateProgramaReport($entity, $this->parameters);
-            } else {
-                throw new \Exception("Tipo de reporte no soportado: {$this->type}");
+            // ✅ OPTIMIZACIÓN: Generar el reporte según el tipo con cache inteligente
+            $entity = $this->entityType::find($this->entityId);
+            
+            switch ($this->type) {
+                case 'universidad':
+                    $reportService->generateUniversidadReport($entity, $this->parameters);
+                    break;
+                case 'facultad':
+                    $reportService->generateFacultadReport($entity, $this->parameters);
+                    break;
+                case 'programa':
+                    $reportService->generateProgramaReport($entity, $this->parameters);
+                    break;
+                case 'profesor':
+                    $reportService->generateProfesorReport($entity, $this->parameters);
+                    break;
+                default:
+                    throw new \Exception("Tipo de reporte no soportado: {$this->type}");
             }
 
             Log::info("Reporte generado exitosamente", [

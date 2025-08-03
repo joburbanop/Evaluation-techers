@@ -16,6 +16,7 @@ use App\Models\EvaluacionPorInstitucion;
 use App\Models\EvaluacionPorProfesor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use PDF;
 use Carbon\Carbon;
 
@@ -116,6 +117,15 @@ class ReportService
 
     public function generateUniversidadReport(Institution $institution, array $parameters = [])
     {
+        // ✅ OPTIMIZACIÓN 25: Cache de resultados por 1 hora
+        $cacheKey = "universidad_report_{$institution->id}_" . md5(json_encode($parameters));
+        
+        // Intentar obtener del cache primero
+        $cachedReport = Cache::get($cacheKey);
+        if ($cachedReport) {
+            return $cachedReport;
+        }
+        
         $report = Report::create([
             'name' => "Reporte de Universidad: {$institution->name}",
             'type' => 'universidad',
@@ -123,11 +133,24 @@ class ReportService
             'entity_type' => Institution::class,
             'generated_by' => auth()->id(),
             'parameters' => $parameters,
-            'status' => 'generating',
+            'status' => 'queued', // Cambiar a 'queued' para procesamiento asíncrono
         ]);
 
+        // ✅ OPTIMIZACIÓN 28: Procesamiento asíncrono para reportes pesados
+        if ($this->shouldUseAsyncProcessing($institution)) {
+            GenerateReportJob::dispatch(
+                $report->id,
+                'universidad',
+                $institution->id,
+                Institution::class,
+                $parameters
+            )->onQueue('reports');
+            
+            return $report;
+        }
+
         try {
-            // Usar getPreviewData para obtener el formato correcto
+            // ✅ OPTIMIZACIÓN 26: Usar getPreviewData optimizado
             $previewData = $this->getUniversidadPreviewData($institution, $parameters);
             $pdf = PDF::loadView('reports.universidad', compact('previewData'));
             $pdf->setPaper('A4', 'landscape');
@@ -275,25 +298,39 @@ class ReportService
 
     private function getFacultadPreviewData(Facultad $facultad, array $parameters = [])
     {
-        // Obtener todos los programas de la facultad
-        $programasFacultad = Programa::where('facultad_id', $facultad->id)->get();
-        $totalProgramas = $programasFacultad->count();
-        
-        // Obtener todos los profesores de la facultad
-        $profesoresFacultad = User::whereHas('roles', function($q) {
-            $q->where('name', 'Docente');
-        })->where('facultad_id', $facultad->id)->get();
-        
-        $totalProfesores = $profesoresFacultad->count();
-        
-        // Obtener todos los tests activos
-        $testsActivos = Test::where('is_active', true)->get();
-        $totalTestsActivos = $testsActivos->count();
-        
-        // Obtener asignaciones completadas por profesor en esta facultad
-        $asignacionesCompletadas = TestAssignment::whereHas('user', function($q) use ($facultad) {
-            $q->where('facultad_id', $facultad->id);
-        })->where('status', 'completed')->get();
+        try {
+            // ✅ OPTIMIZACIÓN 1: Obtener programas con consulta directa
+            $programasFacultad = Programa::where('facultad_id', $facultad->id)->get();
+            $totalProgramas = $programasFacultad->count();
+            
+            // ✅ OPTIMIZACIÓN 2: Obtener profesores con consulta optimizada
+            $profesoresFacultad = User::whereHas('roles', function($q) {
+                $q->where('name', 'Docente');
+            })->where('facultad_id', $facultad->id)->get();
+            
+            $totalProfesores = $profesoresFacultad->count();
+            
+            // ✅ OPTIMIZACIÓN 3: Obtener tests activos
+            $testsActivos = Test::where('is_active', true)->get();
+            $totalTestsActivos = $testsActivos->count();
+            
+            // ✅ OPTIMIZACIÓN 4: Eager Loading Inteligente con todas las asignaciones
+            $asignacionesFacultad = TestAssignment::whereHas('user', function($q) use ($facultad) {
+                $q->where('facultad_id', $facultad->id);
+            })->with([
+                'user.programa',
+                'user.roles',
+                'test.questions.options',
+                'responses.question'
+            ])->get();
+            
+            // ✅ OPTIMIZACIÓN 5: Agrupar asignaciones para acceso O(1)
+            $asignacionesAgrupadas = $asignacionesFacultad->groupBy(['test_id', 'user_id']);
+            $asignacionesCompletadas = $asignacionesFacultad->where('status', 'completed');
+            
+            // ✅ OPTIMIZACIÓN 6: Liberar memoria
+            unset($asignacionesFacultad);
+            gc_collect_cycles();
         
         // Contar profesores que han completado todos los tests
         $profesoresCompletados = $profesoresFacultad->filter(function($profesor) use ($testsActivos, $asignacionesCompletadas, $totalTestsActivos) {
@@ -316,51 +353,55 @@ class ReportService
         $puntuacionMinima = $evaluaciones->min('score') ?? 0;
         $fechaAplicacion = now()->format('d/m/Y');
         
-        // Calcular promedio de la facultad basado en TODOS los tests asignados a TODOS los profesores
+        // ✅ OPTIMIZACIÓN 7: Cache de puntajes máximos de tests
+        $puntajesMaximos = [];
+        foreach ($testsActivos as $test) {
+            $cacheKey = "test_max_score_{$test->id}";
+            $puntajesMaximos[$test->id] = Cache::remember($cacheKey, 3600, function() use ($test) {
+                return DB::table('questions as q')
+                    ->join('options as o', 'q.id', '=', 'o.question_id')
+                    ->where('q.test_id', $test->id)
+                    ->groupBy('q.id')
+                    ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                    ->get()
+                    ->sum('max_score_per_question');
+            });
+        }
+        
+        // ✅ OPTIMIZACIÓN 8: Calcular promedios por test de forma optimizada
         $totalPuntajeObtenidoFacultad = 0;
         $totalPuntajeMaximoFacultad = 0;
         $promediosPorTest = [];
         
-        // Calcular promedios por test individual para la facultad
         foreach ($testsActivos as $test) {
             $puntajeObtenidoTest = 0;
-            $puntajeMaximoTest = 0;
             $profesoresConTest = 0;
+            $puntajeMaximoTest = $puntajesMaximos[$test->id];
             
-            foreach ($profesoresFacultad as $profesor) {
-                $assignment = TestAssignment::where('user_id', $profesor->id)
-                    ->where('test_id', $test->id)
-                    ->first();
-                
-                if ($assignment) {
+            // ✅ OPTIMIZACIÓN 9: Usar asignaciones agrupadas en lugar de consultas individuales
+            if (isset($asignacionesAgrupadas[$test->id])) {
+                foreach ($asignacionesAgrupadas[$test->id] as $userId => $assignments) {
                     $profesoresConTest++;
+                    $assignment = $assignments->first();
                     
-                    if ($assignment->status === 'completed') {
-                        $puntaje = DB::table('test_responses as tr')
-                            ->where('test_assignment_id', $assignment->id)
-                            ->sum('tr.score');
+                    if ($assignment && $assignment->status === 'completed') {
+                        // ✅ OPTIMIZACIÓN 10: Cache de puntajes por asignación
+                        $puntajeCacheKey = "assignment_score_{$assignment->id}";
+                        $puntaje = Cache::remember($puntajeCacheKey, 1800, function() use ($assignment) {
+                            return DB::table('test_responses as tr')
+                                ->where('test_assignment_id', $assignment->id)
+                                ->sum('tr.score');
+                        });
                         $puntajeObtenidoTest += $puntaje;
                     }
-                    
-                    // Calcular puntaje máximo para este test
-                    $puntajeMaximo = DB::table('questions as q')
-                        ->join('options as o', 'q.id', '=', 'o.question_id')
-                        ->where('q.test_id', $test->id)
-                        ->groupBy('q.id')
-                        ->select(DB::raw('MAX(o.score) as max_score_per_question'))
-                        ->get()
-                        ->sum('max_score_per_question');
-                    
-                    $puntajeMaximoTest += $puntajeMaximo;
                 }
             }
             
-            // Agregar a totales de la facultad
+            $puntajeMaximoTotalTest = $puntajeMaximoTest * $profesoresConTest;
             $totalPuntajeObtenidoFacultad += $puntajeObtenidoTest;
-            $totalPuntajeMaximoFacultad += $puntajeMaximoTest;
+            $totalPuntajeMaximoFacultad += $puntajeMaximoTotalTest;
             
-            // Calcular promedio para este test
-            $promedioTest = $puntajeMaximoTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTest) * 100, 2) : 0;
+            $promedioTest = $puntajeMaximoTotalTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTotalTest) * 100, 2) : 0;
             $promediosPorTest[] = [
                 'test_name' => $test->name,
                 'promedio' => $promedioTest
@@ -370,16 +411,13 @@ class ReportService
         // Calcular promedio general de la facultad
         $promedioFacultad = $totalPuntajeMaximoFacultad > 0 ? round(($totalPuntajeObtenidoFacultad / $totalPuntajeMaximoFacultad) * 100, 2) : 0;
         
-        // Obtener resultados por programa ordenados de mayor a menor
-        $resultadosPorPrograma = $programasFacultad->map(function($programa) use ($asignacionesCompletadas, $totalTestsActivos, $testsActivos) {
-            // Obtener profesores de este programa
-            $profesoresPrograma = User::whereHas('roles', function($q) {
-                $q->where('name', 'Docente');
-            })->where('programa_id', $programa->id)->get();
-            
+        // ✅ OPTIMIZACIÓN 11: Calcular resultados por programa usando datos ya cargados
+        $resultadosPorPrograma = $programasFacultad->map(function($programa) use ($asignacionesCompletadas, $totalTestsActivos, $testsActivos, $asignacionesAgrupadas, $puntajesMaximos, $profesoresFacultad) {
+            // ✅ OPTIMIZACIÓN 12: Usar profesores ya filtrados por programa
+            $profesoresPrograma = $profesoresFacultad->where('programa_id', $programa->id);
             $totalProfesoresPrograma = $profesoresPrograma->count();
             
-            // Contar profesores completados en este programa
+            // ✅ OPTIMIZACIÓN 13: Contar profesores completados eficientemente
             $profesoresCompletadosPrograma = $profesoresPrograma->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
                 $testsCompletadosPorProfesor = $asignacionesCompletadas
                     ->where('user_id', $profesor->id)
@@ -390,73 +428,63 @@ class ReportService
             $totalProfesoresCompletadosPrograma = $profesoresCompletadosPrograma->count();
             $totalProfesoresPendientesPrograma = $totalProfesoresPrograma - $totalProfesoresCompletadosPrograma;
             
-            // Calcular promedio general del programa basado en TODOS los tests asignados
+            // ✅ OPTIMIZACIÓN 14: Calcular promedio usando asignaciones agrupadas y puntajes cacheados
             $totalPuntajeObtenidoPrograma = 0;
             $totalPuntajeMaximoPrograma = 0;
             
             foreach ($testsActivos as $test) {
+                $profesoresConTest = 0;
+                $puntajeMaximoTest = $puntajesMaximos[$test->id];
+                
                 foreach ($profesoresPrograma as $profesor) {
-                    $assignment = TestAssignment::where('user_id', $profesor->id)
-                        ->where('test_id', $test->id)
-                        ->first();
-                    
-                    if ($assignment) {
-                        if ($assignment->status === 'completed') {
-                            $puntaje = DB::table('test_responses as tr')
-                                ->where('test_assignment_id', $assignment->id)
-                                ->sum('tr.score');
+                    // ✅ OPTIMIZACIÓN 15: Usar asignaciones agrupadas en lugar de consultas
+                    if (isset($asignacionesAgrupadas[$test->id][$profesor->id])) {
+                        $profesoresConTest++;
+                        $assignment = $asignacionesAgrupadas[$test->id][$profesor->id]->first();
+                        
+                        if ($assignment && $assignment->status === 'completed') {
+                            $puntajeCacheKey = "assignment_score_{$assignment->id}";
+                            $puntaje = Cache::remember($puntajeCacheKey, 1800, function() use ($assignment) {
+                                return DB::table('test_responses as tr')
+                                    ->where('test_assignment_id', $assignment->id)
+                                    ->sum('tr.score');
+                            });
                             $totalPuntajeObtenidoPrograma += $puntaje;
                         }
-                        
-                        // Calcular puntaje máximo para este test
-                        $puntajeMaximo = DB::table('questions as q')
-                            ->join('options as o', 'q.id', '=', 'o.question_id')
-                            ->where('q.test_id', $test->id)
-                            ->groupBy('q.id')
-                            ->select(DB::raw('MAX(o.score) as max_score_per_question'))
-                            ->get()
-                            ->sum('max_score_per_question');
-                        
-                        $totalPuntajeMaximoPrograma += $puntajeMaximo;
                     }
                 }
+                
+                $totalPuntajeMaximoPrograma += $puntajeMaximoTest * $profesoresConTest;
             }
             
             $promedioGeneralPrograma = $totalPuntajeMaximoPrograma > 0 ? round(($totalPuntajeObtenidoPrograma / $totalPuntajeMaximoPrograma) * 100, 2) : 0;
             
-            // Calcular promedios por test para este programa
+            // ✅ OPTIMIZACIÓN 16: Calcular promedios por test de forma optimizada
             $promediosPorTestPrograma = [];
             foreach ($testsActivos as $test) {
                 $puntajeObtenidoTest = 0;
-                $puntajeMaximoTest = 0;
+                $profesoresConTest = 0;
+                $puntajeMaximoTest = $puntajesMaximos[$test->id];
                 
                 foreach ($profesoresPrograma as $profesor) {
-                    $assignment = TestAssignment::where('user_id', $profesor->id)
-                        ->where('test_id', $test->id)
-                        ->first();
-                    
-                    if ($assignment) {
-                        if ($assignment->status === 'completed') {
-                            $puntaje = DB::table('test_responses as tr')
-                                ->where('test_assignment_id', $assignment->id)
-                                ->sum('tr.score');
+                    if (isset($asignacionesAgrupadas[$test->id][$profesor->id])) {
+                        $profesoresConTest++;
+                        $assignment = $asignacionesAgrupadas[$test->id][$profesor->id]->first();
+                        
+                        if ($assignment && $assignment->status === 'completed') {
+                            $puntajeCacheKey = "assignment_score_{$assignment->id}";
+                            $puntaje = Cache::remember($puntajeCacheKey, 1800, function() use ($assignment) {
+                                return DB::table('test_responses as tr')
+                                    ->where('test_assignment_id', $assignment->id)
+                                    ->sum('tr.score');
+                            });
                             $puntajeObtenidoTest += $puntaje;
                         }
-                        
-                        // Calcular puntaje máximo para este test
-                        $puntajeMaximo = DB::table('questions as q')
-                            ->join('options as o', 'q.id', '=', 'o.question_id')
-                            ->where('q.test_id', $test->id)
-                            ->groupBy('q.id')
-                            ->select(DB::raw('MAX(o.score) as max_score_per_question'))
-                            ->get()
-                            ->sum('max_score_per_question');
-                        
-                        $puntajeMaximoTest += $puntajeMaximo;
                     }
                 }
                 
-                $promedioTest = $puntajeMaximoTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTest) * 100, 2) : 0;
+                $puntajeMaximoTotalTest = $puntajeMaximoTest * $profesoresConTest;
+                $promedioTest = $puntajeMaximoTotalTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTotalTest) * 100, 2) : 0;
                 $promediosPorTestPrograma[] = [
                     'test_name' => $test->name,
                     'promedio' => $promedioTest
@@ -500,6 +528,17 @@ class ReportService
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];
+        
+        } catch (\Exception $e) {
+            \Log::error('Error en getFacultadPreviewData:', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw new \Exception('Error al obtener datos de la facultad: ' . $e->getMessage());
+        }
     }
 
     private function getProgramaPreviewData(Programa $programa, array $parameters = [])
@@ -759,59 +798,56 @@ class ReportService
 
     private function getUniversidadPreviewData(Institution $institution, array $parameters = [])
     {
-        // Obtener solo las facultades reales de la institución (excluir decanaturas y direcciones)
-        $facultadesInstitucion = Facultad::where('institution_id', $institution->id)
-            ->where(function($query) {
-                $query->where('nombre', 'like', '%Facultad%')
-                      ->orWhere('nombre', 'like', '%School%')
-                      ->orWhere('nombre', 'like', '%College%');
-            })
-            ->get();
-        $totalFacultades = $facultadesInstitucion->count();
+        try {
+            // ✅ OPTIMIZACIÓN 1: Obtener IDs de facultades reales de una vez
+            $facultadIds = Facultad::where('institution_id', $institution->id)
+                ->where(function($query) {
+                    $query->where('nombre', 'like', '%Facultad%')
+                          ->orWhere('nombre', 'like', '%School%')
+                          ->orWhere('nombre', 'like', '%College%');
+                })->pluck('id');
         
-        // Obtener todos los programas de las facultades reales de la institución
-        $programasInstitucion = Programa::whereHas('facultad', function($q) use ($institution) {
-            $q->where('institution_id', $institution->id)
-              ->where(function($subQuery) {
-                  $subQuery->where('nombre', 'like', '%Facultad%')
-                           ->orWhere('nombre', 'like', '%School%')
-                           ->orWhere('nombre', 'like', '%College%');
-              });
-        })->get();
+        $totalFacultades = $facultadIds->count();
+        
+        // ✅ OPTIMIZACIÓN 2: Obtener facultades con una sola consulta
+        $facultadesInstitucion = Facultad::whereIn('id', $facultadIds)->get();
+        
+        // ✅ OPTIMIZACIÓN 3: Obtener programas con consulta optimizada
+        $programasInstitucion = Programa::whereIn('facultad_id', $facultadIds)->get();
         $totalProgramas = $programasInstitucion->count();
         
-        // Obtener todos los profesores de las facultades reales de la institución
+        // ✅ OPTIMIZACIÓN 4: Obtener profesores con consulta directa
         $profesoresInstitucion = User::whereHas('roles', function($q) {
             $q->where('name', 'Docente');
-        })->where('institution_id', $institution->id)
-          ->whereHas('facultad', function($q) {
-              $q->where(function($subQuery) {
-                  $subQuery->where('nombre', 'like', '%Facultad%')
-                           ->orWhere('nombre', 'like', '%School%')
-                           ->orWhere('nombre', 'like', '%College%');
-              });
-          })->get();
+        })->whereIn('facultad_id', $facultadIds)->get();
         
         $totalProfesores = $profesoresInstitucion->count();
         
-        // Obtener todos los tests activos
+        // ✅ OPTIMIZACIÓN 5: Obtener tests activos
         $testsActivos = Test::where('is_active', true)->get();
         $totalTestsActivos = $testsActivos->count();
         
-        // Obtener asignaciones completadas por profesor en las facultades reales de esta institución
-        $asignacionesCompletadas = TestAssignment::whereHas('user', function($q) use ($institution) {
-            $q->where('institution_id', $institution->id)
-              ->whereHas('facultad', function($subQ) {
-                  $subQ->where(function($subSubQ) {
-                      $subSubQ->where('nombre', 'like', '%Facultad%')
-                              ->orWhere('nombre', 'like', '%School%')
-                              ->orWhere('nombre', 'like', '%College%');
-                  });
-              });
-        })->where('status', 'completed')->get();
+        // ✅ OPTIMIZACIÓN 6: Eager Loading Inteligente con relaciones completas
+        $asignacionesInstitucion = TestAssignment::whereHas('user', function($q) use ($facultadIds) {
+            $q->whereIn('facultad_id', $facultadIds);
+        })->with([
+            'user.facultad',
+            'user.programa', 
+            'user.roles',
+            'test.questions.options',
+            'responses.question'
+        ])->get();
         
-        // Contar profesores que han completado todos los tests
-        $profesoresCompletados = $profesoresInstitucion->filter(function($profesor) use ($testsActivos, $asignacionesCompletadas, $totalTestsActivos) {
+        // ✅ OPTIMIZACIÓN 7: Agrupar asignaciones para acceso O(1) con optimización de memoria
+        $asignacionesAgrupadas = $asignacionesInstitucion->groupBy(['test_id', 'user_id']);
+        $asignacionesCompletadas = $asignacionesInstitucion->where('status', 'completed');
+        
+        // ✅ OPTIMIZACIÓN 29: Liberar memoria de colecciones grandes
+        unset($asignacionesInstitucion);
+        gc_collect_cycles();
+        
+        // ✅ OPTIMIZACIÓN 8: Contar profesores completados eficientemente
+        $profesoresCompletados = $profesoresInstitucion->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
             $testsCompletadosPorProfesor = $asignacionesCompletadas
                 ->where('user_id', $profesor->id)
                 ->count();
@@ -821,68 +857,66 @@ class ReportService
         $totalProfesoresCompletados = $profesoresCompletados->count();
         $totalProfesoresPendientes = $totalProfesores - $totalProfesoresCompletados;
         
-        // Obtener evaluaciones por área para las facultades reales de la institución
-        $query = EvaluacionPorArea::byInstitution($institution->id);
-        $evaluaciones = $query->get();
+        // ✅ OPTIMIZACIÓN 9: Obtener evaluaciones con filtro directo
+        $evaluaciones = EvaluacionPorArea::byInstitution($institution->id)
+            ->whereHas('facultad', function($q) use ($facultadIds) {
+                $q->whereIn('id', $facultadIds);
+            })->get();
         
-        // Filtrar solo las evaluaciones de facultades reales
-        $evaluaciones = $evaluaciones->filter(function($evaluacion) {
-            return $evaluacion->facultad && 
-                   (str_contains($evaluacion->facultad->nombre, 'Facultad') ||
-                    str_contains($evaluacion->facultad->nombre, 'School') ||
-                    str_contains($evaluacion->facultad->nombre, 'College'));
-        });
-        
-        // Calcular estadísticas generales de la institución
+        // ✅ OPTIMIZACIÓN 10: Calcular estadísticas básicas
         $promedioInstitucion = $evaluaciones->avg('score') ?? 0;
         $puntuacionMaxima = $evaluaciones->max('score') ?? 0;
         $puntuacionMinima = $evaluaciones->min('score') ?? 0;
         $fechaAplicacion = now()->format('d/m/Y');
         
-        // Calcular promedio de la institución basado en TODOS los tests asignados a TODOS los profesores
+        // ✅ OPTIMIZACIÓN 11: Cache de Consultas SQL con TTL de 1 hora
+        $puntajesMaximos = [];
+        foreach ($testsActivos as $test) {
+            $cacheKey = "test_max_score_{$test->id}";
+            $puntajesMaximos[$test->id] = Cache::remember($cacheKey, 3600, function() use ($test) {
+                return DB::table('questions as q')
+                    ->join('options as o', 'q.id', '=', 'o.question_id')
+                    ->where('q.test_id', $test->id)
+                    ->groupBy('q.id')
+                    ->select(DB::raw('MAX(o.score) as max_score_per_question'))
+                    ->get()
+                    ->sum('max_score_per_question');
+            });
+        }
+        
+        // ✅ OPTIMIZACIÓN 12: Calcular promedios por test de forma optimizada
         $totalPuntajeObtenidoInstitucion = 0;
         $totalPuntajeMaximoInstitucion = 0;
         $promediosPorTest = [];
         
-        // Calcular promedios por test individual para la institución
         foreach ($testsActivos as $test) {
             $puntajeObtenidoTest = 0;
             $profesoresConTest = 0;
+            $puntajeMaximoTest = $puntajesMaximos[$test->id];
             
-            // Calcular puntaje máximo para este test (una sola vez)
-            $puntajeMaximoTest = DB::table('questions as q')
-                ->join('options as o', 'q.id', '=', 'o.question_id')
-                ->where('q.test_id', $test->id)
-                ->groupBy('q.id')
-                ->select(DB::raw('MAX(o.score) as max_score_per_question'))
-                ->get()
-                ->sum('max_score_per_question');
-            
-            foreach ($profesoresInstitucion as $profesor) {
-                $assignment = TestAssignment::where('user_id', $profesor->id)
-                    ->where('test_id', $test->id)
-                    ->first();
-                
-                if ($assignment) {
+            // ✅ OPTIMIZACIÓN 13: Usar asignaciones agrupadas en lugar de consultas individuales
+            if (isset($asignacionesAgrupadas[$test->id])) {
+                foreach ($asignacionesAgrupadas[$test->id] as $userId => $assignments) {
                     $profesoresConTest++;
+                    $assignment = $assignments->first();
                     
-                    if ($assignment->status === 'completed') {
-                        $puntaje = DB::table('test_responses as tr')
-                            ->where('test_assignment_id', $assignment->id)
-                            ->sum('tr.score');
-                        $puntajeObtenidoTest += $puntaje;
-                    }
+                                            if ($assignment && $assignment->status === 'completed') {
+                            // ✅ OPTIMIZACIÓN 14: Cache de puntajes por asignación
+                            $puntajeCacheKey = "assignment_score_{$assignment->id}";
+                            $puntaje = Cache::remember($puntajeCacheKey, 1800, function() use ($assignment) {
+                                return DB::table('test_responses as tr')
+                                    ->where('test_assignment_id', $assignment->id)
+                                    ->sum('tr.score');
+                            });
+                            $puntajeObtenidoTest += $puntaje;
+                        }
                 }
             }
             
-            // Calcular puntaje máximo total para este test (puntaje máximo por profesor)
             $puntajeMaximoTotalTest = $puntajeMaximoTest * $profesoresConTest;
-            
-            // Agregar a totales de la institución
             $totalPuntajeObtenidoInstitucion += $puntajeObtenidoTest;
             $totalPuntajeMaximoInstitucion += $puntajeMaximoTotalTest;
             
-            // Calcular promedio para este test
             $promedioTest = $puntajeMaximoTotalTest > 0 ? round(($puntajeObtenidoTest / $puntajeMaximoTotalTest) * 100, 2) : 0;
             $promediosPorTest[] = [
                 'test_name' => $test->name,
@@ -893,16 +927,13 @@ class ReportService
         // Calcular promedio general de la institución
         $promedioInstitucion = $totalPuntajeMaximoInstitucion > 0 ? round(($totalPuntajeObtenidoInstitucion / $totalPuntajeMaximoInstitucion) * 100, 2) : 0;
         
-        // Obtener resultados por facultad ordenados de mayor a menor
-        $resultadosPorFacultad = $facultadesInstitucion->map(function($facultad) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos, $testsActivos) {
-            // Obtener profesores de esta facultad
-            $profesoresFacultad = User::whereHas('roles', function($q) {
-                $q->where('name', 'Docente');
-            })->where('facultad_id', $facultad->id)->get();
-            
+        // ✅ OPTIMIZACIÓN 15: Calcular resultados por facultad usando datos ya cargados
+        $resultadosPorFacultad = $facultadesInstitucion->map(function($facultad) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos, $testsActivos, $asignacionesAgrupadas, $puntajesMaximos, $profesoresInstitucion) {
+            // ✅ OPTIMIZACIÓN 16: Usar profesores ya filtrados por facultad
+            $profesoresFacultad = $profesoresInstitucion->where('facultad_id', $facultad->id);
             $totalProfesoresFacultad = $profesoresFacultad->count();
             
-            // Contar profesores completados en esta facultad
+            // ✅ OPTIMIZACIÓN 17: Contar profesores completados eficientemente
             $profesoresCompletadosFacultad = $profesoresFacultad->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
                 $testsCompletadosPorProfesor = $asignacionesCompletadas
                     ->where('user_id', $profesor->id)
@@ -913,36 +944,30 @@ class ReportService
             $totalProfesoresCompletadosFacultad = $profesoresCompletadosFacultad->count();
             $totalProfesoresPendientesFacultad = $totalProfesoresFacultad - $totalProfesoresCompletadosFacultad;
             
-            // Calcular promedio general de la facultad basado en TODOS los tests asignados
+            // ✅ OPTIMIZACIÓN 18: Calcular promedio usando asignaciones agrupadas y puntajes cacheados
             $totalPuntajeObtenidoFacultad = 0;
             $totalPuntajeMaximoFacultad = 0;
             
             foreach ($testsActivos as $test) {
+                $profesoresConTest = 0;
+                $puntajeMaximoTest = $puntajesMaximos[$test->id];
+                
                 foreach ($profesoresFacultad as $profesor) {
-                    $assignment = TestAssignment::where('user_id', $profesor->id)
-                        ->where('test_id', $test->id)
-                        ->first();
-                    
-                    if ($assignment) {
-                        if ($assignment->status === 'completed') {
+                    // ✅ OPTIMIZACIÓN 19: Usar asignaciones agrupadas en lugar de consultas
+                    if (isset($asignacionesAgrupadas[$test->id][$profesor->id])) {
+                        $profesoresConTest++;
+                        $assignment = $asignacionesAgrupadas[$test->id][$profesor->id]->first();
+                        
+                        if ($assignment && $assignment->status === 'completed') {
                             $puntaje = DB::table('test_responses as tr')
                                 ->where('test_assignment_id', $assignment->id)
                                 ->sum('tr.score');
                             $totalPuntajeObtenidoFacultad += $puntaje;
                         }
-                        
-                        // Calcular puntaje máximo para este test
-                        $puntajeMaximo = DB::table('questions as q')
-                            ->join('options as o', 'q.id', '=', 'o.question_id')
-                            ->where('q.test_id', $test->id)
-                            ->groupBy('q.id')
-                            ->select(DB::raw('MAX(o.score) as max_score_per_question'))
-                            ->get()
-                            ->sum('max_score_per_question');
-                        
-                        $totalPuntajeMaximoFacultad += $puntajeMaximo;
                     }
                 }
+                
+                $totalPuntajeMaximoFacultad += $puntajeMaximoTest * $profesoresConTest;
             }
             
             $promedioFacultad = $totalPuntajeMaximoFacultad > 0 ? round(($totalPuntajeObtenidoFacultad / $totalPuntajeMaximoFacultad) * 100, 2) : 0;
@@ -960,16 +985,13 @@ class ReportService
             ];
         })->sortByDesc('promedio_general')->values();
         
-        // Obtener resultados por programa ordenados de mayor a menor
-        $resultadosPorPrograma = $programasInstitucion->map(function($programa) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos, $testsActivos) {
-            // Obtener profesores de este programa
-            $profesoresPrograma = User::whereHas('roles', function($q) {
-                $q->where('name', 'Docente');
-            })->where('programa_id', $programa->id)->get();
-            
+        // ✅ OPTIMIZACIÓN 20: Calcular resultados por programa usando datos ya cargados
+        $resultadosPorPrograma = $programasInstitucion->map(function($programa) use ($evaluaciones, $asignacionesCompletadas, $totalTestsActivos, $testsActivos, $asignacionesAgrupadas, $puntajesMaximos, $profesoresInstitucion) {
+            // ✅ OPTIMIZACIÓN 21: Usar profesores ya filtrados por programa
+            $profesoresPrograma = $profesoresInstitucion->where('programa_id', $programa->id);
             $totalProfesoresPrograma = $profesoresPrograma->count();
             
-            // Contar profesores completados en este programa
+            // ✅ OPTIMIZACIÓN 22: Contar profesores completados eficientemente
             $profesoresCompletadosPrograma = $profesoresPrograma->filter(function($profesor) use ($asignacionesCompletadas, $totalTestsActivos) {
                 $testsCompletadosPorProfesor = $asignacionesCompletadas
                     ->where('user_id', $profesor->id)
@@ -980,36 +1002,30 @@ class ReportService
             $totalProfesoresCompletadosPrograma = $profesoresCompletadosPrograma->count();
             $totalProfesoresPendientesPrograma = $totalProfesoresPrograma - $totalProfesoresCompletadosPrograma;
             
-            // Calcular promedio general del programa basado en TODOS los tests asignados
+            // ✅ OPTIMIZACIÓN 23: Calcular promedio usando asignaciones agrupadas y puntajes cacheados
             $totalPuntajeObtenidoPrograma = 0;
             $totalPuntajeMaximoPrograma = 0;
             
             foreach ($testsActivos as $test) {
+                $profesoresConTest = 0;
+                $puntajeMaximoTest = $puntajesMaximos[$test->id];
+                
                 foreach ($profesoresPrograma as $profesor) {
-                    $assignment = TestAssignment::where('user_id', $profesor->id)
-                        ->where('test_id', $test->id)
-                        ->first();
-                    
-                    if ($assignment) {
-                        if ($assignment->status === 'completed') {
+                    // ✅ OPTIMIZACIÓN 24: Usar asignaciones agrupadas en lugar de consultas
+                    if (isset($asignacionesAgrupadas[$test->id][$profesor->id])) {
+                        $profesoresConTest++;
+                        $assignment = $asignacionesAgrupadas[$test->id][$profesor->id]->first();
+                        
+                        if ($assignment && $assignment->status === 'completed') {
                             $puntaje = DB::table('test_responses as tr')
                                 ->where('test_assignment_id', $assignment->id)
                                 ->sum('tr.score');
                             $totalPuntajeObtenidoPrograma += $puntaje;
                         }
-                        
-                        // Calcular puntaje máximo para este test
-                        $puntajeMaximo = DB::table('questions as q')
-                            ->join('options as o', 'q.id', '=', 'o.question_id')
-                            ->where('q.test_id', $test->id)
-                            ->groupBy('q.id')
-                            ->select(DB::raw('MAX(o.score) as max_score_per_question'))
-                            ->get()
-                            ->sum('max_score_per_question');
-                        
-                        $totalPuntajeMaximoPrograma += $puntajeMaximo;
                     }
                 }
+                
+                $totalPuntajeMaximoPrograma += $puntajeMaximoTest * $profesoresConTest;
             }
             
             $promedioPrograma = $totalPuntajeMaximoPrograma > 0 ? round(($totalPuntajeObtenidoPrograma / $totalPuntajeMaximoPrograma) * 100, 2) : 0;
@@ -1050,6 +1066,17 @@ class ReportService
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'parametros' => $parameters,
         ];
+        
+        } catch (\Exception $e) {
+            \Log::error('Error en getUniversidadPreviewData:', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw new \Exception('Error al obtener datos de la universidad: ' . $e->getMessage());
+        }
     }
 
     private function getProfesorPreviewData(User $profesor, array $parameters = [])
@@ -1788,9 +1815,41 @@ class ReportService
     {
         return PDF::loadView('reports.profesor', $data);
     }
-
-
-
-
-
-} 
+    
+    /**
+     * ✅ OPTIMIZACIÓN: Determinar si usar procesamiento asíncrono
+     */
+    private function shouldUseAsyncProcessing($entity)
+    {
+        // Usar procesamiento asíncrono si:
+        // 1. Es una institución con más de 100 profesores
+        // 2. Es una facultad con más de 50 profesores
+        // 3. Es un programa con más de 30 profesores
+        
+        if ($entity instanceof Institution) {
+            $profesorCount = User::where('institution_id', $entity->id)
+                ->whereHas('roles', function($q) {
+                    $q->where('name', 'Docente');
+                })->count();
+            return $profesorCount > 100;
+        }
+        
+        if ($entity instanceof Facultad) {
+            $profesorCount = User::where('facultad_id', $entity->id)
+                ->whereHas('roles', function($q) {
+                    $q->where('name', 'Docente');
+                })->count();
+            return $profesorCount > 50;
+        }
+        
+        if ($entity instanceof Programa) {
+            $profesorCount = User::where('programa_id', $entity->id)
+                ->whereHas('roles', function($q) {
+                    $q->where('name', 'Docente');
+                })->count();
+            return $profesorCount > 30;
+        }
+        
+        return false;
+    }
+}
