@@ -9,23 +9,22 @@ class RolePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('Ver Gestion de roles');
+        return $user->can('Gestionar roles');
     }
-
 
     public function create(User $user): bool
     {
-        return $user->can('Crear permisos');
+        return $user->can('Gestionar roles');
     }
 
     public function update(User $user): bool
     {
-        return $user->can('Editar permisos');
+        return $user->can('Gestionar roles');
     }
 
     public function delete(User $user, Role $role): bool
     {
-        return $user->can('Eliminar permiso');
+        return $user->can('Gestionar roles');
     }
 
 }

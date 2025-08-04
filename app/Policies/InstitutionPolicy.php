@@ -16,22 +16,22 @@ class InstitutionPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('Ver instituciones');
+        return $user->can('Gestionar instituciones');
     }
 
     public function create(User $user): bool
     {
-        return $user->can('Crear institucion');
+        return $user->can('Gestionar instituciones');
     }
 
     public function update(User $user, Institution $institution): bool
     {
-        return $user->can('Editar institucion');
+        return $user->can('Gestionar instituciones');
     }
 
     public function delete(User $user, Institution $institution): bool
     {
-        return $user->can('Eliminar institucion');
+        return $user->can('Gestionar instituciones');
     }
 
 }
