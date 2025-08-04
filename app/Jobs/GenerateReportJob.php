@@ -42,10 +42,24 @@ class GenerateReportJob implements ShouldQueue
                 'entity_id' => $this->entityId
             ]);
 
-            $report = Report::find($this->reportId);
+            // Buscar el reporte con reintentos
+            $report = null;
+            $attempts = 0;
+            $maxAttempts = 3;
+            
+            while (!$report && $attempts < $maxAttempts) {
+                $report = Report::find($this->reportId);
+                if (!$report) {
+                    $attempts++;
+                    Log::warning("Reporte no encontrado, intento {$attempts}/{$maxAttempts}", [
+                        'report_id' => $this->reportId
+                    ]);
+                    sleep(1); // Esperar 1 segundo antes del siguiente intento
+                }
+            }
             
             if (!$report) {
-                throw new \Exception("Reporte no encontrado");
+                throw new \Exception("Reporte no encontrado después de {$maxAttempts} intentos");
             }
 
             // Actualizar estado a generando
@@ -53,6 +67,10 @@ class GenerateReportJob implements ShouldQueue
 
             // ✅ OPTIMIZACIÓN: Generar el reporte según el tipo con cache inteligente
             $entity = $this->entityType::find($this->entityId);
+            
+            if (!$entity) {
+                throw new \Exception("Entidad no encontrada: {$this->entityType} con ID {$this->entityId}");
+            }
             
             switch ($this->type) {
                 case 'universidad':

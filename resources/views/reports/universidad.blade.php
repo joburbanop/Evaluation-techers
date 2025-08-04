@@ -413,11 +413,6 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
             <div>
                 <p style="margin-bottom: 15px;"><strong>Nombre:</strong> {{ $previewData['entidad']['name'] ?? 'N/A' }}</p>
-                <p style="margin-bottom: 15px;"><strong>Carácter Académico:</strong> {{ $previewData['entidad']['caracter_academico'] ?? 'No especificado' }}</p>
-            </div>
-            <div>
-                <p style="margin-bottom: 15px;"><strong>Departamento:</strong> {{ $previewData['entidad']['departamento'] ?? 'No especificado' }}</p>
-                <p style="margin-bottom: 15px;"><strong>Municipio:</strong> {{ $previewData['entidad']['municipio'] ?? 'No especificado' }}</p>
             </div>
         </div>
     </div>

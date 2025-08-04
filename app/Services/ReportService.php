@@ -14,6 +14,7 @@ use App\Models\TestAreaCompetencyLevel;
 use App\Models\EvaluacionPorArea;
 use App\Models\EvaluacionPorInstitucion;
 use App\Models\EvaluacionPorProfesor;
+use App\Jobs\GenerateReportJob;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
